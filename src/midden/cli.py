@@ -14,6 +14,7 @@ import typer
 
 from midden import PROJECT_CRS
 from midden.aoi import get_aoi, list_aois, seed_aois
+from midden.commands.terrain import terrain_app
 from midden.config import settings
 from midden.db import (
     apply_schema,
@@ -41,6 +42,8 @@ app.add_typer(aoi_app, name="aoi")
 
 intake_app = typer.Typer(help="Fetch, transform, and load sources.", no_args_is_help=True)
 app.add_typer(intake_app, name="intake")
+
+app.add_typer(terrain_app, name="terrain")
 
 #: WhiteboxTools tools the pipeline depends on and that this build must provide.
 REQUIRED_WBT_TOOLS = [

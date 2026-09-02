@@ -15,6 +15,7 @@ dependencies = [
     "httpx>=0.28.1",
     "ibis-framework[duckdb,postgres]>=11.0.0",
     "psycopg[binary]>=3.3.5",
+    "pillow>=11.4.0",
     "pyarrow>=25.0.1",
     "pydantic-settings>=2.15.0",
     "pygeoogc>=0.19.4",
