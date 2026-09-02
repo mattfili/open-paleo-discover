@@ -27,3 +27,15 @@ If openness is ever cited in output, cite:
   Yokoyama, R., Shirasawa, M., & Pike, R. J. (2002). Visualizing Topography by Openness:
   A New Application of Image Processing to Digital Elevation Models. Photogrammetric
   Engineering & Remote Sensing 68(3), 257-265.
+
+This product includes software developed by the Leaflet project.
+
+  Leaflet 1.9.4
+  https://github.com/Leaflet/Leaflet
+  Licensed under BSD-2-Clause
+  Copyright 2010-2023 Volodymyr Agafonkin, Copyright 2010-2011 CloudMade
+
+`dist/leaflet.css` is vendored verbatim into `src/midden/render/_leaflet.css`. The
+artifact sandbox's content-security policy allows external stylesheets only from
+fonts.googleapis.com, so the stylesheet must be inlined even though the matching script
+loads from a CDN.

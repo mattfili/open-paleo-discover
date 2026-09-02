@@ -44,6 +44,9 @@ dev = [
 ]
 
 [tool.uv.build-backend]
+# The vendored Leaflet stylesheet ships with the package; the artifact exporter
+# inlines it and cannot fetch it at render time.
+source-include = ["src/midden/render/_leaflet.css"]
 # Distribution is open-paleo-discover; the module is `midden` (spec.md §10).
 module-name = "midden"
 

@@ -12,7 +12,12 @@ import typer
 from midden.aoi import get_aoi
 from midden.config import settings
 from midden.db import connect, fetch_all
-from midden.features.score import load_weights, score_stack, write_score_raster
+from midden.features.score import (
+    load_weights,
+    publish_score,
+    score_stack,
+    write_score_raster,
+)
 from midden.features.stack import build_feature_stack, register_stack
 from midden.skills import script_path
 from midden.terrain.cog import list_assets
@@ -76,6 +81,9 @@ def score_run(
     suffix = "_regional" if regional else ""
     destination = settings().aoi_cog_dir(aoi) / f"score{suffix}_10m.tif"
     write_score_raster(result.frame, template, destination)
+    if not regional:
+        with connect() as conn:
+            publish_score(conn, get_aoi(conn, aoi), destination)
 
     typer.secho(f"{aoi}: scored {len(frame):,} cells with '{result.weight_set}'",
                 fg=typer.colors.GREEN)

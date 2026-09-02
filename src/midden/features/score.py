@@ -143,3 +143,23 @@ def write_score_raster(
     with rasterio.open(dest, "w", **profile) as handle:
         handle.write(grid, 1)
     return dest
+
+
+def publish_score(conn, aoi, source: Path, *, kind: str = "score",
+                  derivation_id: int | None = None) -> int:
+    """Convert a score raster to a COG and catalog it.
+
+    Without this the surface exists on disk but is invisible to everything that reads the
+    catalog — which is midden_list_rasters, midden_preview_raster, and every render scene.
+    """
+    from midden.config import settings
+    from midden.terrain.cog import register_asset, write_cog
+
+    dest = settings().aoi_cog_dir(aoi.slug) / f"{kind}_10m.tif"
+    if source.resolve() != dest.resolve():
+        write_cog(source, dest)
+    else:
+        write_cog(source, dest.with_suffix(".cog.tif"))
+        dest.with_suffix(".cog.tif").replace(dest)
+    return register_asset(conn, aoi_id=aoi.id, kind=kind, grid="model", path=dest,
+                          derivation_id=derivation_id)

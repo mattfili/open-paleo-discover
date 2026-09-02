@@ -15,6 +15,7 @@ import typer
 from midden import PROJECT_CRS
 from midden.aoi import get_aoi, list_aois, seed_aois
 from midden.commands.features import features_app, score_app
+from midden.commands.render import render_app
 from midden.commands.semantic import semantic_app
 from midden.commands.terrain import terrain_app
 from midden.config import settings
@@ -49,6 +50,7 @@ app.add_typer(terrain_app, name="terrain")
 app.add_typer(semantic_app, name="semantic")
 app.add_typer(features_app, name="features")
 app.add_typer(score_app, name="score")
+app.add_typer(render_app, name="render")
 
 #: WhiteboxTools tools the pipeline depends on and that this build must provide.
 REQUIRED_WBT_TOOLS = [
