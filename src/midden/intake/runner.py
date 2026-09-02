@@ -108,24 +108,66 @@ def _prepare_for_load(frame: gpd.GeoDataFrame, load: LoadSpec) -> gpd.GeoDataFra
     return frame
 
 
+def _upsert(frame: gpd.GeoDataFrame, load: LoadSpec, engine) -> int:
+    """Insert or update rows, keyed on `upsert_key`.
+
+    This matters more than it looks. Every fetch is AOI-scoped, so a source is loaded once
+    per AOI; with `mode: replace` the table would only ever hold the most recent AOI, and
+    deriving a second AOI would silently destroy the first one's data. Upsert is what lets
+    reference layers accumulate across AOIs while a re-run of the same AOI stays idempotent.
+    """
+    from sqlalchemy import text
+
+    staging = f"_staging_{load.table_name}"
+    frame.to_postgis(staging, engine, schema=load.schema_name, if_exists="replace", index=False)
+
+    columns = [c for c in frame.columns]
+    key = load.upsert_key
+    updates = ", ".join(f'"{c}" = EXCLUDED."{c}"' for c in columns if c not in key)
+    column_list = ", ".join(f'"{c}"' for c in columns)
+    conflict = ", ".join(f'"{c}"' for c in key)
+
+    with engine.begin() as connection:
+        # ON CONFLICT needs a unique constraint to arbitrate against.
+        connection.execute(text(
+            f'CREATE UNIQUE INDEX IF NOT EXISTS {load.table_name}_upsert_key_idx '
+            f"ON {load.target} ({conflict})"
+        ))
+        result = connection.execute(text(
+            f"INSERT INTO {load.target} ({column_list}) "
+            f"SELECT {column_list} FROM {load.schema_name}.{staging} "
+            f"ON CONFLICT ({conflict}) DO UPDATE SET {updates}"
+        ))
+        connection.execute(text(f"DROP TABLE IF EXISTS {load.schema_name}.{staging}"))
+    return result.rowcount if result.rowcount is not None else len(frame)
+
+
 def _write_postgis(frame: gpd.GeoDataFrame, load: LoadSpec, config: Settings) -> int:
     """Write the frame to its target table and build the declared indexes."""
     engine = create_engine(config.sqlalchemy_url())
-    if_exists = {
-        LoadMode.REPLACE: "replace",
-        LoadMode.APPEND: "append",
-        LoadMode.UPSERT: "append",
-    }[load.mode]
     try:
-        frame.to_postgis(
-            load.table_name, engine, schema=load.schema_name, if_exists=if_exists, index=False
-        )
+        if load.mode is LoadMode.UPSERT and _table_exists(engine, load):
+            written = _upsert(frame, load, engine)
+        else:
+            if_exists = "replace" if load.mode is LoadMode.REPLACE else "append"
+            frame.to_postgis(
+                load.table_name, engine, schema=load.schema_name,
+                if_exists=if_exists, index=False,
+            )
+            written = len(frame)
         with engine.begin() as connection:
             for statement in index_statements(load):
                 connection.exec_driver_sql(statement)
     finally:
         engine.dispose()
-    return len(frame)
+    return written
+
+
+def _table_exists(engine, load: LoadSpec) -> bool:
+    """Whether the target table is already present. First load has nothing to conflict on."""
+    from sqlalchemy import inspect as sa_inspect
+
+    return sa_inspect(engine).has_table(load.table_name, schema=load.schema_name)
 
 
 def _ledger_params(source: Source, aoi: Aoi | None, key: str) -> dict[str, Any]:

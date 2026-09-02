@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Ten evaluation questions for the midden MCP server.
+
+  Each is independent, read-only, and verifiable. Answers were checked by hand against a
+  seeded database rather than generated. Questions 1-6 test whether the model can drive
+  the tool surface; 7-10 test whether it has absorbed the conventions that fail silently
+  when got wrong, which is the more important half.
+
+  Questions about counts are phrased against the *seeded* AOI table, which is stable.
+  Deliberately avoided: anything counting rasters or derivation runs, since those grow
+  with use and an eval that drifts is an eval nobody trusts.
+-->
+<evaluation name="midden" version="0.1.0">
+
+  <qa_pair id="1">
+    <question>How many areas of interest have the role control_positive, and what are their slugs?</question>
+    <answer>Two: castalian-springs and mound-bottom.</answer>
+    <expected_tools>midden_list_aois</expected_tools>
+    <notes>A control_positive AOI is a published site that falsifies a weight set. Answerable with midden_list_aois(role="control_positive").</notes>
+  </qa_pair>
+
+  <qa_pair id="2">
+    <question>Which seeded AOI is the largest by area, and roughly how large is it?</question>
+    <answer>cedars-of-lebanon, about 12.44 square kilometres.</answer>
+    <expected_tools>midden_list_aois</expected_tools>
+  </qa_pair>
+
+  <qa_pair id="3">
+    <question>Which AOI has the role shakeout, and why should its scores be ignored?</question>
+    <answer>harpeth-highway-70 (Harpeth River SP, Highway 70 Canoe Access), about 0.003 square kilometres. A shakeout AOI exists only for fast iteration; it is roughly one acre, far too small for its own hydrology to be meaningful, so its outputs are for checking that the chain runs rather than for interpretation.</answer>
+    <expected_tools>midden_list_aois</expected_tools>
+  </qa_pair>
+
+  <qa_pair id="4">
+    <question>What is the highest Strahler stream order present in the flowline data, and which named stream carries it?</question>
+    <answer>Order 6, carried by the Harpeth River.</answer>
+    <expected_tools>midden_list_semantic_models, midden_get_model_schema, midden_query</expected_tools>
+    <notes>Requires querying the nhd_flowline model with dimension gnis_name or stream_order and measure max_stream_order or reach_count.</notes>
+  </qa_pair>
+
+  <qa_pair id="5">
+    <question>Which semantic model would you query to find out whether any derivation runs have failed, and what dimension distinguishes them?</question>
+    <answer>The derivation model, using the status dimension, whose values are running, ok and failed. It is the provenance ledger, so a failed run keeps its row, its parameters and its error rather than vanishing.</answer>
+    <expected_tools>midden_list_semantic_models, midden_get_model_schema</expected_tools>
+  </qa_pair>
+
+  <qa_pair id="6">
+    <question>You want to know the median Height Above Nearest Drainage inside the mound-bottom AOI. Which tool, and why might the answer differ from the raster's overall median?</question>
+    <answer>midden_raster_stats with aoi="mound-bottom", kind="hand". Rasters are computed on a buffered extent because HAND depends on flow accumulated out of the surrounding catchment, so the unclipped raster covers considerably more ground than the AOI; clip_to_aoi=True reports the AOI itself and defaults to true.</answer>
+    <expected_tools>midden_raster_stats</expected_tools>
+  </qa_pair>
+
+  <qa_pair id="7">
+    <question>In a positive-openness render, a roughly circular patch reads well above 90 degrees. Is that a pit or a mound, and what would you check next?</question>
+    <answer>A mound. Positive openness is high on CONVEX ground, so above 90 means convex: a mound, platform, hearth or ridge. Next, look at negative openness over the same spot — a mound with a surrounding borrow ditch shows its top in positive and the ditch ring in negative — and check SLRM. One anomaly is not a finding; look for spatial pattern before calling it cultural.</answer>
+    <expected_tools>midden_preview_raster</expected_tools>
+    <notes>Tests the sign convention, which fails silently: nothing errors, every interpretation simply inverts.</notes>
+  </qa_pair>
+
+  <qa_pair id="8">
+    <question>A cell scores very low on the suitability surface and its burial_risk band is high. Has the model ruled out a site there?</question>
+    <answer>No. A low score means either the landform is wrong or anything present is under metres of overbank silt, and those are different findings. burial_risk is reported as a companion band and is never summed into the score precisely so the two are not collapsed. High burial risk with a low score is a statement that LiDAR cannot see there, not a negative result.</answer>
+    <expected_tools></expected_tools>
+  </qa_pair>
+
+  <qa_pair id="9">
+    <question>You want to run an arbitrary SQL query with a spatial join against the database. Which server's tool should you reach for?</question>
+    <answer>The mcp-postgis server's execute_sql, in read-only mode, alongside its spatial helpers such as features_in_polygon and nearest_features. midden deliberately does not ship a midden_sql; midden_query is the curated semantic vocabulary of named dimensions and measures, not a second way to write SQL.</answer>
+    <expected_tools></expected_tools>
+  </qa_pair>
+
+  <qa_pair id="10">
+    <question>You are choosing a search radius for openness so that charcoal hearths resolve. Which AOI should you sweep against, and which should you never use?</question>
+    <answer>Sweep against montgomery-bell, a control_detection AOI whose 19th-century iron district leaves relict charcoal hearths — flat circular platforms roughly 10 m across. Never tune against a prospect AOI: there is no ground truth there, so a parameter fitted to it is fitted to noise. Use midden_sweep, then midden_preview_raster on each variant; openness previews hold a fixed display window centred on 90 degrees so variants stay comparable.</answer>
+    <expected_tools>midden_list_aois, midden_sweep, midden_preview_raster</expected_tools>
+  </qa_pair>
+
+</evaluation>

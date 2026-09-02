@@ -24,7 +24,9 @@ transform:
 load:
   target: ref.nhd_flowline
   geometry_column: geom
-  mode: replace                   # replace | append | upsert
+  # upsert, not replace: every fetch is AOI-scoped, so replace would leave the table
+  # holding only the most recently derived AOI and silently destroy the rest.
+  mode: upsert                    # replace | append | upsert
   upsert_key: [comid]
   index: [gist(geom), btree(stream_order)]
 

@@ -1,0 +1,15 @@
+{
+  "name": "midden",
+  "displayName": "midden",
+  "version": "0.1.0",
+  "description": "Archaeological site-predictive modelling for Middle Tennessee: LiDAR-derived landform suitability, detection-grid renders, and a semantic layer over the results.",
+  "author": {
+    "name": "Matt Fili",
+    "email": "matthewjosephfili@gmail.com"
+  },
+  "repository": "https://github.com/mattfili/open-paleo-discover",
+  "license": "MIT",
+  "keywords": ["archaeology", "lidar", "geospatial", "postgis", "terrain"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json"
+}
