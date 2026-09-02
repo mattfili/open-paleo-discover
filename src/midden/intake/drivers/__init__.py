@@ -66,4 +66,5 @@ def _load_builtin() -> None:
     from midden.intake.drivers import (  # noqa: F401  (import for side effect)
         arcgis,
         nhd,
+        sda,
     )

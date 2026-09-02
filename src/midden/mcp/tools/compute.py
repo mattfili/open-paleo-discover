@@ -6,6 +6,7 @@ from a network service, writes rasters to disk, or inserts rows.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Annotated, Any
 
 from pydantic import Field
@@ -249,12 +250,100 @@ def midden_sweep(  # cq-allow: 53 lines, of which 30 are logic; the remainder is
     return {"aoi": aoi, "derivation": derivation, "parameter": parameter, "runs": results}
 
 
-#: Tools that only read. Marked readOnlyHint so a client can reason about
-#: which calls are safe to retry or run speculatively.
+
+def midden_build_feature_stack(
+    aoi: Annotated[str, Field(description="AOI slug.")],
+    regional: Annotated[
+        bool,
+        Field(description="Keep the full buffered extent instead of clipping to the AOI. "
+                          "Required for a control test: ranking a site against itself is "
+                          "not a test."),
+    ] = False,
+) -> dict[str, Any]:
+    """Assemble the 10 m feature stack for an AOI and write it to Parquet.
+
+    Needs the modelling-grid terrain and the SSURGO soils for that AOI to exist already.
+    Distances come from the authoritative NHD hydrography rather than from the
+    WhiteboxTools stream raster, so they do not move when the stream threshold moves.
+    """
+    from midden.features.stack import build_feature_stack, register_stack
+
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        result = build_feature_stack(conn, area, clip_to_aoi=not regional)
+        if not regional:
+            register_stack(conn, area, result)
+    return {
+        "aoi": result.aoi_slug, "rows": result.rows,
+        "path": str(result.path), "columns": result.columns,
+        "extent": "buffered" if regional else "clipped to AOI",
+    }
+
+
+def midden_score_overlay(
+    aoi: Annotated[str, Field(description="AOI slug.")],
+    weights: Annotated[
+        str, Field(description="Path to a weight-set YAML.")
+    ] = "weights/default.yml",
+    regional: Annotated[
+        bool, Field(description="Score the buffered extent, for a control test.")
+    ] = False,
+) -> dict[str, Any]:
+    """Apply a weight set to an AOI's feature stack and write a score raster.
+
+    A weighted overlay is a hypothesis, not a measurement. Its only claim to validity is
+    whether it ranks published sites highly, so follow this with a control run rather than
+    treating the ranking as a finding.
+
+    `burial_risk` is deliberately absent from the sum: a cell scores low either because the
+    landform is wrong or because anything there is under metres of overbank silt, and
+    those are different findings.
+    """
+    import pandas as pd
+
+    from midden.features.score import load_weights, score_stack, write_score_raster
+    from midden.features.stack import build_feature_stack
+    from midden.terrain.cog import list_assets
+
+    weight_set = load_weights(Path(weights))
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        stack = build_feature_stack(conn, area, clip_to_aoi=not regional)
+        template = next(
+            r["path"] for r in list_assets(conn, aoi_id=area.id, kind="hand")
+            if r["grid"] == "model"
+        )
+
+    result = score_stack(pd.read_parquet(stack.path), weight_set)
+    suffix = "_regional" if regional else ""
+    destination = settings().aoi_cog_dir(aoi) / f"score{suffix}_10m.tif"
+    write_score_raster(result.frame, Path(template), destination)
+
+    scores = result.frame.score
+    return {
+        "aoi": aoi, "weight_set": result.weight_set, "cells": len(result.frame),
+        "score_raster": str(destination),
+        "score": {"mean": float(scores.mean()), "min": float(scores.min()),
+                  "max": float(scores.max())},
+        "weights": result.weights,
+        "mean_contribution": result.contributions,
+        "companion_bands": sorted(weight_set.companion_bands),
+    }
+
+
+#: Tools that only read. Marked readOnlyHint so a client can reason about which calls are
+#: safe to retry or run speculatively.
 READ_TOOLS = (midden_list_parameters,)
 
 #: Tools that fetch from a network service, write rasters, or insert rows.
-WRITE_TOOLS = (midden_run_intake, midden_derive_terrain, midden_create_aoi, midden_sweep)
+WRITE_TOOLS = (
+    midden_run_intake,
+    midden_derive_terrain,
+    midden_create_aoi,
+    midden_sweep,
+    midden_build_feature_stack,
+    midden_score_overlay,
+)
 
 
 def register(mcp) -> None:

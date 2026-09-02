@@ -1,0 +1,30 @@
+name: ssurgo
+description: >-
+  SSURGO soil map units from USDA Soil Data Access. Supplies drainage class for the
+  suitability score, and flooding frequency and parent material for the burial-risk
+  companion band.
+
+fetch:
+  driver: sda_rest
+  params:
+    scope: aoi
+    buffer_m: 500               # soil polygons are coarse; a margin avoids edge slivers
+  cache: data/raw/ssurgo
+
+transform:
+  # SDA returns WGS84; everything in this project is EPSG:26916 and WhiteboxTools will
+  # treat degrees as metres if it is handed them.
+  - reproject: {to: EPSG:26916}
+  - select: [mupolygonkey, mukey, muname, drclassdcd, flodfreqdcd, pmgroupname, burial_risk, geometry]
+  - rename: {drclassdcd: drainage_class, flodfreqdcd: flood_freq, pmgroupname: parent_material}
+
+load:
+  target: ref.ssurgo_mapunit
+  geometry_column: geom
+  # upsert, not replace: every fetch is AOI-scoped, so replace would leave the table
+  # holding only the most recently loaded AOI.
+  mode: upsert
+  # mupolygonkey, not mukey: a map unit key recurs across every polygon of that
+  # soil type in the survey area.
+  upsert_key: [mupolygonkey]
+  index: [gist(geom), btree(drainage_class)]

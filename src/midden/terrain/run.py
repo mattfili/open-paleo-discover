@@ -22,6 +22,7 @@ from midden.config import Settings, settings
 from midden.derivation import open_derivation, param_variant
 from midden.terrain import dem as dem_mod
 from midden.terrain import detection, hydro
+from midden.terrain import terrace as terrace_mod
 from midden.terrain.cog import register_asset, write_cog
 from midden.terrain.params import GRID_BUFFER_M, grid_resolution, resolve
 
@@ -65,6 +66,21 @@ def _publish(
     return assets, paths
 
 
+def _model_derivatives(
+    work: Path, outputs: dict[str, Any], terrace_params: dict[str, Any]
+) -> tuple[dict[str, Path], dict[str, Any]]:
+    """Derive TWI and terrace class from the conditioned hydrology outputs."""
+    wbt = hydro.make_wbt(work)
+    sca = terrace_mod.specific_contributing_area(wbt, Path(outputs["pointer"]), work / "sca.tif")
+    twi = terrace_mod.wetness_index(wbt, sca, Path(outputs["slope"]), work / "twi.tif")
+    terrace_path, report = terrace_mod.classify(
+        Path(outputs["hand"]), Path(outputs["slope"]), work / "terrace.tif",
+        max_slope_deg=terrace_params["max_slope_deg"],
+        tolerance_m=terrace_params["hand_mode_tolerance_m"],
+    )
+    return {"twi": twi, "terrace": terrace_path}, report
+
+
 def run_model_grid(
     conn: psycopg.Connection,
     aoi: Aoi,
@@ -94,12 +110,17 @@ def run_model_grid(
             breach_dist_m=streams["breach_dist_m"],
             flow_accum_threshold=streams["flow_accum_threshold"],
         )
+        derived_paths, terrace_report = _model_derivatives(
+            work / "hydro", outputs, resolve("terrain.terrace", None)
+        )
+        diagnostics = {**diagnostics, "terrace": terrace_report}
         products = {
             "dem": raw_dem,
             "hand": Path(outputs["hand"]),
             "slope": Path(outputs["slope"]),
             "streams": Path(outputs["streams"]),
             "d8_accum": Path(outputs["accum"]),
+            **derived_paths,
         }
         assets, paths = _publish(
             conn, aoi, "model", products,
