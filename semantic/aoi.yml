@@ -1,0 +1,42 @@
+# Areas of interest. Every fetch, derivation, and model run is scoped to one of these.
+# BSL YAML uses unbound `_.field` syntax only -- no lambdas.
+
+aoi:
+  table: aoi_tbl
+  description: >-
+    Areas of interest in Middle Tennessee, seeded from the authoritative boundary
+    services rather than from hardcoded extents.
+
+  dimensions:
+    slug:
+      expr: _.slug
+      description: Stable identifier used by every CLI command and MCP tool.
+    name:
+      expr: _.name
+      description: Name as published by the managing agency.
+    kind:
+      expr: _.kind
+      description: state_park | metro_park | county | watershed | custom.
+    role:
+      expr: _.role
+      description: >-
+        prospect (a real candidate), control_positive (published site, validates the
+        predictive model), control_detection (known surface feature, validates the
+        render chain), or shakeout (fast iteration; ignore its scores).
+    source:
+      expr: _.source
+      description: Boundary service the geometry came from.
+
+  measures:
+    aoi_count:
+      expr: _.count()
+      description: Number of AOIs.
+    total_area_km2:
+      expr: _.area_km2.sum()
+      description: Total area in square kilometres.
+    mean_area_km2:
+      expr: _.area_km2.mean()
+      description: Mean AOI area in square kilometres.
+    max_area_km2:
+      expr: _.area_km2.max()
+      description: Largest AOI in square kilometres.

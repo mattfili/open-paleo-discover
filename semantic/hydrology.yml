@@ -1,0 +1,57 @@
+# Hydrography: NHDPlus HR flowlines and the confluences derived from them.
+# Basis for HAND, distance-to-stream, and distance-to-confluence.
+
+nhd_flowline:
+  table: nhd_flowline_tbl
+  description: >-
+    NHDPlus High Resolution network flowlines, fetched over each AOI's buffered
+    bounding box. Buffered because HAND is computed from upslope flow, so a network
+    truncated at the AOI boundary is wrong near the edge.
+
+  dimensions:
+    comid:
+      expr: _.comid
+      description: Reach identifier. NHDPlus HR calls this nhdplusid; renamed on intake.
+    gnis_name:
+      expr: _.gnis_name
+      description: Named stream, where the reach carries a GNIS name.
+    stream_order:
+      expr: _.stream_order
+      description: >-
+        Strahler stream order. Higher is a larger stream; the main stem here is 6.
+
+  measures:
+    reach_count:
+      expr: _.count()
+      description: Number of flowline reaches.
+    total_length_km:
+      expr: _.lengthkm.sum()
+      description: Total reach length in kilometres.
+    mean_length_km:
+      expr: _.lengthkm.mean()
+      description: Mean reach length in kilometres.
+    max_stream_order:
+      expr: _.stream_order.max()
+      description: Largest Strahler order present.
+
+confluence:
+  table: confluence_tbl
+  description: >-
+    Points where two flowlines intersect. Two water sources, two habitats, and a
+    travel node -- a strong empirical predictor in the eastern US.
+
+  dimensions:
+    order_minor:
+      expr: _.order_minor
+      description: Strahler order of the smaller of the two joining reaches.
+    order_major:
+      expr: _.order_major
+      description: Strahler order of the larger of the two joining reaches.
+
+  measures:
+    confluence_count:
+      expr: _.count()
+      description: Number of confluence points.
+    mean_weight:
+      expr: _.weight.mean()
+      description: Mean confluence weight, scaled from the minor reach's order.

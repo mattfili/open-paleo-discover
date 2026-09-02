@@ -1,0 +1,57 @@
+# The derivation ledger and the raster catalog. This is how a result six months old
+# is traced back to the inputs and parameters that produced it.
+
+derivation:
+  table: derivation_tbl
+  description: >-
+    One row per attempted derivation, opened before the work and closed after, so a
+    crash leaves evidence of what was attempted and with which parameters.
+
+  dimensions:
+    operation:
+      expr: _.operation
+      description: e.g. intake.nhd_flowline, terrain.model, terrain.detection.
+    tool:
+      expr: _.tool
+      description: The library or binary that did the work.
+    tool_version:
+      expr: _.tool_version
+      description: >-
+        Recorded because WhiteboxTools argument names drift between releases, so an
+        output is only reproducible alongside the version that produced it.
+    status:
+      expr: _.status
+      description: running | ok | failed.
+
+  measures:
+    run_count:
+      expr: _.count()
+      description: Number of derivation runs.
+
+raster_asset:
+  table: raster_asset_tbl
+  description: >-
+    Catalog of Cloud-Optimized GeoTIFFs on disk. Pixels are not in the database;
+    this table is what makes "which rasters cover this AOI" a PostGIS query.
+
+  dimensions:
+    kind:
+      expr: _.kind
+      description: dem | hand | slope | streams | openness_pos | openness_neg | slrm | ...
+    grid:
+      expr: _.grid
+      description: >-
+        detection (0.5 m, for looking at) or model (10 m, for fitting). Never mixed.
+    resolution_m:
+      expr: _.resolution_m
+      description: Cell size in metres.
+    variant:
+      expr: _.variant
+      description: >-
+        Short digest of the parameters that produced this asset. Empty for a default
+        run; set for each value in a sweep, which is what makes sweeps addressable.
+
+  measures:
+    asset_count:
+      expr: _.count()
+      description: Number of catalogued rasters.
