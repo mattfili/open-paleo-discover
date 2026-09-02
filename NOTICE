@@ -1,0 +1,29 @@
+midden
+Copyright 2026 Matt Fili
+
+This product includes software developed by the Relief Visualization Toolbox project.
+
+  Relief Visualization Toolbox (RVT_py)
+  https://github.com/EarthObservation/RVT_py
+  Licensed under the Apache License, Version 2.0
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Copyright 2010-2020 Research Centre of the Slovenian Academy of Sciences and Arts
+  Copyright 2016-2020 University of Ljubljana, Faculty of Civil and Geodetic Engineering
+
+  Credits: Ziga Kokalj, Kristof Ostir, Klemen Zaksek, Peter Pehani, Klemen Cotar,
+           Maja Somrak, Ziga Maroh, Nejc Coz
+
+The functions `horizon_shift_vector` and `sky_view_factor_compute` are vendored verbatim
+from RVT's `rvt/vis.py` into `src/midden/terrain/_rvt_vis.py`. They are unmodified. The
+RVT package itself is not installed because it caps at Python <3.12 (a constraint imposed
+by its GDAL I/O layer, not by the numerical code that is used here).
+
+If openness is ever cited in output, cite:
+
+  Doneus, M. (2013). Openness as Visualization Technique for Interpretative Mapping of
+  Airborne Lidar Derived Digital Terrain Models. Remote Sensing 5(12), 6427-6442.
+
+  Yokoyama, R., Shirasawa, M., & Pike, R. J. (2002). Visualizing Topography by Openness:
+  A New Application of Image Processing to Digital Elevation Models. Photogrammetric
+  Engineering & Remote Sensing 68(3), 257-265.

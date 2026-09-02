@@ -1,0 +1,26 @@
+# Data. Feature stacks are multi-million-row coordinate tables and COGs run to hundreds
+# of megabytes. None of it belongs in version control.
+data/
+
+# QGIS project files embed AOI extents and local absolute paths.
+*.qgs
+*.qgz
+
+# Rendered artifact HTML.
+exports/
+
+# Credentials.
+.env
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Scratch space for WhiteboxTools intermediates.
+scratch/
+
+# HyRiver/pygeoogc HTTP response cache, created on first fetch.
+cache/

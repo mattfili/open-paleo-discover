@@ -1,0 +1,34 @@
+{
+  "//": "Bare-earth DEM from already-classified LAS/LAZ.",
+  "//1": "Streamable -- run with `pdal pipeline --stream` for flat memory.",
+  "//2": "Reprojection comes BEFORE the writer so `resolution` means metres.",
+  "pipeline": [
+    {
+      "type": "readers.las",
+      "filename": "input.laz"
+    },
+    {
+      "//": "Ground returns only. If the data is unclassified this matches nothing",
+      "//1": "and you get an empty raster with NO ERROR. Run scripts/inspect.py first.",
+      "type": "filters.range",
+      "limits": "Classification[2:2]"
+    },
+    {
+      "type": "filters.reprojection",
+      "out_srs": "EPSG:26916"
+    },
+    {
+      "//": "radius ~1.5x resolution; window_size fills remaining gaps.",
+      "//1": "Raising window_size invents elevation where there were no returns.",
+      "//2": "If you need a large window, coarsen the grid instead.",
+      "type": "writers.gdal",
+      "filename": "dem.tif",
+      "resolution": 1.0,
+      "output_type": "idw",
+      "radius": 1.5,
+      "window_size": 3,
+      "gdaldriver": "GTiff",
+      "gdalopts": "COMPRESS=DEFLATE,TILED=YES"
+    }
+  ]
+}

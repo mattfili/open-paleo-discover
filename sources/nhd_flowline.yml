@@ -1,0 +1,35 @@
+name: nhd_flowline
+description: >-
+  NHDPlus HR network flowlines, fetched over the AOI's buffered bounding box. Basis for
+  HAND, stream distance, and confluence features.
+
+fetch:
+  driver: pynhd
+  params:
+    layer: flowline               # NHDPlus HR "NetworkNHDFlowline" (hydro.nationalmap.gov)
+    scope: aoi                    # aoi | statewide
+    buffer_m: 2000                # hydrological context beyond the AOI; HAND needs upslope
+  cache: data/raw/nhd_flowline    # idempotent; skipped if the content hash is unchanged
+
+transform:
+  # NHDPlus HR returns EPSG:4326 regardless of the requested CRS, so this step is not
+  # decorative -- without it the load fails its CRS assertion.
+  - reproject: {to: EPSG:26916}
+  - select: [nhdplusid, gnis_name, streamorde, lengthkm, geometry]
+  # HR keys reaches on nhdplusid; NHDPlus V2 used comid. Renamed so that ref.nhd_flowline
+  # keeps the column name confluence_extract.sql and spec.md §7 expect.
+  - rename: {nhdplusid: comid, streamorde: stream_order}
+  - filter: "stream_order >= 1"
+
+load:
+  target: ref.nhd_flowline
+  geometry_column: geom
+  mode: replace                   # replace | append | upsert
+  upsert_key: [comid]
+  index: [gist(geom), btree(stream_order)]
+
+joins:
+  - to: ref.nhd_waterbody
+    type: spatial
+    predicate: ST_DWithin
+    args: {distance_m: 500}

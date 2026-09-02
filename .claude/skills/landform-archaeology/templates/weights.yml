@@ -1,0 +1,101 @@
+# Weight set for the suitability overlay.
+#
+# A weighted overlay is a hypothesis, not a measurement. Its only claim to validity is
+# whether it ranks known sites highly -- run scripts/control_check.py before using any
+# weight set for anything, and discard rather than defend one that fails.
+#
+# Weights are relative and normalized at runtime; they do not need to sum to 1.
+# Every feature is normalized to 0-1 before weighting, per the `normalize` block.
+
+name: default
+description: >
+  Starting hypothesis for Middle Tennessee river valleys. Seeded by judgement, not
+  fitted to anything. Expect to change it after the first control run.
+version: 1
+
+features:
+
+  terrace_class:
+    weight: 3.0
+    normalize:
+      method: categorical
+      # T1 is the target: flat, drained, close to water, rarely flooded.
+      # T0 floods annually -- sites there are scoured or buried.
+      # T2+ are older surfaces, further from water, often thinner soils.
+      values: {0: 0.0, 1: 0.2, 2: 1.0, 3: 0.6, 4: 0.4}
+      # NOTE the index shift: terrace_extract.py writes 0 = none, 1 = T0, 2 = T1.
+
+  dist_to_stream_m:
+    weight: 2.0
+    normalize:
+      method: inverse_linear
+      # Close is good, but immediately adjacent is floodplain.
+      optimum_m: 150
+      falloff_m: 1200
+
+  dist_to_confluence_m:
+    weight: 2.0
+    normalize:
+      method: inverse_linear
+      optimum_m: 0
+      falloff_m: 2000
+    # Only counts junctions of order_minor >= 2. See scripts/confluence_extract.sql.
+
+  slope_deg:
+    weight: 2.5
+    normalize:
+      method: threshold_decay
+      # Habitable ground is flat. Falls off hard past a few degrees.
+      full_below: 3.0
+      zero_above: 12.0
+
+  drainage_class:
+    weight: 1.5
+    normalize:
+      method: categorical
+      values:
+        well_drained: 1.0
+        moderately_well_drained: 0.8
+        somewhat_poorly_drained: 0.3
+        poorly_drained: 0.0
+        very_poorly_drained: 0.0
+
+  twi:
+    weight: 0.5
+    normalize:
+      method: inverse_linear
+      # Low weight: TWI partly restates slope and drainage class. Included to catch
+      # local wet spots those miss, not as an independent signal.
+      optimum: 4.0
+      falloff: 8.0
+
+  aspect_deg:
+    weight: 0.0
+    # Deliberately zero. The seasonal argument for south-facing slopes is weak in the
+    # eastern US and including it without evidence just adds noise. Left in the file so
+    # the decision is visible rather than silently absent.
+
+# ---------------------------------------------------------------------------
+# NOT scored. Reported as separate bands alongside the score.
+# ---------------------------------------------------------------------------
+
+companion_bands:
+
+  burial_risk:
+    # The band that makes a low score interpretable. A cell can score low because the
+    # landform is wrong, or because anything there is under metres of overbank silt.
+    # Those are different findings. Summing this into the score destroys the only
+    # genuinely useful distinction in the output.
+    source: alluvial parent material x flooding frequency
+
+  canopy_pct:
+    # Not a predictor of past settlement -- a predictor of data quality. Dense canopy
+    # means sparse ground returns, a noisier DEM, and worse detection. Lets a weak
+    # result in forest be told apart from a weak result in an open field.
+    source: NLCD
+
+# ---------------------------------------------------------------------------
+# Never include
+# ---------------------------------------------------------------------------
+# dist_to_road: correlates with the SURVEY record, not the archaeological record. It is
+# the fastest way to build a model that predicts where archaeologists have already been.

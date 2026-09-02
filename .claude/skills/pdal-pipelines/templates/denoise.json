@@ -1,0 +1,28 @@
+{
+  "//": "Standalone noise removal, writing points back out rather than gridding.",
+  "//1": "Useful as a preprocessing pass over a tile set before classification.",
+  "//2": "NOT streamable.",
+  "pipeline": [
+    {
+      "type": "readers.las",
+      "filename": "input.laz"
+    },
+    {
+      "//": "statistical: flags points far from their k nearest neighbours.",
+      "//1": "radius method is an alternative for uniform-density data.",
+      "type": "filters.outlier",
+      "method": "statistical",
+      "mean_k": 12,
+      "multiplier": 2.2
+    },
+    {
+      "type": "filters.range",
+      "limits": "Classification![7:7],Classification![18:18]"
+    },
+    {
+      "type": "writers.las",
+      "filename": "clean.laz",
+      "compression": "laszip"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# PostGIS 3.5 on Postgres 17, plus the two extensions the tuning work will want later.
+#
+# pg_stat_statements already ships in the base image; hypopg does not. Both are installed
+# now rather than when they are needed, because adding them later means a rebuild and a
+# restart at exactly the moment the database is busy enough to care about.
+FROM postgis/postgis:17-3.5
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-17-hypopg \
+    && rm -rf /var/lib/apt/lists/*
+
+# pg_stat_statements must be preloaded at server start; it cannot be enabled by CREATE
+# EXTENSION alone.
+CMD ["postgres", "-c", "shared_preload_libraries=pg_stat_statements"]

@@ -1,0 +1,53 @@
+{
+  "//": "Classify ground with SMRF when the source data has none.",
+  "//1": "NOT streamable -- SMRF needs a global view. Tile large areas, and buffer",
+  "//2": "each tile by at least the `window` value or you get seams.",
+  "//3": "Outlier removal runs BEFORE SMRF: one low outlier drags a whole",
+  "//4": "neighbourhood of the ground surface down with it.",
+  "pipeline": [
+    {
+      "type": "readers.las",
+      "filename": "input.laz"
+    },
+    {
+      "//": "Marks noise as class 7 rather than deleting it.",
+      "type": "filters.outlier",
+      "method": "statistical",
+      "mean_k": 8,
+      "multiplier": 2.5
+    },
+    {
+      "//": "Drop the points outlier just marked, before classifying ground.",
+      "type": "filters.range",
+      "limits": "Classification![7:7]"
+    },
+    {
+      "//": "slope is a ratio, not degrees. Raise it in steep country or SMRF",
+      "//1": "classifies hillside as non-ground. window is in map units and should",
+      "//2": "exceed the largest non-ground object you want removed.",
+      "type": "filters.smrf",
+      "scalar": 1.25,
+      "slope": 0.15,
+      "threshold": 0.5,
+      "window": 18
+    },
+    {
+      "//": "SMRF assigns classifications; it does not filter. Do that here.",
+      "type": "filters.range",
+      "limits": "Classification[2:2]"
+    },
+    {
+      "type": "filters.reprojection",
+      "out_srs": "EPSG:26916"
+    },
+    {
+      "type": "writers.gdal",
+      "filename": "dem.tif",
+      "resolution": 1.0,
+      "output_type": "idw",
+      "radius": 1.5,
+      "window_size": 3,
+      "gdalopts": "COMPRESS=DEFLATE,TILED=YES"
+    }
+  ]
+}

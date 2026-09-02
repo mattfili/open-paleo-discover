@@ -1,0 +1,42 @@
+{
+  "//": "Subset a 3DEP EPT dataset to an AOI and write both DEM and count raster.",
+  "//1": "CRITICAL: `bounds` is in the EPT's OWN CRS. The USGS public bucket is",
+  "//2": "EPSG:3857. Passing UTM coordinates returns zero points with no error.",
+  "//3": "Syntax is ([xmin,xmax],[ymin,ymax]) -- X range then Y range.",
+  "//4": "Find project names at https://usgs.entwine.io/",
+  "pipeline": [
+    {
+      "type": "readers.ept",
+      "filename": "https://s3-us-west-2.amazonaws.com/usgs-lidar-public/PROJECT_NAME/ept.json",
+      "bounds": "([-9600000,-9595000],[4340000,4345000])",
+      "//": "resolution requests a level of detail. Set it near the target grid size;",
+      "//1": "full density then gridding at 1 m downloads far more than the output holds.",
+      "resolution": 1.0
+    },
+    {
+      "type": "filters.range",
+      "limits": "Classification[2:2]"
+    },
+    {
+      "type": "filters.reprojection",
+      "out_srs": "EPSG:26916"
+    },
+    {
+      "type": "writers.gdal",
+      "filename": "dem.tif",
+      "resolution": 1.0,
+      "output_type": "idw",
+      "radius": 1.5,
+      "window_size": 3,
+      "gdalopts": "COMPRESS=DEFLATE,TILED=YES"
+    },
+    {
+      "//": "Diagnostic. Cells reading 0 are interpolated, not measured. Open it.",
+      "type": "writers.gdal",
+      "filename": "ground_count.tif",
+      "resolution": 1.0,
+      "output_type": "count",
+      "gdalopts": "COMPRESS=DEFLATE,TILED=YES"
+    }
+  ]
+}

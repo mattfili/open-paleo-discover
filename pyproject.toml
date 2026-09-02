@@ -1,0 +1,51 @@
+[project]
+name = "open-paleo-discover"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Matt Fili", email = "matthewjosephfili@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "boring-semantic-layer>=0.3.18",
+    "fastmcp>=4.0.1",
+    "geoalchemy2>=0.19.0",
+    "geopandas>=1.1.4",
+    "httpx>=0.28.1",
+    "ibis-framework[duckdb,postgres]>=11.0.0",
+    "psycopg[binary]>=3.3.5",
+    "pyarrow>=25.0.1",
+    "pydantic-settings>=2.15.0",
+    "pygeoogc>=0.19.4",
+    "pynhd>=0.20.0",
+    "pyyaml>=6.0.3",
+    "pyproj>=3.7.2",
+    "rasterio>=1.5.1",
+    "rioxarray>=0.23.0",
+    "scipy>=1.18.1",
+    "seamless-3dep>=0.5.2",
+    "shapely>=2.1.2",
+    "sqlalchemy>=2.0.52",
+    "typer>=0.27.2",
+    "whitebox>=2.3.6",
+    "xarray>=2026.7.0",
+]
+
+[project.scripts]
+midden = "midden.cli:app"
+midden-mcp = "midden.mcp.server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+    "ruff>=0.14.5",
+]
+
+[tool.uv.build-backend]
+# Distribution is open-paleo-discover; the module is `midden` (spec.md §10).
+module-name = "midden"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
