@@ -3,16 +3,28 @@
 LiDAR-derived landform suitability modelling for archaeological survey planning in Middle
 Tennessee. Proof of concept, local only.
 
-**`spec.md` is the source of truth for architecture.** Read it before building anything. This
-file covers how to work in the repo, not what to build.
+**`spec.md` is the source of truth for architecture.** Read it before building anything.
+
+**@ROADMAP.md is the source of truth for state** — what is built, what is not, and what is
+known to be broken. `spec.md` says what the project should be; the roadmap says where it
+actually is. That `@` is an import: the roadmap is pulled into context with this file, so
+it is already in front of you. Do not re-read it, and do not re-derive project status by
+exploring the tree or re-running the pipeline.
+
+This file covers how to work in the repo, not what to build and not where things stand.
+
+**Keep the roadmap current.** Any commit that finishes something, breaks something, or
+discovers a constraint updates `ROADMAP.md` in the same commit. A roadmap that lags the
+code is worse than none, because the next session will trust it.
 
 ---
 
 ## Use the skills. They exist because the docs do not cover this.
 
-Three skills in `.claude/skills/`. They encode failure modes that are invisible until they
-have already cost you a day, and several of them fail *silently* — wrong output, exit code
-zero, no error.
+The four below live in `.claude/skills/`, alongside the two `bsl-*` skills that ship with
+boring-semantic-layer. Three of the four encode failure modes that are invisible until they
+have already cost you a day, and several of those fail *silently* — wrong output, exit code
+zero, no error. The fourth governs how output is explained.
 
 Consult them on both sides of the work:
 
@@ -26,6 +38,7 @@ Consult them on both sides of the work:
 | `landform-archaeology` | Anything about terraces, HAND, openness interpretation, what an anomaly might be, whether a low score is meaningful, or how to tune against a control. Also when writing or reviewing a weight set. |
 | `whiteboxtools` | Any `wbt.*` call. Before writing a hydrology chain. Whenever a WBT call produced nothing, or produced something that looks plausible and is wrong. |
 | `pdal-pipelines` | Any pipeline JSON. Reading LAS/LAZ/EPT/COPC. Producing a DEM. Debugging an empty raster or a DEM full of holes. |
+| `midden-interpretation` | **Every artifact, map, render, preview or score.** Any question of what a feature means, why it is in the model, or what a number implies. Non-optional: output that is not explained is not finished. |
 
 Do not reimplement what is in `scripts/` inside those skills. `wbt_helpers.py`,
 `hydro_chain.py`, `run_pipeline.py`, `dem_from_ept.py`, `inspect.py`, and `control_check.py`
@@ -60,6 +73,12 @@ the target.
 **Burial risk is a companion band, never summed into the score.** A cell scores low either
 because the landform is wrong or because anything there is under metres of overbank silt.
 Those are different findings.
+
+**Nothing ships unexplained.** Every artifact, render and score carries prose saying what
+each layer measures, what bright and dark mean on it, why the feature is in the model, what
+would fool you, and what the output does not claim. Verbosity is correct here; a reader who
+skims a thorough explanation loses nothing, while a reader given a thin one forms a wrong
+belief. See the `midden-interpretation` skill.
 
 ---
 
