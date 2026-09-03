@@ -13,6 +13,14 @@ This spec is written to be executed, not admired. Where it states a design decis
 that decision has a stated reason — if you disagree during implementation, say so in a
 comment and continue; do not silently substitute.
 
+**Amended 2026-09-03 — the scope widened from middens to a target-class registry.** The
+project models the archaeological and historical landscape record of Middle Tennessee;
+middens are one class within it, and the least detectable one. Sections 1, 2, 6, 7, 9, 11, 12
+and 13 below carry the amendment inline, each marked **Amended**. `ROADMAP.md` holds the design for the parts not yet built —
+the registry itself, per-class detection parameters, historic-map labels, and the validation
+programme that replaces the pass/fail control threshold. Where this spec and `ROADMAP.md`
+disagree about *state*, the roadmap wins; where they disagree about *intent*, this file does.
+
 Three things in this spec are **verify-before-use** because they change faster than this
 document. Do not trust the code shapes below without checking:
 
@@ -37,11 +45,30 @@ A pipeline that turns public LiDAR and environmental data into a **ranked set of
 worth walking** for archaeological survey in Middle Tennessee, plus an AI layer that can
 query, configure, and explore the whole thing.
 
+The target is the **archaeological and historical landscape record**, not one feature type.
+What is being looked for is declared per target class in `ref.target_class` — precontact
+mounds and earthworks, rockshelters, chert quarries, cave entrances, open habitation,
+middens, stone-box cemeteries; historic charcoal hearths, iron works, mill seats, homesteads,
+family cemeteries, road traces, saltpeter works, field boundaries. Each class declares its
+own grid, detectability, label source, burial sensitivity, and detection parameters, because
+none of those are shared across classes.
+
 ### The domain problem, stated for an engineer
 
-Prehistoric people camped on flat, well-drained ground close to water but above the flood
-line. That preference is stable enough to be modeled. The observable proxies are all
-derivable from a DEM plus soils:
+Two problems, one pipeline.
+
+**Precontact.** People camped on flat, well-drained ground close to water but above the flood
+line. That preference is stable enough to be modeled, and the observable proxies are all
+derivable from a DEM plus soils. This is a *suitability* problem: the model ranks ground, and
+for most precontact classes there is no surface signature to detect.
+
+**Historic.** Industry and settlement left built features with geometry — a hearth is a flat
+circle ~10 m across, a mill race is a metre-wide linear cut, a homestead is a cellar
+depression beside a chimney fall. This is a *detection* problem: the feature is on the ground
+surface and the 0.5 m grid can see it directly. It also has something the precontact half
+does not — a public, dated label source in historic topographic quads (§6).
+
+The precontact proxies:
 
 | Concept | What it means | How it is computed |
 |---|---|---|
@@ -50,12 +77,22 @@ derivable from a DEM plus soils:
 | **Confluence** | Tributary meets main stem. Two water sources, two habitats, travel node. Strong empirical predictor in the eastern US. | Self-intersection of NHD flowlines |
 | **Alluvial burial** | Sites under meters of overbank deposit. LiDAR cannot see them. A negative result here means nothing. | SSURGO parent material + flooding frequency |
 
-**The honest limit, and it shapes the whole design:** LiDAR finds mounds, earthworks,
-borrow pits, and historic features well. It finds middens poorly — most Archaic
-shell-bearing sites in the Cumberland and Harpeth drainages are buried with no surface
-expression. So the system's primary output is a *landform-and-soils predictive surface*,
-not a *feature-detection classifier*. Visual anomaly detection is a secondary,
-human-and-AI-in-the-loop mode, not the main event.
+**Detectability is a property of the class, not of the project.** LiDAR finds mounds,
+earthworks, borrow pits, charcoal hearths and mill races well. It finds middens poorly — most
+Archaic shell-bearing sites in the Cumberland and Harpeth drainages are buried with no
+surface expression. Both statements are true at once, and the design consequence is a
+declared field rather than a project-wide caveat:
+
+- **direct** — a LiDAR signature exists and the 0.5 m chain looks for it.
+- **proxy** — no surface expression; only a landform-and-soils suitability surface is
+  available, and a negative result is not evidence of absence.
+- **invisible** — do not run a detection chain and do not report the absence as a finding.
+
+So the system produces both a *suitability surface* and a *feature detector*, and which one
+is meaningful is answered per class by `ref.target_class.detectability`. Never present a
+proxy result as a detection. The earlier framing — suitability as the primary output, anomaly
+detection as a secondary human-in-the-loop mode — was a description of the midden class
+generalised to the whole project by mistake.
 
 ### Two grids, two jobs
 
@@ -90,6 +127,29 @@ filesystem. Deployment is a later problem.
 (oversold in predictive archaeology, expensive, weak signal at this scale); PostGIS raster
 (see §4); any attempt to auto-classify features from LiDAR with a CNN.
 
+### Target classes
+
+**What** is in scope is as AOI-scoped as **where**. `ref.target_class` is the registry and
+the single source of truth: `class_id`, `period`, `morphology` (plan form and size range in
+metres), `grid`, `detectability`, `burial_sensitivity`, `label_source`, and `params`.
+
+Three rules follow from it, and they are load-bearing:
+
+1. **No unqualified score.** Every scoring, detection, validation and render operation takes
+   a `class_id`. The features that predict a Mississippian mound platform are not the
+   features that predict a charcoal hearth, so a score surface with no class attached does
+   not mean anything.
+2. **Detection parameters live in `params`, never in global config.** A hearth is ~10 m, a
+   mound platform 30–100 m, a mill race a metre wide. One openness search radius serves none
+   of them. §7's parameter table is amended accordingly.
+3. **Burial sensitivity is a registry field.** Overbank burial removes a midden and does
+   nothing to a rockshelter. Burial risk remains a companion band and is still never summed
+   into the score; what changed is that *which classes it applies to* is declared rather than
+   assumed.
+
+The initial registry and the reasoning behind each class are in `ROADMAP.md`. It is not yet
+populated — nothing in the CLI takes `--class` today, and that is the first thing to build.
+
 ### Seeded AOIs
 
 **Do not hardcode bounding boxes.** Seed `derived.aoi` by querying the authoritative
@@ -122,12 +182,27 @@ read, not how it is computed:
 ### Controls
 
 There is no ground-truth site dataset in this project. That is not the same as having no way
-to check whether the pipeline works. Published sites are the check.
+to check whether the pipeline works. Published sites are the check — and, since the scope
+widening, published *maps* are a second and much larger one.
 
 **`control_positive` — tests the predictive model.** Mound Bottom and Castalian Springs are
 major Mississippian centers on public land whose locations have been published for over a
 century. If your terrace / HAND / confluence stack does not rank their landform in the top
-few percent, something in the chain is broken.
+few percent, something in the chain is broken. Under the registry these are labels for
+`mound_earthwork` specifically, which is what they are.
+
+**Two controls is not a sample.** Every validation statistic worth computing is inert at
+n = 2, and that — not the weight set — is the binding constraint on the project. The fix is
+§6's historic topographic quads: a single 15-minute quad marks dozens of mills, fords,
+furnaces, cemeteries and homesteads by symbol, all public domain and all dated. Digitized
+into `ref.control_sites` with a `class_id` and a positional error, three quads take n from 2
+into the dozens. `ROADMAP.md` A1 has the procedure.
+
+**The vanished-feature test is the strongest check available and it is free.** An 1895 quad
+shows a mill; the modern quad does not. Run the 0.5 m chain there and ask whether a headrace
+cut, a dam abutment or a leveled mill seat is present. The ground truth is public, dated, and
+independent of the model; it produces genuine misses as well as hits, which is what makes
+recall estimable; and it needs no permission and no fieldwork.
 
 **`control_detection` — tests the visualization chain.** Two of these, at different scales:
 
@@ -141,15 +216,24 @@ few percent, something in the chain is broken.
   you actually care about. If your 0.5 m detection grid resolves hearths at Montgomery Bell,
   it will resolve a low mound. If it does not, no amount of tuning elsewhere will help.
 
-Tune `smoothing_radius_m` against the hearths, not against a prospect AOI where you have no
-ground truth.
+Montgomery Bell is no longer "the fine detection control" in the abstract. It is the first
+worked target class — `charcoal_hearth` — with its own morphology, its own label source, and
+its own detection parameters. Tune `smoothing_radius_m` and the openness search radius
+against the hearths and record the result **against that class**, not as a project default. A
+radius swept without a class recorded cannot be reused, because nothing downstream can tell
+what it was swept for.
 
-These two controls answer different questions and both are free. Run them every time you
+These controls answer different questions and all of them are free. Run them every time you
 change a parameter.
 
-Every control here is a published, mapped, historically-marked site. Nothing in this project
-uses non-public site locations, and §13 covers what would change if that ever stopped being
-true.
+Every control here is a published, mapped, historically-marked site, and every historic-map
+label is public-domain cartography. Nothing in this project uses non-public site locations,
+and §13 covers what would change if that ever stopped being true.
+
+Labels from different sources are never pooled without recording it. NRHP skews monumental,
+historic quads skew historic-period and near-settlement, and model-derived weak labels skew
+toward whatever the model already believes — so every row in `ref.control_sites` carries
+`source`, `source_id` or `source_sheet`, and `class_id`.
 
 Practical note on Mound Bottom: it is a protected site with managed access, generally
 guided-tour only. You can model it freely; you cannot casually walk it.
@@ -446,14 +530,30 @@ there. Historical sources do:
    GeoTIFF, multiple editions per quad back to the late 1800s. Shows pre-impoundment
    floodplain, fords, ferries, mills, and vanished roads. Mills and fords are river
    crossings, and river crossings are where people concentrated for ten thousand years.
+
+   **Amended: these are the label source, not only an interpretation aid.** Every quad marks
+   mills, fords, churches, schools, cemeteries, furnaces, mines and individual homesteads by
+   symbol. Digitized into `ref.control_sites` they retire the n = 2 problem in §2, and the
+   symbols that have *vanished* from the modern quad are the ground truth for the strongest
+   available test of the detection chain. Two consequences for the schema:
+
+   - `ref.histmap_sheet` records year, scale, `source_url`, and a georeferencing transform.
+   - Historic quads are not survey-grade, so `positional_confidence_m` travels with every
+     point derived from one and is what sets the tolerance radius in validation. A detection
+     "hit" inside a tolerance that was never recorded is not a hit. A feature present on an
+     1895 sheet and absent in 1935 is dated to that window — record the window.
+
+   Start manual. Three quads digitized by hand is a bounded weekend; CV symbol extraction is
+   a later optimisation and is explicitly not a prerequisite.
 2. **1930s–50s USDA aerial photography.** Pre-suburban, pre-reservoir, and low enough
    contrast-managed that plowed-out mounds sometimes still show as soil marks. Availability
    varies by county; check USGS EarthExplorer and the UT Libraries collection.
 3. **GLO survey plats and field notes** (`glorecords.blm.gov`). Early surveyors recorded
    mounds, "Indian fields," and trails as landmarks.
 
-Ingest at minimum the topo quads — they are a clean `http_file` driver target and they
-change the interpretation of every drawdown-zone AOI.
+Ingest at minimum the topo quads — they are a clean `http_file` driver target, they change
+the interpretation of every drawdown-zone AOI, and they are now the highest-priority
+unbuilt item in the project for the labelling reason above.
 
 ---
 
@@ -601,6 +701,30 @@ write this week.
 | `slrm`, `openness_pos` | scipy / WhiteboxTools, resampled from detection grid |
 | `canopy_pct` | NLCD |
 
+Amended. `terrace_class` is **slated for deletion, not repair.** It encodes a human
+interpretive category as an ordinal integer carrying a hand-assigned weight, which discards
+the continuous information in HAND, inherits mode-counting fragility, and forces a weight
+onto a variable whose units are "rank." Feed continuous `hand_m` and `flood_freq` as separate
+features and let the response curve be fitted. Keep the terrace concept for the write-up,
+where a reader can see the reasoning, and out of the stack, where it is silently
+load-bearing. Delete it *after* the ablation in `ROADMAP.md` B2 records the number, so the
+removal is evidence rather than argument.
+
+Feature families the widened scope adds, designed in `ROADMAP.md` C2–C6 and not yet built:
+karst (`dist_to_sinkhole_m`, `dist_to_spring_m`, `sinkhole_density` — Middle Tennessee is
+limestone and the stack does not know it), lithic raw material (`dist_to_chert_outcrop_m`,
+a standard strong predictor in eastern woodlands models and absent here), aspect and
+insolation, rockshelter potential on the 0.5 m grid, and portage nodes.
+
+Two standing rules for anything added to this table:
+
+- **Before adding a feature, ask what it would take to remove it.** If ablation cannot
+  measure its contribution, it is not ready to be scored.
+- **A companion band is promoted to a scored feature only by test, never by argument.** The
+  bar is two recorded answers: does the feature fire at a control where it should, and do the
+  controls move when it is included? `dist_to_road` is permanently unpromotable — it is a
+  diagnostic, and §13's sampling-bias problem is why.
+
 Confluences in SQL:
 
 ```sql
@@ -632,12 +756,16 @@ Parameters that matter and their defaults:
 | Derivation | Parameter | Default | Why it is contested |
 |---|---|---|---|
 | `terrain.streams` | `flow_accum_threshold` | 5000 | Sets what counts as a stream, which sets HAND, which sets terraces. The single most consequential knob in the project. |
-| `terrain.slrm` | `smoothing_radius_m` | 15 | 10 m finds small features and noise; 25 m finds large features and smooths away small ones. |
-| `terrain.openness` | `search_dist_cells` | 20 | 10 m radius at 0.5 m. Tune against the Montgomery Bell hearths. |
+| `terrain.slrm` | `smoothing_radius_m` | 15 | **Per class.** 10 m finds small features and noise; 25 m finds large features and smooths away small ones. |
+| `terrain.openness` | `search_dist_cells` | 20 | **Per class.** 10 m radius at 0.5 m — correct for `charcoal_hearth`, wrong for a 30–100 m mound platform and wrong for a metre-wide mill race. Tune against the Montgomery Bell hearths and record the sweep against `charcoal_hearth`. |
 | `terrain.terrace` | `max_slope_deg` | 3.0 | Tighter is cleaner, looser catches gentle fans. |
 | `terrain.terrace` | `hand_mode_tolerance_m` | 1.0 | How tightly a cell must sit on a HAND mode to be called terrace. |
 | `hydro.drawdown` | `pool_level_m` | winter pool | See below. |
-| `score.overlay` | `weights` | `weights/default.yml` | Seeded by guess; tuned against the controls. |
+| `score.overlay` | `weights` | `weights/default.yml` | **Per class.** Seeded by guess; tuned against the controls. |
+
+Rows marked **per class** read from `ref.target_class.params`, not from global config. A
+sweep that does not record which class it was swept for produces a number nothing downstream
+can reuse.
 
 ### `hydro.drawdown` — the worked example
 
@@ -833,6 +961,29 @@ northeast edge that does not match the surrounding drainage pattern." That is a 
 contribution, and it is exactly the kind of pattern-spotting that is tedious for a human
 across hundreds of tiles.
 
+**Amended — the agent layer is the interpretive surface, and that raises its correctness
+bar.** Its purpose is to let someone without geoarchaeology training read what the pipeline
+is saying, which is not overhead; judge it on whether it produces correct and *traceable*
+interpretations, not on whether it improves model accuracy. A query tool that is occasionally
+wrong wastes a minute. An interpretive tool that is occasionally wrong installs a false
+belief that then shapes feature design — the openness sign convention is the worst case,
+because a confidently inverted explanation flips every downstream reading silently.
+
+Two rules and four tools follow, designed in `ROADMAP.md` G2–G3 and not yet built.
+
+- **Interpretations cite.** A skill explaining a landform association or an
+  industrial-archaeology signature carries references, or says the claim is unsourced.
+- **Attribution over assertion.** Explaining a high score returns the per-feature
+  decomposition — values, normalised percentiles, contribution. The narrative is the user's
+  job; the numbers are the tool's.
+
+| Tool | Purpose |
+|---|---|
+| `midden_explain_cell` | Per-feature values, percentiles, and score contribution at a point |
+| `midden_compare_landform` | Contrast two locations' feature vectors and landform context |
+| `midden_describe_aoi` | Physiographic context, drainage, soils, terrain coverage state |
+| `midden_class_brief` | A class's morphology, size range, parameters, detectability, confusers, sources |
+
 ### Long-running operations
 
 `midden_derive_terrain` on a large AOI takes minutes. For a POC, keep it synchronous but
@@ -846,6 +997,13 @@ Ten questions in `plugin/mcp/evals.xml`. Independent, read-only, verifiable, sta
 questions like "how many square kilometres of the Radnor Lake AOI are classified T1 with
 slope under 3 degrees?" where the answer is a number you have checked by hand. The
 mcp-builder skill's evaluation guide covers the format.
+
+**Amended — the evals must actually run.** They are written with hand-checked answers and
+have never been executed against the server, which under the interpretive framing above is
+the only thing standing between the tool and confidently teaching the wrong sign convention.
+One command, in CI if the server starts headless, with the openness sign convention, the
+two-grids rule, and per-class detectability as explicit cases. The sign convention is a test
+case, not a comment.
 
 ---
 
@@ -916,6 +1074,14 @@ and confirm it loads.
 M5 is where the controls start earning: tune weights until Mound Bottom and Castalian
 Springs rank where they should, then look at what else ranks with them.
 
+**Amended.** All seven milestones are implemented, and M5's weight set was falsified by its
+own controls — the loop working as intended. Two things about that sentence changed with the
+scope widening. First, "rank where they should" was a mean-percentile threshold with no error
+bar; it is replaced by a permutation test that reports an effect size against a matched null
+(`ROADMAP.md` B1). Second, every milestone was built against a single implicit target class,
+so M5 and M6 are complete but *unqualified* — they emit a score surface and a render with no
+`class_id` attached, which §2 now forbids. `ROADMAP.md` holds the work order.
+
 ---
 
 ## 12. Decisions made on your behalf
@@ -934,6 +1100,10 @@ Override any of these; they are judgment calls, not requirements.
    they are silent.
 8. **Published sites as controls.** §2. The only validation signal available without a site
    dataset, and it is a good one — treat a weight set that misses Mound Bottom as falsified.
+   **Amended:** not the only one. Public-domain historic cartography is a second label source,
+   and a larger one — see §2 and §6.
+9. **A target-class registry, not a single target.** §2. Detectability, scale, labels and
+   parameters are per class; a global value for any of them silently serves no class well.
 
 ## 13. Deferred
 
@@ -949,6 +1119,16 @@ and both are substantial:
   are near highways." Correcting for it requires knowing where people **looked**, not only
   what they found, which means survey-coverage polygons and not just site points. Without
   those, every number the model produces is suspect.
+
+  **Amended — measure it, do not correct it.** Keeping `dist_to_road` out of the feature
+  stack does not remove access bias; it removes the ability to see it, because roads follow
+  terrace edges, gentle slope and water access, so the bias re-enters through `slope_deg` and
+  `dist_to_stream_m`. Every scoring run should therefore compare the distance-to-road
+  distribution of top-5% cells against the AOI background and report the ratio. If the top
+  5% sits systematically closer to roads than chance, the stack is laundering accessibility
+  and the result carries that caveat. Correction still needs the non-public survey-coverage
+  polygons and stays deferred; the distinction between *measured* and *corrected* must stay
+  explicit so it does not blur in a later write-up.
 - *Output sensitivity.* A high-resolution probability surface fitted on real site locations
   is itself a disclosure of those locations — lossy, but functionally a treasure map. This
   is a live argument in archaeological predictive modelling and it is why site inventories
@@ -959,7 +1139,14 @@ and both are substantial:
   Not worth building against a requirement that does not exist yet.
 
 None of that touches the controls in §2, which are published, mapped, historically-marked
-sites. The POC's validation loop is self-contained.
+sites, nor the historic-map labels in §6, which are public-domain cartography. The POC's
+validation loop is self-contained and stays that way.
+
+One rule guards the boundary as the label set grows. **Weak labels never become ground
+truth.** Where the two grids cascade — 10 m suitability triaging candidates, 0.5 m detection
+confirming them — stage-2 detections fed back as stage-1 training labels are flagged in
+provenance and excluded from every validation set. A model validated against its own output
+is validated against nothing.
 
 **Fieldwork loop.** A `field_visit` table recording walked polygons and outcomes. Trivial to
 add; pointless until someone walks something.

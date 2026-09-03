@@ -3,7 +3,9 @@
 LiDAR-derived landform suitability modelling for archaeological survey planning in Middle
 Tennessee. Proof of concept, local only.
 
-**`spec.md` is the source of truth for architecture.** Read it before building anything.
+**`spec.md` is the source of truth for architecture.** Read it before building anything. It
+was amended on 2026-09-03 for the widened scope; §0 carries a banner saying which sections
+changed.
 
 **@ROADMAP.md is the source of truth for state** — what is built, what is not, and what is
 known to be broken. `spec.md` says what the project should be; the roadmap says where it
@@ -14,8 +16,22 @@ exploring the tree or re-running the pipeline.
 This file covers how to work in the repo, not what to build and not where things stand.
 
 **Keep the roadmap current.** Any commit that finishes something, breaks something, or
-discovers a constraint updates `ROADMAP.md` in the same commit. A roadmap that lags the
-code is worse than none, because the next session will trust it.
+discovers a constraint updates `ROADMAP.md` in the same commit — **including when the result
+is negative.** A recorded failure is worth more than an unrecorded success; the
+`hand_mode_tolerance_m` entry is the model to follow. A roadmap that lags the code is worse
+than none, because the next session will trust it.
+
+---
+
+## Scope
+
+This project models the archaeological and historical landscape record of Middle Tennessee.
+Middens are one target class within it, and the least detectable one. **Do not describe the
+project as a midden finder, and do not treat midden detectability as the project's ceiling.**
+
+Every target class has its own detectability, its own scale, its own label source, and its
+own parameters. These live in `ref.target_class`, which is the single source of truth for all
+of them.
 
 ---
 
@@ -70,15 +86,94 @@ UTM and you get zero points with no error.
 small closed depressions — which in karst is most of the landscape and in this domain may be
 the target.
 
-**Burial risk is a companion band, never summed into the score.** A cell scores low either
-because the landform is wrong or because anything there is under metres of overbank silt.
-Those are different findings.
+**No unqualified score.** Every scoring, detection, validation, or render operation takes a
+`class_id`. A score surface without a class attached is meaningless, because the features
+that predict a Mississippian mound platform are not the features that predict a charcoal
+hearth. If a command can run without `--class`, that is a bug.
+
+**Detection parameters are per class, never global.** Openness search radius, SLRM radius,
+and minimum-area thresholds come from `ref.target_class.params`. A hearth is ~10 m, a mound
+platform is 30–100 m, a mill race is a metre wide. A single global radius silently serves
+none of them. Any parameter sweep records which class it was swept for, or the result cannot
+be reused.
+
+**Detectability is declared, not assumed.** A class is *direct* (a LiDAR signature exists),
+*proxy* (only landform suitability is available), or *invisible*. Never present a proxy
+result as a detection, and never run a detection chain for an invisible class and report the
+absence as evidence.
+
+**Burial risk is a companion band, never summed into the score — and it is per class.** A
+cell scores low either because the landform is wrong or because anything there is under
+metres of overbank silt. Those are different findings. Overbank burial removes a midden and
+does nothing to a rockshelter: the rule that it is a band and not a term stands unchanged,
+but *which classes it applies to* is a registry field rather than a global assumption.
+
+**Historic-map evidence carries a date and a positional error.** A feature on an 1895 quad
+and absent in 1935 is dated to that window; say so. Historic quads are not survey-grade, so
+`positional_confidence_m` travels with every point derived from one and is used as the
+tolerance radius in validation. A detection "hit" inside a tolerance that was never recorded
+is not a hit.
+
+**Label provenance is mandatory.** Every row in `ref.control_sites` carries `source`,
+`source_id` or `source_sheet`, and `class_id`. Labels from different sources are never pooled
+without recording it, because they have different biases: NRHP skews monumental, historic
+quads skew historic-period and near-settlement, model-derived weak labels skew toward
+whatever the model already believes.
+
+**Weak labels never become ground truth.** Stage-2 detections fed back into stage-1 training
+are flagged as such in provenance and are excluded from any validation set. A model validated
+against its own output is validated against nothing.
+
+**Confusers are logged, not discarded.** When a candidate turns out to be a logging deck, a
+CCC terrace, or a push pile, it goes into `ref.confuser` with its class-lookalike noted. These
+are the hard negatives that set precision. Deleting them throws away the most expensive
+information in the project.
+
+**A companion band is promoted to a scored feature only by test, never by argument.** The
+bar: does the feature register at a control where it should (a known example fires), and do
+the controls move when it is included? Both answers recorded, including when they are no.
+`dist_to_road` stays permanently unpromotable — it is a diagnostic. It predicts where
+archaeologists have looked, not where people lived, and keeping it out of the stack does not
+remove access bias, it only removes the ability to measure it.
+
+**Where a source is missing, say so in the artifact.** If a feature rests on an ethnographic
+or geomorphological claim that has not been sourced, the gap is recorded in the sources file
+and surfaced by the skill that explains the feature. Portage nodes (`neck_max_m`,
+`loop_min_m`) are the current example: dugout travel in the interior Southeast is well
+attested, neck portages on rivers of this size are not sourced, and that stays visible until
+it is closed.
 
 **Nothing ships unexplained.** Every artifact, render and score carries prose saying what
 each layer measures, what bright and dark mean on it, why the feature is in the model, what
 would fool you, and what the output does not claim. Verbosity is correct here; a reader who
 skims a thorough explanation loses nothing, while a reader given a thin one forms a wrong
 belief. See the `midden-interpretation` skill.
+
+---
+
+## Interpretive-layer conventions
+
+The MCP layer exists so that someone without geoarchaeology training can read what the
+pipeline is saying. That makes correctness load-bearing in a way it would not be for a pure
+query interface: a wrong query result wastes a minute, a wrong interpretation installs a
+false belief that then shapes feature design.
+
+**Interpretations cite.** A skill that explains a landform association, a terrace
+relationship, or an industrial-archaeology signature carries references. If it cannot, it
+says the claim is unsourced rather than asserting it.
+
+**Attribution over assertion.** When explaining why a cell scores highly, return the
+per-feature decomposition — values, normalised percentiles, contribution — not a narrative.
+The narrative is the user's job; the numbers are the tool's.
+
+**The sign convention is a test case, not a comment.** Positive openness is high on convex
+ground, negative on concave, a flat plane is 90° in both. This is in `plugin/mcp/evals.xml`
+and the evals must actually run. An interpretive tool that gets this backwards inverts every
+downstream reading silently, which is the exact failure the invariant was written to prevent.
+
+**Class briefs are first-class.** `midden_class_brief` returns a class's morphology, size
+range, parameters, detectability, known confusers, and sources. The registry is only useful
+for learning if it is legible from inside a conversation.
 
 ---
 
@@ -183,6 +278,24 @@ it is what turns "should we use X or Y" into a swept parameter rather than an ar
 **Judgment calls become parameters, not decisions.** If a choice would otherwise be settled
 once in prose, make it a named parameter with the value recorded in `derivation.params`, and
 sweep it. `midden_sweep` exists for this.
+
+---
+
+## Working conventions
+
+**`ROADMAP.md` stays canonical for state.** Update it in the same commit as the work,
+including when the result is negative. A recorded failure is worth more than an unrecorded
+success — the `hand_mode_tolerance_m` entry is the model to follow.
+
+**Prefer fixing a feature over reweighting around it.** `terrace_class` is the standing
+example: the fix is deletion, not a better labeller.
+
+**Prefer a test that can falsify over a test that can pass.** The vanished-feature test —
+take a symbol off a historic quad, run the detection chain, count misses as well as hits — is
+worth more than any number of controls that were chosen because they are known sites.
+
+**Before adding a feature, ask what it would take to remove it.** If ablation cannot measure
+its contribution, it is not ready to be scored.
 
 ---
 

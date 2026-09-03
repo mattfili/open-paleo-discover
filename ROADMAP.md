@@ -5,6 +5,85 @@ broken.** Update it in the same commit as the work it describes. `spec.md` says 
 project *should* be; this file says where it actually is.
 
 Last verified: 2026-09-02, against a live database and a full pipeline run.
+Scope widened 2026-09-03 — see the next section before reading anything below it.
+
+---
+
+## Scope — target classes, not middens
+
+The project was scoped to middens, and `README.md` opens by conceding that LiDAR finds them
+poorly. That concession is accurate and it is a limit of the *target*, not of the method.
+Middens are one feature class among many in the Middle Tennessee record, and they happen to
+be the least detectable one.
+
+The target is now the archaeological and historical landscape record. Middens stay in as a
+class — buried, proxy-only, high burial risk. Several other classes are directly
+LiDAR-visible, have public label sources, and are what the detection grid was built for.
+
+### Target class registry — not built
+
+`ref.target_class`. Every class declares its own detectability and parameters, because they
+are not shared: a 10 m charcoal hearth and a 100 m earthwork cannot be found with the same
+openness search radius, and a global value silently serves neither.
+
+| column | meaning |
+|---|---|
+| `class_id` | `charcoal_hearth`, `rockshelter`, `mound_earthwork`, `open_habitation`, … |
+| `period` | precontact / historic / either |
+| `morphology` | plan form and expected size range in metres |
+| `grid` | detection (0.5 m) or model (10 m) |
+| `detectability` | direct, proxy, or invisible |
+| `burial_sensitivity` | whether overbank burial removes the signature |
+| `label_source` | where controls for this class come from |
+| `params` | per-class detection parameters (see **D** under Not built) |
+
+Initial registry, with honest detectability.
+
+**Precontact**
+
+| class | grid | detectability | notes |
+|---|---|---|---|
+| `mound_earthwork` | model + detection | direct | what `mound-bottom` and `castalian-springs` actually are |
+| `rockshelter` | detection | direct | negative openness + bluff mask; see **C3** |
+| `chert_quarry` | detection | direct | pit clusters on outcrop; pairs with **C4** |
+| `cave_entrance` | detection | direct | karst; see **C2** |
+| `open_habitation` | model | proxy | the current predictive target |
+| `midden` | model | proxy | buried, no surface expression; keep, do not lead with |
+| `stone_box_cemetery` | model | proxy | Middle Cumberland Mississippian; subsurface |
+
+**Historic**
+
+| class | grid | detectability | notes |
+|---|---|---|---|
+| `charcoal_hearth` | detection | direct | ~10 m circular platforms; Montgomery Bell |
+| `iron_works` | detection | direct | furnace, forge, ore pits, race |
+| `mill_seat` | detection | direct | race, dam abutment, headrace cut |
+| `homestead` | detection | direct | cellar depression, chimney fall, terraced yard, springhouse |
+| `family_cemetery` | detection | direct | enclosure wall, regular depressions; high public value |
+| `road_trace` | detection | direct | sunken roadbeds, fords |
+| `saltpeter_works` | detection | proxy | cave-linked; entrance plus historic record |
+| `field_boundary` | detection | direct | stone fences, cleared-line edges |
+
+### What this dissolves
+
+- The README's project-wide caveat becomes a detectability column. Per class, honest, and
+  not an apology.
+- `montgomery-bell` stops being "the fine detection control" and becomes the first target
+  class with its own model and its own parameters. Known broken **#2** is now scoped as
+  `charcoal_hearth`.
+- NRHP label bias toward monumental sites — previously a scope mismatch — largely resolves.
+  `mound_earthwork` is a legitimate class now, so those labels match a class rather than
+  mismatching the project.
+- Burial risk becomes per class. It removes `midden` and `open_habitation` from
+  consideration on a floodplain and does nothing at all to `rockshelter`.
+
+**Acceptance.** `ref.target_class` populated; `midden score run` requires `--class`; no
+unqualified score surface is produced or rendered.
+
+**Downstream doc edits — done 2026-09-03.** `README.md` leads with the detectability table
+instead of the project-wide midden caveat. `spec.md` carries the amendment inline in §§1, 2,
+6, 7, 11, 12 and 13, with a banner in §0. `CLAUDE.md` carries the invariants. The four files
+now agree; nothing in the code has changed.
 
 ---
 
@@ -22,6 +101,10 @@ Last verified: 2026-09-02, against a live database and a full pipeline run.
 
 All seven milestones in `spec.md` §11 are implemented. The pipeline runs end to end. The
 **predictive output is not yet trustworthy** — see "Known broken" below.
+
+Every one of those milestones was built against a single implicit target class. Under the
+widened scope they are complete but *unqualified*: M5 and M6 produce a score surface and a
+render with no `class_id` attached, which the Scope acceptance criteria now forbid.
 
 ---
 
@@ -41,7 +124,11 @@ round-trip. 11 test functions, all passing.
 
 ---
 
-## Known broken, in priority order
+## Known broken
+
+Numbered in the order they were found, not the order to fix them — **Priority** below is the
+work order, and it does not follow this numbering. Items 1–4 predate the scope widening;
+5 and 6 came with it, and 5 is the binding constraint on 4.
 
 ### 1. The weight set is falsified — `terrace_class` is the cause
 
@@ -114,19 +201,345 @@ Both numbers are real; they answer different questions. Changing the test is a d
 decision, not a convenience — it is the falsifier, and loosening it to get a pass is
 exactly the failure mode the discipline exists to prevent.
 
+The replacement is **B1** below: a permutation test, which is not a loosening. It reports an
+effect size with an error bar instead of a threshold with neither, and it degrades honestly
+at low n rather than passing or failing arbitrarily.
+
+### 5. Labels — n=2, and historic cartography is the unlock
+
+Two controls. Every validation method in **#4** and in **B** is statistically inert at n=2.
+This is the binding constraint on the whole validation programme, and it is fixable from
+public data without permission or fieldwork.
+
+#### A1. Historic topographic quads as a label source
+
+Historic topo quads are listed under Not built as an `http_file` driver target, valued for
+showing pre-impoundment floodplain and vanished roads. Under the widened scope they are
+something more useful: **the label source that retires the n=2 problem.**
+
+USGS topoView serves scanned quads back to the 1880s, public domain, with corner
+coordinates. Every quad marks by symbol: mills, fords, churches, schools, cemeteries,
+furnaces, mines, and individual homesteads. A single 15-minute quad over the Highland Rim
+carries dozens of them.
+
+1. `http_file` driver fetches quads by cell name and year into `ref.histmap_sheet` with
+   year, scale, `source_url`, and a georeferencing transform.
+2. Digitize symbols into `ref.control_sites` with `class_id`, `source = 'usgs_histmap'`,
+   `source_sheet`, `map_year`, and `positional_confidence_m` — historic quads are not
+   survey-grade and the error must travel with the point.
+3. **Start manual.** Three quads digitized by hand is a bounded weekend and produces n in
+   the dozens. CV symbol extraction is a later optimisation, not a prerequisite.
+
+This is the highest-leverage item in the file. Everything in **B** becomes usable at n ≥ 30.
+
+Secondary sources, same table, once the pattern works: GLO plats (section-line notes record
+mills, fields, and improvements), 1930s–50s aerial photography, county atlases.
+
+#### A2. The vanished-feature test
+
+The strongest test available, and the project has nothing like it.
+
+An 1895 quad shows a mill on a creek. The modern quad does not. Run the 0.5 m detection
+chain there. Is there a headrace cut, a dam abutment, a leveled mill seat?
+
+- Ground truth that is public, dated, and independent of the model.
+- Tests the detection chain end to end, which **#2** identifies as currently unverified.
+- Produces negatives as well as positives: a mapped symbol with nothing detectable is a
+  genuine miss, and misses are what let you estimate recall.
+- No permission and no fieldwork.
+
+Do this immediately after A1, on one quad. It either validates the detection chain or
+falsifies it, in one pass, against real features of known location and known type.
+
+**Acceptance.** `midden validate histmap --sheet <sheet> --class mill_seat` reports, per
+mapped symbol, whether detection fired within a tolerance radius. Report recall and the
+false-negative list, not just hits.
+
+#### A3. NRHP for the monumental precontact classes
+
+`ref.control_sites` seeded from NRHP archaeological listings intersecting the Central Basin
+and Highland Rim; address-restricted rows excluded rather than approximated. Under the
+registry these are labels for `mound_earthwork` specifically, which is what they are.
+
+#### A4. Confuser registry
+
+The classes above have look-alikes, and a detection chain that cannot separate them will
+spend field days on 20th-century earthmoving. Log them deliberately.
+
+`ref.confuser` — logging deck landings, skid trails, CCC-era terraces and picnic platforms,
+bulldozer push piles, wildlife food plots, borrow pits, well pads, modern pond dams.
+
+Every one is a flat or circular anthropogenic platform in the size range of a charcoal
+hearth or a small mound. Catalogue them while working Montgomery Bell and Harpeth Narrows
+anyway — marginal cost is zero and they are the hard negatives that set precision.
+
+### 6. Validation is per class, and currently has no error bars
+
+Every test below runs per `class_id`, and **A1** is what makes any of them meaningful.
+
+#### B1. Permutation test replaces the pass/fail threshold
+
+The current test asks "is the mean percentile above 95." That is a threshold with no error
+bar, on footprints that **#4** already shows cannot average that high.
+
+Compute observed enrichment; build a null by drawing k random footprints of matched area and
+landform class from the same AOI; report observed, null distribution, and empirical p.
+Degrades gracefully — a weak honest answer at low n, a strong one at high n.
+
+**Acceptance.** `midden score validate --aoi <aoi> --class <class>` emits enrichment, null
+summary, and p. `control_check.py` wraps this or is deleted.
+
+#### B2. Feature ablation
+
+Hold each feature out in turn, refit, report delta-enrichment. A feature whose removal does
+not move enrichment is not carrying signal regardless of its weight. This is the
+quantitative version of the `terrace_class` finding in **#1**, reached without manual
+comparison of normalised means.
+
+**Acceptance.** `midden score ablate --aoi <aoi> --class <class>` → feature → delta.
+
+#### B3. Cross-physiography holdout
+
+Fit on Central Basin, evaluate on Highland Rim, report separately. The only test that
+catches the failure `spec.md` §2 names — the model learning "Middle Tennessee means big
+river terrace." Blocked by **#3** (`beaman-park` has no terrain), which makes that item a
+dependency of the validation strategy, not a coverage gap.
+
+#### B4. Access-bias audit
+
+Keep `dist_to_road` out of the feature stack. Excluding the variable does not remove access
+bias, it removes the ability to see it — roads follow terrace edges, gentle slope, and water
+access, so the bias re-enters through `slope_deg` and `dist_to_stream_m`.
+
+Measure it: compare the distance-to-road distribution of top-5% cells against the AOI
+background, and report the ratio on every scoring run. If the top 5% sits systematically
+closer to roads than chance, the stack is laundering accessibility and the result carries
+that caveat.
+
+This is measurement, not correction. Correction needs survey-coverage polygons that are not
+public. Keep the distinction explicit so it does not blur in a later write-up.
+
+#### B5. Define the background frame
+
+"Regional" and "surrounding buffered extent" appear in the **#1** diagnosis with no written
+definition, and they determine every enrichment number here. Define once in `spec.md`,
+record the frame used per run in the provenance ledger, and have B1's null draw from it.
+
 ---
 
 ## Not built
 
 | Item | Where specified | Note |
 |---|---|---|
+| `ref.target_class` registry | Scope, above | Everything else here reads from it. Nothing takes `--class` yet. |
 | `priest-drawdown` AOI | §7, the worked example | Derived, not fetched: NHD waterbody minus a pool-elevation contour. **Carries the NAVD88/NGVD29 datum trap** — an unconfirmed datum makes the figure unusable. |
-| Historical topo quads | §6 | `http_file` driver target. Changes the interpretation of every drawdown AOI: shows pre-impoundment floodplain, fords, mills, vanished roads. |
-| 1930s–50s aerial photography, GLO plats | §6 | Availability varies by county. |
+| Historical topo quads | §6 | `http_file` driver target. **Promoted: this is the label source — see A1.** Also changes the interpretation of every drawdown AOI: pre-impoundment floodplain, fords, mills, vanished roads. |
+| 1930s–50s aerial photography, GLO plats | §6 | Availability varies by county. Secondary label sources behind A1. |
 | NLCD canopy (`canopy_pct`) | §7 | Companion band: a predictor of data quality, not of settlement. Distinguishes a weak result in forest from a weak result in an open field. |
 | `midden_render_chart` | §9 | Needs a chart backend dependency (Altair or similar). |
-| Evals actually executed | §9 | `plugin/mcp/evals.xml` is written with hand-checked answers but has never been run against the server. |
-| Ranked polygon output | §11 M5 | Scoring produces a raster; polygonising the top percentile is not implemented. |
+| Evals actually executed | §9 | `plugin/mcp/evals.xml` is written with hand-checked answers but has never been run against the server. See **G1**. |
+| Ranked polygon output | §11 M5 | Scoring produces a raster; polygonising the top percentile is not implemented. See **F1** — this gap is the product. |
+
+The lettered sections below are the design for the items above and for the feature families
+the widened scope opens up.
+
+### C. Features
+
+#### C1. Delete `terrace_class` rather than repair it
+
+The fix proposed under Known broken **#1** — anchor HAND modes to SSURGO `flood_freq` — is
+better than reweighting and should still not be built. `terrace_class` is a human
+interpretive category encoded as an ordinal integer carrying a hand-assigned weight of 3.0.
+That discards the continuous information in HAND, inherits mode-counting fragility
+(`castalian-springs` has two modes, so ordinal position means something different there than
+at `mound-bottom`), and forces a weight onto a variable whose units are "rank."
+
+Feed continuous HAND and `flood_freq` as separate features and let the response curve be
+fitted. Keep the terrace concept for the write-up, where a reader can see the reasoning, and
+out of the feature stack, where it is silently load-bearing.
+
+Sequence it after **B2**, so the deletion is recorded with the ablation number that justifies
+it rather than with an argument.
+
+#### C2. Karst family
+
+Middle Tennessee is limestone and the feature stack does not know it.
+
+- **Sinkholes.** Closed depressions from the 10 m DEM via `sink`, `depth_in_sink`, and
+  `stochastic_depression_analysis`. Prefer the stochastic version — it returns a probability
+  surface, which is more honest than a binary mask on a noisy DEM.
+- **Springs.** NHD point features, already fetched alongside flowlines.
+- **Cave entrances.** Sinkhole margins and bluff-base concavities on the 0.5 m grid. Feeds
+  `cave_entrance` and `saltpeter_works` directly.
+
+New features: `dist_to_sinkhole_m`, `dist_to_spring_m`, `sinkhole_density`.
+
+#### C3. Rockshelter potential — 0.5 m grid
+
+Bluff-line overhangs from negative openness plus slope plus a bluff mask.
+
+This matters disproportionately: a class the detection grid can find *directly* rather than
+by proxy, and a reason for the 0.5 m chain to exist on the Highland Rim margin, where
+terrace-based prediction is weakest.
+
+#### C4. Lithic raw material
+
+Distance to chert source is a standard strong predictor in eastern woodlands settlement
+models and is absent. Tennessee Geological Survey publishes statewide surficial geology;
+Fort Payne and St. Louis formation outcrops are the relevant units. A join against a public
+layer, not new computation.
+
+New feature: `dist_to_chert_outcrop_m`. Also defines where `chert_quarry` can plausibly
+occur, which is a hard constraint worth encoding rather than learning.
+
+#### C5. Aspect and insolation
+
+South-facing terraces and bluff bases. `aspect` is in the WhiteboxTools open core;
+`time_in_daylight` is better-conditioned if the compute is acceptable.
+
+#### C6. Portage nodes
+
+Same shape as the existing confluence feature — a point layer of travel nodes plus a
+distance band — so it rides existing machinery rather than adding any.
+
+Derive from `ref.nhd_flowline` on `stream_order >= 4` (a canoe river, not a creek). Walk the
+channel; wherever two points are within `neck_max_m` straight-line but ≥ `loop_min_m` along
+the channel, emit a node at the neck midpoint weighted by the ratio of those two distances.
+
+Defaults: `neck_max_m = 300`, `loop_min_m = 2000`.
+
+The distance band then attaches to the landings at the bluff base, which is where the record
+would be, rather than to the ridge over the neck.
+
+Two conditions.
+
+1. **Companion band, not scored**, until tested the honest way: does `mound-bottom`'s own
+   horseshoe register as a node, and do the controls move when the band is included?
+   Promotion to a scored feature requires both answers, recorded.
+2. **The ethnographic footing is thinner than for confluences.** Dugout travel in the
+   interior Southeast is well attested. A source specifically documenting neck portages on
+   rivers of this size has not been found. That gap goes in the sources file rather than
+   being papered over, and it stays recorded until it is closed.
+
+### D. Per-class detection parameters
+
+`terrain.openness.search_radius_m` is currently a single global value. It cannot be.
+
+A charcoal hearth is a ~10 m circular platform. A mound platform is 30–100 m. A mill race is
+a metre-wide linear cut. One radius serves none of them well — and the parameter that Known
+broken **#2** says Montgomery Bell exists to set is a parameter for the hearth class, not for
+the project.
+
+Move openness search radius, SLRM radius, and any minimum-area threshold into
+`ref.target_class.params`. Detection runs take `--class` and read parameters from the
+registry.
+
+**Acceptance.** No detection parameter read from global config. A parameter sweep records
+which class it was swept for.
+
+### E. Cascade the two grids
+
+The 10 m modelling grid and the 0.5 m detection grid never inform each other. Known broken
+**#2** notes Montgomery Bell is 10.9 km² (~44 M cells at 0.5 m). That number is the argument:
+exhaustive detection does not scale past a handful of parks, and there is no triage step.
+
+1. **Stage 1, recall.** 10 m suitability for the class selects candidates. Tuned for recall —
+   a false positive here costs compute, not a field day.
+2. **Stage 2, precision.** 0.5 m detection runs only inside stage-1 candidates, with that
+   class's parameters from **D**.
+3. **Feedback.** Stage-2 detections become weak labels for stage 1, flagged by provenance so
+   they are never confused with `ref.control_sites` ground truth.
+
+Some classes skip stage 1 — `rockshelter` is constrained to bluff lines, a cheaper mask than
+a suitability surface. Record which classes cascade and which gate on a hard constraint.
+
+### F. Product — ranked polygons, then the survey plan
+
+`README.md` promises "a ranked set of polygons worth walking." Ranked polygon output is in
+the table above as not built. That gap is the product.
+
+1. **Polygonise.** Top percentile → polygons with area, mean and max score, dominant landform
+   class, `class_id`, and the burial-risk companion band as a separate attribute (never
+   summed, per the existing invariant).
+2. **Survey plan.** Given N person-days: which polygons, in what order. An optimisation over
+   the score surface — expected discoveries per unit effort subject to access, walk time, and
+   parcel boundaries. `travelling_salesman_problem` is in the WhiteboxTools open core and
+   covers routing.
+
+Item 2 is the differentiator. Suitability surfaces are common; a defensible survey design
+derived from one is not.
+
+### G. MCP and plugin layer — amendment to M4
+
+**Scope note.** The agent layer is the interpretive surface for doing geoarchaeology without
+geoarchaeology training. That is its purpose and it is not overhead. Judge it on whether it
+produces correct and traceable interpretations, not on whether it improves model accuracy.
+
+That raises the correctness bar rather than lowering it. A query tool that is occasionally
+wrong wastes a minute. An interpretive tool that is occasionally wrong installs a false
+belief that then shapes feature design. The openness sign convention is the worst case: a
+confidently inverted explanation flips every downstream reading silently, which is exactly
+why the invariant exists.
+
+#### G1. Run the evals
+
+`plugin/mcp/evals.xml` has hand-checked answers and has never been executed against the
+server. Under the interpretive framing this is the only thing standing between the tool and
+confidently teaching the wrong sign convention.
+
+**Acceptance.** One-command eval run, in CI if the server starts headless, with the openness
+sign convention, the two-grids rule, and per-class detectability as explicit cases.
+
+#### G2. Ground the skills in citable sources
+
+Skills encode technique. For interpretation they must also encode *why*, with references —
+landform association, terrace formation, burial and site visibility, industrial archaeology
+signatures. An interpretation should be traceable to a source rather than to model priors, so
+it can be checked and so it can go into a methods appendix later.
+
+**C6**'s recorded portage gap is the template: where a source is missing, the skill says so.
+
+#### G3. Tools the interpretive use case needs
+
+- **`midden_explain_cell`** — AOI plus coordinates returns per-feature values, their
+  normalised percentiles, and each feature's contribution to the score. Feature attribution
+  at a point. The core learning loop: the model ranks something, you ask why, you get a
+  decomposition rather than an assertion.
+- **`midden_compare_landform`** — contrast two locations' feature vectors and landform
+  context. "How is this unlike Mound Bottom" builds intuition fastest.
+- **`midden_describe_aoi`** — physiographic context, drainage, dominant soils, terrain
+  coverage state. Orientation before interpretation.
+- **`midden_class_brief`** — for a `class_id`, return morphology, expected size, detection
+  parameters, detectability, confusers, and sources. The registry is only useful as a
+  learning tool if it is legible from inside the conversation.
+
+#### G4. Closing the loop
+
+Longer horizon, recorded now: an agent that reads `ROADMAP.md`, proposes the next falsifiable
+experiment, runs it, and writes the outcome back into the ledger — including when it fails.
+Provenance ledger, CLI, and write tools already exist. Distinct from querying, and genuinely
+novel for geospatial work.
+
+---
+
+## Priority
+
+1. **Scope** — `ref.target_class` and the registry. Everything below reads from it.
+2. **A1** — historic quads into `ref.control_sites`, manual, three sheets. Retires n=2.
+3. **A2** — the vanished-feature test. Validates or falsifies the detection chain against
+   public ground truth, no permission and no fieldwork.
+4. **D** — per-class detection parameters. Prerequisite for A2 meaning anything.
+5. **Known broken #2** — hearth-scale AOI at Montgomery Bell, now as `charcoal_hearth` with
+   its own radius rather than a global one.
+6. **B1 + B2** — permutation and ablation. Retires the pass/fail threshold, answers the
+   `terrace_class` question with evidence.
+7. **C1** — delete `terrace_class`, after B2 records why.
+8. **G1** — run the evals.
+9. **C2–C5** — feature families. Cheapest accuracy available.
+10. **A4** — confuser registry, opportunistically while working existing AOIs.
+11. **B3 + Known broken #3** — `beaman-park` terrain, then holdout.
+12. **C6** — portage, as a companion band with its test.
+13. **F1** polygonise, **E** cascade, then **F2**, **G3**, **G4**.
 
 ---
 
@@ -141,6 +554,15 @@ Recorded so the reasoning is not relitigated. See `spec.md` §13.
 - **Fieldwork loop.** Trivial to add, pointless until someone walks something.
 - **Browser explorer.** QGIS plus the artifact export covers it.
 - **Anything cloud.**
+
+Added with the scope widening:
+
+- **Correcting survey bias.** Needs survey-coverage polygons that are not public. **B4**
+  measures it instead. The distinction between *measured* and *corrected* stays explicit.
+- **Fitting on non-public site data.** Out of scope for this repo by design. Nothing in the
+  scope widening depends on it.
+- **CV symbol extraction from scanned quads.** Not until manual digitisation of three sheets
+  has proven the label pipeline worth automating.
 
 ---
 
@@ -178,6 +600,24 @@ Each of these was learned the expensive way. They are in the code as comments to
 
 ## Resuming
 
+### Where this was left — paused 2026-09-03
+
+**Docs only. No code changed, nothing is half-built, nothing is in flight.** The scope
+widening was written into `ROADMAP.md`, `CLAUDE.md`, `spec.md` and `README.md` and the work
+itself was deliberately not started. The database, the CLI, the feature stack and the weight
+set are exactly as they were on 2026-09-02 — still single-class, still no `--class` argument
+anywhere, still the falsified weight set described under Known broken **#1**.
+
+So the pipeline commands below all still run and still produce what they produced before.
+What changed is that their *output is now unqualified by the project's own rules*: a score
+surface without a `class_id` is something §2 of the spec and the invariants in `CLAUDE.md`
+now forbid producing. That contradiction is intentional and recorded rather than papered
+over — the rule was written before the thing that satisfies it, because the rule is what
+tells the next session what to build.
+
+Nothing was left in a broken state. Picking this up is starting item 1 of **Priority**, not
+finishing anything.
+
 ```bash
 docker compose up -d && uv sync
 uv run midden doctor          # postgres, PDAL, WhiteboxTools tool set
@@ -187,6 +627,11 @@ uv run midden terrain list
 uv run pytest tests/ -q
 ```
 
-Suggested next action: **#2 above** — cut a hearth-scale AOI at Montgomery Bell and put it
-through the detection grid. It is bounded, it is compute rather than design, and it either
-validates or falsifies the detection chain in one run.
+Suggested next action: **items 1–3 of Priority above** — populate `ref.target_class`, then
+digitize three historic quads into `ref.control_sites`, then run the vanished-feature test.
+That sequence retires the n=2 problem and puts the detection chain in front of public ground
+truth without permission or fieldwork.
+
+The previously suggested action — the hearth-scale Montgomery Bell AOI, Known broken **#2** —
+is now item 5, and is unchanged except that it is scoped as `charcoal_hearth` with its own
+openness radius from **D** rather than setting a global one.
