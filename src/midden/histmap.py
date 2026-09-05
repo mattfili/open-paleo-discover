@@ -381,7 +381,13 @@ def load_sites(
                     props["name"],
                     sheet_id,
                     sheet["map_year"],
-                    sheet["positional_confidence_m"],
+                    # A feature may carry its own confidence — sheet error plus the
+                    # digitization method's pointing error — but never less than the
+                    # sheet's: a point cannot be more certain than the map it came from.
+                    max(
+                        float(props.get("positional_confidence_m") or 0.0),
+                        sheet["positional_confidence_m"],
+                    ),
                     x,
                     y,
                     derivation_id,

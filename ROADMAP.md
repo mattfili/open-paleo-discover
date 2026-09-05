@@ -241,10 +241,26 @@ retired by this. Sheets come from the TNM Access API (`urls.GeoTIFF` on each pro
 the HTMC scan; GeoPDF-only editions are skipped), warp NAD27 → EPSG:26916 as RGB
 nearest-neighbour, and land in `ref.histmap_sheet` with NMAS-derived
 `positional_confidence_m` (12.2 m at 1:24,000, 31.8 m at 1:62,500, + 15 m georef margin —
-all named parameters in the fetch derivation). Three sheets catalogued, each verified to
-contain its AOI: Burns 1936 1:24,000 (montgomery-bell), White Bluff 1930 1:62,500
-(harpeth-narrows), Ridgetop 1931 1:62,500 (beaman-park, Highland Rim). Digitization next;
-points land `review_status='unreviewed'` and re-loads replace only unreviewed rows.
+all named parameters in the fetch derivation). Four sheets catalogued: White Bluff 1930 1:62,500
+(harpeth-narrows), Burns 1936 and 1953 1:24,000 (montgomery-bell), Ridgetop 1931 1:62,500
+(beaman-park, Highland Rim). Each verified to contain its AOI.
+
+**Digitized 2026-09-04, machine pass (claude-vision), 37 points in `ref.control_sites`:**
+22 from White Bluff 1930 (schools, churches, Travis Ford), 15 from Burns 1953 (nine family
+cemeteries, three crossed-pick ore-pit symbols and "Bakersworks" as `iron_works`, two
+churches). Label files tracked under `labels/<sheet_id>.geojson`; every point carries
+per-point `positional_confidence_m` (sheet NMAS + pointing error, 45–150 m) and
+`review_status='unreviewed'` — machine labels are never silently promoted. Eight points sit
+*inside* detection AOIs (three ore pits + Jackson Cem in montgomery-bell; Cedar Hill Sch in
+harpeth-narrows), which is what A2 runs against. **n=2 is retired: n=37 across four
+classes** (23 homestead, 9 family_cemetery, 4 iron_works, 1 road_trace).
+
+Findings from the pass, recorded: (a) no "Mill" label survives on the 1930/1953 editions —
+mill culture predates them, so A2's vanished-structure test runs on `homestead` /
+`family_cemetery` / `iron_works` instead of `mill_seat`, whose labels need an 1890s-1900s
+edition (Greenbrier 1903 1:125,000 exists but its ~78 m NMAS error is marginal); (b) schools
+and churches map to class `homestead` deliberately — the detection signature (building
+foundation, cellar, terraced yard) is the same, and the name field keeps what it was.
 
 Historic topo quads are listed under Not built as an `http_file` driver target, valued for
 showing pre-impoundment floodplain and vanished roads. Under the widened scope they are
@@ -633,6 +649,10 @@ Each of these was learned the expensive way. They are in the code as comments to
   polygon — `mupolygonkey` is.
 - **Ibis has no cross-backend joins.** DuckDB is the single connection; `ref.*` and
   `derived.*` are attached with `read_postgres`.
+- **HTMC contains partial "advance sheets" that georeference correctly and are mostly
+  blank paper.** Burns 1936 covers only the western third of its cell; Montgomery Bell
+  falls in the blank part, discovered only by checking per-tile ink fraction. Check
+  coverage (the `_tn.jpg` preview, or ink density) before digitizing from a fetched sheet.
 - **`postgis/postgis:17-3.5` publishes no arm64 manifest.** On Apple Silicon the compose
   build fails with "no match for platform in manifest" until `platform: linux/amd64` is
   pinned on the service; OrbStack then runs it under Rosetta, which is fine for a local
