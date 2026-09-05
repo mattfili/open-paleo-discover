@@ -72,7 +72,12 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose â
         )
 
     evaluable, hits = report["evaluable"], report["hits"]
-    misses = [r.name for r in report["results"] if not r.hit]
+    # Only evaluable symbols can be false negatives; a coverage gap is a data gap.
+    misses = [
+        r.name
+        for r in report["results"]
+        if not r.hit and any(d.get("valid") for d in r.detail.values())
+    ]
     typer.echo("")
     if evaluable:
         typer.secho(

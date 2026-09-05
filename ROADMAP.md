@@ -304,6 +304,49 @@ falsifies it, in one pass, against real features of known location and known typ
 mapped symbol, whether detection fired within a tolerance radius. Report recall and the
 false-negative list, not just hits.
 
+**Executed 2026-09-04 — machinery works, and the first firing rule is falsified.**
+
+`midden validate histmap` is built and ran against Burns 1953 for `iron_works` (4
+symbols) and `family_cemetery` (9, one in an EPT coverage gap). It cuts
+`control_detection` AOIs around symbol clusters, derives the 0.5 m chain per class from
+the registry parameters, and applies the rule: a connected cluster of ≥ `min_cells`
+cells beyond `threshold_pctile` of a 500 m background annulus, inside the symbol's
+positional-tolerance disc, in the tail the class morphology predicts.
+
+First pass, seeded rule (p95): **12/12 evaluable symbols HIT** — ore pits fired on both
+openness signs (pit + spoil, exactly the catalog's pairing), cemeteries on negative
+openness. Then the negative control: **94% of random background points fire the same
+rule.** The 100% recall was an artifact of permissiveness — a 45 m disc holds ~25k
+cells, ~5% exceed a p95 threshold by chance, and spatial autocorrelation clumps them
+past any small `min_cells`.
+
+The sweep (derivations 18/30 + ad-hoc, all on Burns 1953 clusters):
+
+| rule | cemetery recall | cemetery bg fire | iron recall | iron bg fire |
+|---|---|---|---|---|
+| p95, seeded n | 8/8 | 94% | 4/4 | high |
+| p99.0, n100 | 3/8 | 24% | 1/4 | 13% |
+| p99.5, n200 | 0/8 | 14% | 0/4 | 0% |
+| p99.9, n100 | 1/8 | 3% | 0/4 | 0% |
+
+**No configuration is both sensitive and quiet.** The percentile-cluster rule cannot
+separate a grave-scale or pit-scale anomaly from Highland Rim background texture at a
+45 m tolerance disc. That falsifies the rule design, not the chain: the anomalies are
+present at the symbols (p99–100 extremes), they are just not rarer than background
+texture at that scale. Recorded consequences:
+
+1. The registry's `detect` blocks are placeholders for a rule that needs to be
+   shape-aware (rectangularity for cellar holes, ring/row regularity for cemeteries,
+   pit-plus-spoil pairing for ore pits), not merely amplitude-based.
+2. Shrinking the tolerance disc is the other lever: at 45 m the disc is mostly
+   background. Reviewing machine-digitized label positions against the renders (the
+   `review_status` loop) buys sensitivity without loosening anything.
+3. The negative control must ship inside `midden validate` rather than as an ad-hoc
+   script — a recall number without a background fire rate is exactly the
+   pass-with-no-error-bar failure B1 exists to prevent (see `spatial-validation`).
+4. `USGS_LPC_TN_Middle_B1/B2` seam: Burns 1953 straddles it; validate reports a
+   coverage-gap symbol as "no data", never as a miss.
+
 #### A3. NRHP for the monumental precontact classes
 
 `ref.control_sites` seeded from NRHP archaeological listings intersecting the Central Basin
@@ -579,8 +622,11 @@ novel for geospatial work.
 ## Priority
 
 1. ~~**Scope**~~ — done 2026-09-04. `ref.target_class` built; everything takes `--class`.
-2. **A1** — historic quads into `ref.control_sites`, manual, three sheets. Retires n=2.
-3. **A2** — the vanished-feature test. Validates or falsifies the detection chain against
+2. ~~**A1**~~ — done 2026-09-04, machine pass: 4 sheets, 37 points, n=2 retired.
+   Open residue: review the unreviewed labels in QGIS.
+3. ~~**A2**~~ — executed 2026-09-04: machinery shipped, first firing rule falsified by
+   its own negative control (see A2 above). Next: shape-aware rules + in-command
+   negative control. The original framing, kept: validates or falsifies the chain against
    public ground truth, no permission and no fieldwork.
 4. ~~**D**~~ — done 2026-09-04, with item 1.
 5. **Known broken #2** — hearth-scale AOI at Montgomery Bell, now as `charcoal_hearth` with
@@ -669,38 +715,37 @@ Each of these was learned the expensive way. They are in the code as comments to
 
 ## Resuming
 
-### Where this was left — paused 2026-09-03
+### Where this was left — 2026-09-04, Priority items 1–4 executed
 
-**Docs only. No code changed, nothing is half-built, nothing is in flight.** The scope
-widening was written into `ROADMAP.md`, `CLAUDE.md`, `spec.md` and `README.md` and the work
-itself was deliberately not started. The database, the CLI, the feature stack and the weight
-set are exactly as they were on 2026-09-02 — still single-class, still no `--class` argument
-anywhere, still the falsified weight set described under Known broken **#1**.
+Branch `feat/target-class` (off `docs/target-class-scope`). Items 1 (registry), 4 (D,
+per-class parameters), 2 (A1 labels), and 3 (A2 machinery + first runs) are done; every
+acceptance and every negative result is recorded in its own section above. Headlines:
 
-So the pipeline commands below all still run and still produce what they produced before.
-What changed is that their *output is now unqualified by the project's own rules*: a score
-surface without a `class_id` is something §2 of the spec and the invariants in `CLAUDE.md`
-now forbid producing. That contradiction is intentional and recorded rather than papered
-over — the rule was written before the thing that satisfies it, because the rule is what
-tells the next session what to build.
+- `ref.target_class` seeded (15 classes); everything takes `--class`; no unqualified
+  score surface is produced or rendered; detection values come only from the registry.
+- 37 histmap control points across four classes (n=2 retired), machine-digitized,
+  `unreviewed`, tracked under `labels/`.
+- The vanished-feature test ran twice on Burns 1953: 12/12 hits at the seeded rule,
+  then the negative control showed a 94% background fire rate — the rule, not the
+  chain, is falsified, with the sweep recorded under A2.
+- Environment rebuilt from scratch on this machine (the 2026-09-02 database volume did
+  not survive): compose platform pin, PDAL 2.10.2, fresh AOI seed + intake. The
+  pipeline reproduced the recorded HAND modes (0.38/3.38/10.62) and the weight-set
+  falsification (76.8th pctile vs 74.6 recorded — SSURGO/NHD drift, same verdict).
 
-Nothing was left in a broken state. Picking this up is starting item 1 of **Priority**, not
-finishing anything.
+Nothing is half-built. In-flight residue, deliberately left: the score `variant`
+convention means old unqualified assets are simply invisible to scenes (none exist in
+the fresh DB); `terrain preview` still picks the first variant of a kind.
 
-```bash
-docker compose up -d && uv sync
-uv run midden doctor          # postgres, PDAL, WhiteboxTools tool set
-uv run midden db check        # inventory + the project-CRS assertion
-uv run midden aoi list
-uv run midden terrain list
-uv run pytest tests/ -q
-```
+Suggested next action, in order:
 
-Suggested next action: **items 1–3 of Priority above** — populate `ref.target_class`, then
-digitize three historic quads into `ref.control_sites`, then run the vanished-feature test.
-That sequence retires the n=2 problem and puts the detection chain in front of public ground
-truth without permission or fieldwork.
-
-The previously suggested action — the hearth-scale Montgomery Bell AOI, Known broken **#2** —
-is now item 5, and is unchanged except that it is scoped as `charcoal_hearth` with its own
-openness radius from **D** rather than setting a global one.
+1. **Make the negative control part of `midden validate histmap`** (a `--null n`
+   option reporting background fire rate beside recall) — a recall without it is the
+   pass-with-no-error-bar failure. See `spatial-validation`.
+2. **Review the 37 unreviewed labels in QGIS** (`render-qa` / `histmap-digitize`
+   loop): confirmed positions shrink tolerance discs, which is the cheapest
+   sensitivity gain available.
+3. **Shape-aware firing rules** for cemetery/homestead/ore-pit (rectangularity,
+   row-regularity, pit-plus-spoil pairing) — amplitude alone is falsified.
+4. Then item 5 (hearth-scale Montgomery Bell as `charcoal_hearth` — note the park is
+   in EPT project `..._B2_...`, not B1) and item 6 (B1+B2).

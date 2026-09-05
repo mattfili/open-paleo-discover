@@ -310,9 +310,28 @@ def validate_histmap(
                 )
                 area = get_aoi(conn, slug)
             aois_used.append(area.slug)
-            surfaces = ensure_detection(
-                conn, area, cls, ept_project=ept_project, config=config
-            )
+            try:
+                surfaces = ensure_detection(
+                    conn, area, cls, ept_project=ept_project, config=config
+                )
+            except RuntimeError as exc:
+                # A cluster with no EPT points (coverage seam) is a data gap, not a
+                # miss and not a reason to lose the clusters that did run. Its
+                # symbols are excluded from recall and reported explicitly.
+                why = f"detection failed for {area.slug}: {exc}".splitlines()[0]
+                results.extend(
+                    SymbolResult(
+                        site_id=p["site_id"],
+                        name=p["name"],
+                        tolerance_m=float(p["positional_confidence_m"]),
+                        review_status=p["review_status"],
+                        hit=False,
+                        fired_surfaces=(),
+                        detail={"detection": {"valid": False, "why": why}},
+                    )
+                    for p in members
+                )
+                continue
             results.extend(
                 _evaluate_symbol(p, surfaces, tails, detect) for p in members
             )
