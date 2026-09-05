@@ -756,9 +756,16 @@ Suggested next action, in order:
    spatial-validation §2. Reruns on Burns 1953: iron_works 4/4 recall vs 73%
    background; family_cemetery 8/8 vs 96% — both self-reported weakly informative,
    consistent with the A2 falsification. Zero can never be claimed: (r+1)/(k+1).
-2. **Review the 37 unreviewed labels in QGIS** (`render-qa` / `histmap-digitize`
-   loop): confirmed positions shrink tolerance discs, which is the cheapest
-   sensitivity gain available.
+2. **Review the 37 unreviewed labels — human step, surface is ready.** 37 review
+   cards under `exports/review/<sheet>/` (quad crop + detection renders where they
+   exist, red ring = recorded tolerance). Review is human by the `histmap-digitize`
+   rule; the machine only proposes. First card already teaches: Jackson Cem's ring
+   contains the map label while SLRM shows a creek gully through the disc — the "hit"
+   is plausibly the drainage, not the cemetery. Open convention conflict, raised with
+   the skill's author session and undecided: 23 school/church points are loaded as
+   `homestead` (rationale recorded here), while `histmap-digitize` says such symbols
+   are not loaded absent a registry class — bless the mapping, add a class, or drop
+   23/37 labels.
 3. **Shape-aware firing rules** for cemetery/homestead/ore-pit (rectangularity,
    row-regularity, pit-plus-spoil pairing) — amplitude alone is falsified.
 4. Then item 5 (hearth-scale Montgomery Bell as `charcoal_hearth` — note the park is
