@@ -184,7 +184,21 @@ feature rather than compensating for it.
 recorded: `hand_mode_tolerance_m` 1.0 → 2.0, on the grounds that a terrace tread has
 metre-scale microtopography. It moved both controls the wrong way (75.5→74.6, 88.5→86.4).
 
-### 2. The hearths control has never been run
+### 2. The hearths control has never been run — resolution half answered 2026-09-05
+
+The scale question is settled: a `charcoal_hearth`-parameter detection run (registry
+radius 10 m, SLRM 15 m) over the iron-district cluster AOI inside the park resolves
+tree-throw pairs (the visualization guide's sensitivity floor), the mapped ore-pit
+complex as pit-plus-spoil, and individual 4-6 m building pads. **The chain resolves
+features at hearth scale.** What it has not done is find hearths: no unambiguous
+cluster of 8-15 m circular platforms at 50-200 m spacing in the 1.4 km2 window
+scanned, and the most hearth-like pattern was the park campground loop — now logged
+in `ref.confuser` (built 2026-09-05 as `sql/004_confuser.sql`, A4) along with the
+lake-edge park pads. Hearth prospecting needs windows near the furnace sites (the
+"Forge Hol" toponyms on Jones Creek, west of the park on the White Bluff/Burns
+sheets) and the human review loop, not a bigger threshold. Original framing kept
+below.
+
 
 `montgomery-bell` is the **fine** detection control — a 19th-century iron district whose
 relict charcoal hearths (flat circular platforms ~10 m across) are what should set
@@ -353,7 +367,13 @@ texture at that scale. Recorded consequences:
 and Highland Rim; address-restricted rows excluded rather than approximated. Under the
 registry these are labels for `mound_earthwork` specifically, which is what they are.
 
-#### A4. Confuser registry
+#### A4. Confuser registry — table built 2026-09-05, first two rows logged
+
+`sql/004_confuser.sql` creates `ref.confuser` (kind, imitates FK to target_class,
+four-way assessment, basis prose, point + extent). Seeded with the Montgomery Bell
+campground loop and the Lake Woodhaven pad row, both `likely modern`, both imitating
+`charcoal_hearth`. Original rationale kept below.
+
 
 The classes above have look-alikes, and a detection chain that cannot separate them will
 spend field days on 20th-century earthmoving. Log them deliberately.
