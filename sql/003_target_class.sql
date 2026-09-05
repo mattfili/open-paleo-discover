@@ -124,7 +124,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 25.0},
        "min_area_m2": 300,
        "detect": {"surfaces": {"openness_pos": "high", "openness_neg": "high", "slrm": "high"},
-                  "threshold_pctile": 95, "min_cells": 200}}',
+                  "threshold_pctile": 95, "min_cells": 200, "feature_radius_m": 40.0}}',
      'What mound-bottom and castalian-springs actually are. Site plan (plaza '
      'arrangement) is the strongest identifier; a single isolated rise usually is not one.'),
 
@@ -135,7 +135,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 15.0},
        "min_area_m2": 25,
        "detect": {"surfaces": {"openness_neg": "high", "slrm": "low"},
-                  "threshold_pctile": 95, "min_cells": 40}}',
+                  "threshold_pctile": 95, "min_cells": 40, "feature_radius_m": 10.0}}',
      'Gated on a bluff mask, not a suitability surface (ROADMAP E). The reason the '
      '0.5 m chain exists on the Highland Rim margin.'),
 
@@ -146,7 +146,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 10.0},
        "min_area_m2": 10,
        "detect": {"surfaces": {"openness_neg": "high", "openness_pos": "high"},
-                  "threshold_pctile": 95, "min_cells": 12}}',
+                  "threshold_pctile": 95, "min_cells": 12, "feature_radius_m": 5.0}}',
      'Pit-and-spoil pairing distinguishes from sinkholes (no spoil). Constrained to '
      'chert-bearing outcrop once dist_to_chert_outcrop_m exists (C4).'),
 
@@ -157,7 +157,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 15.0},
        "min_area_m2": 10,
        "detect": {"surfaces": {"openness_neg": "high"},
-                  "threshold_pctile": 95, "min_cells": 20}}',
+                  "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0}}',
      'Feeds saltpeter_works. Cave locations are sensitive; treat detections as '
      'restricted-adjacent and do not publish coordinates.'),
 
@@ -188,7 +188,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 15.0},
        "min_area_m2": 50,
        "detect": {"surfaces": {"slrm": "high", "openness_pos": "high"},
-                  "threshold_pctile": 95, "min_cells": 50}}',
+                  "threshold_pctile": 95, "min_cells": 50, "feature_radius_m": 7.0}}',
      'Montgomery Bell iron district. Clustering 50-200 m apart is the identifier; '
      'the confuser is a log landing (20-40 m, skid trails converge on it).'),
 
@@ -199,7 +199,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 15.0},
        "min_area_m2": 20,
        "detect": {"surfaces": {"openness_pos": "high", "openness_neg": "high"},
-                  "threshold_pctile": 95, "min_cells": 30}}',
+                  "threshold_pctile": 95, "min_cells": 30, "feature_radius_m": 5.0}}',
      'Anchors hearth clusters: hearths sit within hauling distance of the furnace.'),
 
     ('mill_seat', 'historic',
@@ -209,7 +209,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 10.0},
        "min_area_m2": 2,
        "detect": {"surfaces": {"openness_neg": "high", "slrm": "low"},
-                  "threshold_pctile": 95, "min_cells": 8}}',
+                  "threshold_pctile": 95, "min_cells": 8, "feature_radius_m": 10.0}}',
      'The A2 vanished-feature class. Metre-scale cut: the global 10 m radius is blind '
      'to it, which is why parameters are per class. Fords nearby are multi-component.'),
 
@@ -220,7 +220,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 10.0},
        "min_area_m2": 9,
        "detect": {"surfaces": {"openness_neg": "high", "slrm": "low"},
-                  "threshold_pctile": 95, "min_cells": 24}}',
+                  "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0}}',
      'Rectangularity at 4 m is a strong cultural indicator. Historic quads mark '
      'structures: symbol + cellar hole is near-certain confirmation.'),
 
@@ -231,7 +231,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 10.0},
        "min_area_m2": 2,
        "detect": {"surfaces": {"openness_neg": "high", "slrm": "low"},
-                  "threshold_pctile": 95, "min_cells": 8}}',
+                  "threshold_pctile": 95, "min_cells": 8, "feature_radius_m": 10.0}}',
      'High public value, frequently unrecorded. Report, never investigate; suspected '
      'burials get appropriate-care handling.'),
 
@@ -242,7 +242,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 15.0},
        "min_area_m2": 20,
        "detect": {"surfaces": {"openness_neg": "high"},
-                  "threshold_pctile": 95, "min_cells": 40}}',
+                  "threshold_pctile": 95, "min_cells": 40, "feature_radius_m": 10.0}}',
      'Modern skid trails look similar; age is not readable from form alone — '
      'cross-check the quad edition dates.'),
 
@@ -253,7 +253,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 15.0},
        "min_area_m2": 10,
        "detect": {"surfaces": {"openness_neg": "high"},
-                  "threshold_pctile": 95, "min_cells": 20}}',
+                  "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0}}',
      'Proxy: cave entrance detection plus the historic record. Never report entrance '
      'detection alone as a saltpeter detection.'),
 
@@ -264,7 +264,7 @@ VALUES
        "slrm": {"smoothing_radius_m": 10.0},
        "min_area_m2": 10,
        "detect": {"surfaces": {"openness_pos": "high", "slrm": "high"},
-                  "threshold_pctile": 95, "min_cells": 20}}',
+                  "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0}}',
      'Stops at property lines by construction; that regularity is the identifier, '
      'unlike conservation terracing which follows contour with machine precision.')
 

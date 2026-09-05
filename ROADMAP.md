@@ -747,9 +747,15 @@ them as cases.
 
 Suggested next action, in order:
 
-1. **Make the negative control part of `midden validate histmap`** (a `--null n`
-   option reporting background fire rate beside recall) — a recall without it is the
-   pass-with-no-error-bar failure. See `spatial-validation`.
+1. ~~**Make the negative control part of `midden validate histmap`**~~ — done
+   2026-09-05. Every run draws matched-radius null discs (radii sampled from the
+   symbols' own discs, thinned to a disc diameter apart, >=150 m from any control
+   site), reports the Laplace rate beside recall, and grades itself: quiet+exceeded
+   (green), exceeded-but-noisy (yellow, "ground is textured"), or uninformative (red).
+   Discs are now tolerance + per-class `feature_radius_m` (new registry field), per
+   spatial-validation §2. Reruns on Burns 1953: iron_works 4/4 recall vs 73%
+   background; family_cemetery 8/8 vs 96% — both self-reported weakly informative,
+   consistent with the A2 falsification. Zero can never be claimed: (r+1)/(k+1).
 2. **Review the 37 unreviewed labels in QGIS** (`render-qa` / `histmap-digitize`
    loop): confirmed positions shrink tolerance discs, which is the cheapest
    sensitivity gain available.

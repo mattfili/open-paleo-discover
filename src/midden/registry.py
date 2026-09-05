@@ -154,7 +154,7 @@ def detect_params(cls: TargetClass) -> dict[str, Any]:
             f"{cls.detectability}, grid={cls.grid}). Only detection-grid classes with "
             "a firing rule can be validated against point labels."
         )
-    required = {"surfaces", "threshold_pctile", "min_cells"}
+    required = {"surfaces", "threshold_pctile", "min_cells", "feature_radius_m"}
     missing = required - set(detect)
     if missing:
         raise KeyError(

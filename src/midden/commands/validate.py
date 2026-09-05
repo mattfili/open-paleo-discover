@@ -39,6 +39,15 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose â
     ept_project: Annotated[
         str, typer.Option("--ept-project", help="EPT project for the detection grid.")
     ] = DEFAULT_EPT_PROJECT,
+    null_per_cluster: Annotated[
+        int,
+        typer.Option(
+            "--null",
+            help="Matched background discs drawn per cluster "
+            "for the negative control; 0 disables (the "
+            "report then says recall is unverified).",
+        ),
+    ] = 12,
 ) -> None:
     """The vanished-feature test: does detection fire where the historic map says?
 
@@ -48,7 +57,12 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose â
     """
     with connect() as conn:
         report = validate_histmap(
-            conn, sheet_id, class_id, ept_project=ept_project, aoi_slug=aoi
+            conn,
+            sheet_id,
+            class_id,
+            ept_project=ept_project,
+            aoi_slug=aoi,
+            null_per_cluster=null_per_cluster,
         )
 
     typer.secho(
@@ -64,8 +78,10 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose â
             fg=typer.colors.YELLOW,
             bold=True,
         )
-    typer.echo(f"{'symbol':<28}{'tol_m':>6}  {'hit':<5}{'fired on':<28}detail")
-    typer.echo("-" * 100)
+    typer.echo(
+        f"{'symbol':<28}{'tol_m':>6}{'disc_m':>8}  {'hit':<5}{'fired on':<28}detail"
+    )
+    typer.echo("-" * 106)
     for r in report["results"]:
         parts = []
         for kind, d in r.detail.items():
@@ -74,7 +90,7 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose â
             else:
                 parts.append(f"{kind}: p{d['pctile_max']} n{d['cluster_cells']}")
         typer.echo(
-            f"{r.name:<28}{r.tolerance_m:>6.0f}  "
+            f"{r.name:<28}{r.tolerance_m:>6.0f}{r.disc_m:>8.0f}  "
             f"{'HIT' if r.hit else 'miss':<5}"
             f"{','.join(r.fired_surfaces) or '-':<28}{'; '.join(parts)}"
         )
@@ -96,6 +112,42 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose â
     else:
         typer.secho(
             "no symbol had enough valid raster to evaluate", fg=typer.colors.RED
+        )
+    if report["null_draws"]:
+        rate = report["null_rate"]
+        exceeds = bool(evaluable) and (report["recall"] > rate)
+        quiet = rate <= 0.25
+        if exceeds and quiet:
+            verdict, colour = (
+                "Recall exceeds a quiet background â€” the rule carries information "
+                "here.",
+                typer.colors.GREEN,
+            )
+        elif exceeds:
+            verdict, colour = (
+                "Recall exceeds the background rate, but the background itself fires "
+                "often â€” weakly informative at best; a hit here is closer to 'ground "
+                "is textured' than 'feature found'.",
+                typer.colors.YELLOW,
+            )
+        else:
+            verdict, colour = (
+                "Recall does NOT exceed the background rate â€” this recall is "
+                "uninformative; the rule fires on ordinary ground as readily as on "
+                "mapped symbols.",
+                typer.colors.RED,
+            )
+        typer.secho(
+            f"negative control: {report['null_fired']}/{report['null_draws']} matched "
+            f"background discs fire (rate <= {rate:.0%}, Laplace). " + verdict,
+            fg=colour,
+            bold=not (exceeds and quiet),
+        )
+    else:
+        typer.secho(
+            "negative control: no null discs could be drawn â€” treat recall as "
+            "unverified.",
+            fg=typer.colors.RED,
         )
 
     # What this does and does not claim â€” nothing ships unexplained.

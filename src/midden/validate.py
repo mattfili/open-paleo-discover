@@ -55,6 +55,7 @@ class SymbolResult:
     site_id: int
     name: str
     tolerance_m: float
+    disc_m: float  # tolerance + the class's feature radius: the disc actually searched
     review_status: str
     hit: bool
     fired_surfaces: tuple[str, ...]
@@ -205,18 +206,20 @@ def _fire_on_surface(
     }
 
 
-def _evaluate_symbol(
-    point: dict, surfaces: dict[str, Path], tails: dict[str, str], detect: dict
-) -> SymbolResult:
-    """Run the firing rule for one symbol across its class's surfaces."""
+def _apply_rule(
+    x: float,
+    y: float,
+    disc_m: float,
+    surfaces: dict[str, Path],
+    tails: dict[str, str],
+    detect: dict,
+) -> tuple[list[str], dict[str, dict[str, Any]]]:
+    """Apply the firing rule at one location. Returns (fired kinds, per-surface detail)."""
     detail: dict[str, dict[str, Any]] = {}
-    fired = []
-    tolerance = float(point["positional_confidence_m"])
+    fired: list[str] = []
     for kind, path in surfaces.items():
         with rasterio.open(path) as src:
-            masks = _disc_masks(
-                src, point["x"], point["y"], tolerance, BACKGROUND_RADIUS_M
-            )
+            masks = _disc_masks(src, x, y, disc_m, BACKGROUND_RADIUS_M)
         if masks is None:
             detail[kind] = {"valid": False, "why": "outside raster"}
             continue
@@ -229,15 +232,72 @@ def _evaluate_symbol(
         detail[kind] = outcome
         if outcome.get("fired"):
             fired.append(kind)
+    return fired, detail
+
+
+def _evaluate_symbol(
+    point: dict, surfaces: dict[str, Path], tails: dict[str, str], detect: dict
+) -> SymbolResult:
+    """Run the firing rule for one symbol across its class's surfaces.
+
+    The searched disc is the label's positional confidence plus the class's feature
+    radius: a point-sized disc on a 40 m-wide feature would miss the feature's own
+    edges even with a perfect label (spatial-validation §2).
+    """
+    tolerance = float(point["positional_confidence_m"])
+    disc_m = tolerance + float(detect["feature_radius_m"])
+    fired, detail = _apply_rule(point["x"], point["y"], disc_m, surfaces, tails, detect)
     return SymbolResult(
         site_id=point["site_id"],
         name=point["name"],
         tolerance_m=tolerance,
+        disc_m=disc_m,
         review_status=point["review_status"],
         hit=bool(fired),
         fired_surfaces=tuple(fired),
         detail=detail,
     )
+
+
+def _null_draws(
+    rng: np.random.Generator,
+    bounds: tuple[float, float, float, float],
+    exclude: list[tuple[float, float]],
+    disc_radii: list[float],
+    surfaces: dict[str, Path],
+    tails: dict[str, str],
+    detect: dict,
+    *,
+    per_cluster: int,
+) -> tuple[int, int]:
+    """Background fire rate for one cluster: (draws evaluated, draws that fired).
+
+    Nulls follow the spatial-validation design: the unit is the whole disc, radii are
+    sampled from the symbols' own disc radii so the null matches what the symbols were
+    tested with, draws stay >=150 m from every control site, and accepted draws are
+    thinned to at least one disc diameter apart so overlap does not understate null
+    variance.
+    """
+    xmin, ymin, xmax, ymax = bounds
+    margin = min(100.0, (xmax - xmin) / 4, (ymax - ymin) / 4)
+    accepted: list[tuple[float, float, float]] = []
+    fired_n = 0
+    attempts = 0
+    while len(accepted) < per_cluster and attempts < per_cluster * 60:
+        attempts += 1
+        x = rng.uniform(xmin + margin, xmax - margin)
+        y = rng.uniform(ymin + margin, ymax - margin)
+        radius = float(rng.choice(disc_radii))
+        if any(np.hypot(x - ex, y - ey) < 150.0 for ex, ey in exclude):
+            continue
+        if any(np.hypot(x - ax, y - ay) < (radius + ar) for ax, ay, ar in accepted):
+            continue
+        fired, detail = _apply_rule(x, y, radius, surfaces, tails, detect)
+        if not any(d.get("valid") for d in detail.values()):
+            continue
+        accepted.append((x, y, radius))
+        fired_n += bool(fired)
+    return len(accepted), fired_n
 
 
 def validate_histmap(
@@ -247,13 +307,17 @@ def validate_histmap(
     *,
     ept_project: str,
     aoi_slug: str | None = None,
+    null_per_cluster: int = 12,
+    seed: int = 42,
     config=None,
 ) -> dict[str, Any]:
     """Run the vanished-feature test for one class on one sheet.
 
     Returns the full report dict; also writes a `validate.histmap` derivation row so
     the recall number is reproducible. Cuts `control_detection` AOIs around the
-    symbol clusters unless an existing AOI is named.
+    symbol clusters unless an existing AOI is named. Alongside recall it always runs
+    the negative control — matched-radius null discs drawn from the same clusters — a
+    recall without a background fire rate is a pass with no error bar.
     """
     from midden import __version__
     from midden.aoi import SeedSpec, get_aoi, to_multipolygon, upsert_aoi
@@ -266,6 +330,15 @@ def validate_histmap(
     tails = dict(detect["surfaces"])
     points = _load_points(conn, sheet_id, class_id)
     scan_id = sheet_id.split("_")[-3] if sheet_id.count("_") >= 3 else sheet_id
+    rng = np.random.default_rng(seed)
+    # Null discs must avoid every control site of every class, not just this one's.
+    all_sites = [
+        (r["x"], r["y"])
+        for r in fetch_all(
+            conn, "SELECT ST_X(geom) x, ST_Y(geom) y FROM ref.control_sites"
+        )
+    ]
+    null_total = null_fired = 0
 
     if aoi_slug:
         clusters = [(get_aoi(conn, aoi_slug).geom, points)]
@@ -324,6 +397,8 @@ def validate_histmap(
                         site_id=p["site_id"],
                         name=p["name"],
                         tolerance_m=float(p["positional_confidence_m"]),
+                        disc_m=float(p["positional_confidence_m"])
+                        + float(detect["feature_radius_m"]),
                         review_status=p["review_status"],
                         hit=False,
                         fired_surfaces=(),
@@ -332,15 +407,38 @@ def validate_histmap(
                     for p in members
                 )
                 continue
-            results.extend(
+            cluster_results = [
                 _evaluate_symbol(p, surfaces, tails, detect) for p in members
-            )
+            ]
+            results.extend(cluster_results)
+            disc_radii = [
+                r.disc_m
+                for r in cluster_results
+                if any(d.get("valid") for d in r.detail.values())
+            ]
+            if disc_radii and null_per_cluster > 0:
+                with rasterio.open(next(iter(surfaces.values()))) as src0:
+                    bounds = tuple(src0.bounds)
+                drawn, fired_n = _null_draws(
+                    rng,
+                    bounds,
+                    all_sites,
+                    disc_radii,
+                    surfaces,
+                    tails,
+                    detect,
+                    per_cluster=null_per_cluster,
+                )
+                null_total += drawn
+                null_fired += fired_n
 
         evaluable = [
             r for r in results if any(d.get("valid") for d in r.detail.values())
         ]
         hits = [r for r in evaluable if r.hit]
         recall = len(hits) / len(evaluable) if evaluable else float("nan")
+        # Empirical rate as (r+1)/(k+1): k draws can bound the rate, never prove zero.
+        null_rate = (null_fired + 1) / (null_total + 1) if null_total else None
         conn.execute(
             "UPDATE derived.derivation SET params = params || %s::jsonb WHERE id = %s",
             (
@@ -351,6 +449,10 @@ def validate_histmap(
                         "evaluable": len(evaluable),
                         "misses": [r.name for r in evaluable if not r.hit],
                         "aois": aois_used,
+                        "null_draws": null_total,
+                        "null_fired": null_fired,
+                        "null_rate_laplace": round(null_rate, 3) if null_rate else None,
+                        "null_seed": seed,
                     }
                 ),
                 derivation_id,
@@ -368,4 +470,7 @@ def validate_histmap(
         "recall": recall,
         "unreviewed": sum(1 for r in results if r.review_status == "unreviewed"),
         "detectability": cls.detectability,
+        "null_draws": null_total,
+        "null_fired": null_fired,
+        "null_rate": null_rate,
     }
