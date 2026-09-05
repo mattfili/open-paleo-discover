@@ -780,8 +780,12 @@ Suggested next action, in order:
    Discs are now tolerance + per-class `feature_radius_m` (new registry field), per
    spatial-validation §2. Reruns on Burns 1953: iron_works 4/4 recall vs 73%
    background; family_cemetery 8/8 vs 96%; civic_structure (post-split, 2026-09-05)
-   2/2 vs 92% — all self-reported weakly informative, consistent with the A2
-   falsification. Zero can never be claimed: (r+1)/(k+1).
+   2/2 vs 92% on Burns and 14/14 vs 100% on White Bluff (uninformative, self-graded
+   red — at 100 m discs the rule fires literally everywhere); road_trace (Travis
+   Ford) 1/1 vs 92%. All consistent with the A2 falsification: amplitude alone
+   cannot beat background texture. White Bluff detection now exists for 14 of 21
+   civic points + the ford; 7 points sit in EPT B1 coverage seams, reported as data
+   gaps, never misses. Zero can never be claimed: (r+1)/(k+1).
 2. **Review the 37 unreviewed labels — human step, surface is ready.** 37 review
    cards under `exports/review/<sheet>/` (quad crop + detection renders where they
    exist, red ring = recorded tolerance). Review is human by the `histmap-digitize`

@@ -148,7 +148,14 @@ def _disc_masks(
     row, col = src.index(x, y)
     half = int(np.ceil(r_bg / src.res[0]))
     window = rasterio.windows.Window(col - half, row - half, 2 * half + 1, 2 * half + 1)
-    clipped = window.intersection(rasterio.windows.Window(0, 0, src.width, src.height))
+    try:
+        clipped = window.intersection(
+            rasterio.windows.Window(0, 0, src.width, src.height)
+        )
+    except rasterio.windows.WindowError:
+        # rasterio RAISES on an empty intersection rather than returning a
+        # zero-size window — happens on sliver rasters at an EPT coverage edge.
+        return None
     if clipped.width <= 0 or clipped.height <= 0:
         return None
     values = src.read(1, window=clipped, masked=True)
