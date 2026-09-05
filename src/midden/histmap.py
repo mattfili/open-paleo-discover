@@ -384,20 +384,29 @@ def load_sites(
         params={"sheet_id": sheet_id, "n_features": len(features), "method": method},
         inputs=[str(geojson_path)],
     ) as derivation_id:
-        reviewed = fetch_all(
-            conn,
-            "SELECT count(*) AS n FROM ref.control_sites "
-            "WHERE source_sheet = %s AND review_status <> 'unreviewed'",
-            (sheet_id,),
-        )[0]["n"]
+        # Reviewed rows survive a re-load; re-inserting their features would
+        # duplicate them as fresh unreviewed rows. Skip by (name, class) and say so.
+        reviewed_keys = {
+            (r["name"], r["class_id"])
+            for r in fetch_all(
+                conn,
+                "SELECT name, class_id FROM ref.control_sites "
+                "WHERE source_sheet = %s AND review_status <> 'unreviewed'",
+                (sheet_id,),
+            )
+        }
         conn.execute(
             "DELETE FROM ref.control_sites "
             "WHERE source_sheet = %s AND review_status = 'unreviewed'",
             (sheet_id,),
         )
+        skipped = 0
         for feature in features:
             x, y = feature["geometry"]["coordinates"]
             props = feature["properties"]
+            if (props["name"], props["class_id"]) in reviewed_keys:
+                skipped += 1
+                continue
             conn.execute(
                 """
                 INSERT INTO ref.control_sites
@@ -423,7 +432,11 @@ def load_sites(
                     derivation_id,
                 ),
             )
-    if reviewed:
-        # Not silent: reviewed rows for this sheet were kept, and the caller should know.
-        print(f"note: {reviewed} reviewed point(s) for {sheet_id} left untouched")
-    return len(features)
+    if reviewed_keys:
+        # Not silent: reviewed rows for this sheet were kept, and features matching
+        # them were not re-inserted.
+        print(
+            f"note: {len(reviewed_keys)} reviewed point(s) for {sheet_id} left "
+            f"untouched; {skipped} matching feature(s) skipped rather than duplicated"
+        )
+    return len(features) - skipped

@@ -786,7 +786,21 @@ Suggested next action, in order:
    cannot beat background texture. White Bluff detection now exists for 14 of 21
    civic points + the ford; 7 points sit in EPT B1 coverage seams, reported as data
    gaps, never misses. Zero can never be claimed: (r+1)/(k+1).
-2. **Review the 37 unreviewed labels — human step, surface is ready.** 37 review
+2. ~~**Review the 37 labels**~~ — **done by the owner 2026-09-05** via the review-bench
+   artifact (decisions read back from its shared store; `histmap.review` derivation).
+   24 confirmed / 7 rejected / 6 left unreviewed. Notable: Jackson Cem rejected with
+   "a cemetery does appear but outside of the ring" — real feature, mislocated label,
+   re-digitization candidate; Travis Ford and 5 White Bluff schools rejected; both
+   Burns churches and all pit/works points confirmed. `review_note` column added so
+   notes travel with points; `load-sites` now skips reviewed features on re-load
+   rather than duplicating them. Post-review reruns (rejected excluded):
+   family_cemetery 6/6 vs 98% background, WB civic 3/3 vs 100% — verdicts unchanged,
+   the rule stays the falsified part. Wart discovered: validation cluster slugs are
+   numbered from the point set, so label edits renumber clusters and orphan cached
+   terrain (fewer evaluable symbols until re-derived); fix is content-addressed
+   cluster slugs. Original framing kept below.
+
+   **Review the 37 unreviewed labels — human step, surface is ready.** 37 review
    cards under `exports/review/<sheet>/` (quad crop + detection renders where they
    exist, red ring = recorded tolerance). Review is human by the `histmap-digitize`
    rule; the machine only proposes. First card already teaches: Jackson Cem's ring

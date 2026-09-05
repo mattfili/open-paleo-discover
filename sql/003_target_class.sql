@@ -291,3 +291,6 @@ ON CONFLICT (class_id) DO UPDATE SET
     label_source       = EXCLUDED.label_source,
     params             = EXCLUDED.params,
     notes              = EXCLUDED.notes;
+
+-- Review notes travel with the point (added 2026-09-05 with the first human review).
+ALTER TABLE ref.control_sites ADD COLUMN IF NOT EXISTS review_note text;
