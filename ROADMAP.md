@@ -231,7 +231,20 @@ Two controls. Every validation method in **#4** and in **B** is statistically in
 This is the binding constraint on the whole validation programme, and it is fixable from
 public data without permission or fieldwork.
 
-#### A1. Historic topographic quads as a label source
+#### A1. Historic topographic quads as a label source — machinery built 2026-09-04
+
+`midden histmap search/fetch/list/tiles/load-sites` (`src/midden/histmap.py`). Not an
+intake driver after all: intake is vector-only end to end (GeoPackage cache, `to_postgis`
+load), so the raster path mirrors terrain's fetch → warp → COG → catalogue → derivation
+instead — the spec's `topoview` (§5) and `http_file` (§6) driver framings are both
+retired by this. Sheets come from the TNM Access API (`urls.GeoTIFF` on each product is
+the HTMC scan; GeoPDF-only editions are skipped), warp NAD27 → EPSG:26916 as RGB
+nearest-neighbour, and land in `ref.histmap_sheet` with NMAS-derived
+`positional_confidence_m` (12.2 m at 1:24,000, 31.8 m at 1:62,500, + 15 m georef margin —
+all named parameters in the fetch derivation). Three sheets catalogued, each verified to
+contain its AOI: Burns 1936 1:24,000 (montgomery-bell), White Bluff 1930 1:62,500
+(harpeth-narrows), Ridgetop 1931 1:62,500 (beaman-park, Highland Rim). Digitization next;
+points land `review_status='unreviewed'` and re-loads replace only unreviewed rows.
 
 Historic topo quads are listed under Not built as an `http_file` driver target, valued for
 showing pre-impoundment floodplain and vanished roads. Under the widened scope they are
