@@ -20,9 +20,16 @@ The target is now the archaeological and historical landscape record. Middens st
 class — buried, proxy-only, high burial risk. Several other classes are directly
 LiDAR-visible, have public label sources, and are what the detection grid was built for.
 
-### Target class registry — not built
+### Target class registry — built 2026-09-04
 
-`ref.target_class`. Every class declares its own detectability and parameters, because they
+`sql/003_target_class.sql` creates and seeds `ref.target_class` (all 15 classes below, with
+per-class detection params as JSONB), plus `ref.control_sites` and `ref.histmap_sheet` for
+A1. `src/midden/registry.py` is the accessor; `midden classes` lists the registry.
+`resolve_class_params` raises rather than falling back to a global default when a class row
+is missing a known detection parameter. The `--class` requirement on score/detect/render
+(the rest of the acceptance) is in flight.
+
+Every class declares its own detectability and parameters, because they
 are not shared: a 10 m charcoal hearth and a 100 m earthwork cannot be found with the same
 openness search radius, and a global value silently serves neither.
 
@@ -331,7 +338,7 @@ record the frame used per run in the provenance ledger, and have B1's null draw 
 
 | Item | Where specified | Note |
 |---|---|---|
-| `ref.target_class` registry | Scope, above | Everything else here reads from it. Nothing takes `--class` yet. |
+| ~~`ref.target_class` registry~~ | Scope, above | **Built 2026-09-04** (`sql/003_target_class.sql`, `registry.py`). `--class` threading in flight. |
 | `priest-drawdown` AOI | §7, the worked example | Derived, not fetched: NHD waterbody minus a pool-elevation contour. **Carries the NAVD88/NGVD29 datum trap** — an unconfirmed datum makes the figure unusable. |
 | Historical topo quads | §6 | `http_file` driver target. **Promoted: this is the label source — see A1.** Also changes the interpretation of every drawdown AOI: pre-impoundment floodplain, fords, mills, vanished roads. |
 | 1930s–50s aerial photography, GLO plats | §6 | Availability varies by county. Secondary label sources behind A1. |
@@ -595,6 +602,10 @@ Each of these was learned the expensive way. They are in the code as comments to
   polygon — `mupolygonkey` is.
 - **Ibis has no cross-backend joins.** DuckDB is the single connection; `ref.*` and
   `derived.*` are attached with `read_postgres`.
+- **`postgis/postgis:17-3.5` publishes no arm64 manifest.** On Apple Silicon the compose
+  build fails with "no match for platform in manifest" until `platform: linux/amd64` is
+  pinned on the service; OrbStack then runs it under Rosetta, which is fine for a local
+  POC. Pinned in `compose.yaml` 2026-09-04.
 
 ---
 

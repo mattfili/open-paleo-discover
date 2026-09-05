@@ -30,6 +30,7 @@ from midden.db import (
 from midden.intake.drivers import registered_drivers
 from midden.intake.runner import run_source
 from midden.intake.schema import load_all_sources
+from midden.registry import list_classes
 
 app = typer.Typer(
     help="Archaeological site-predictive modelling for Middle Tennessee.",
@@ -37,13 +38,17 @@ app = typer.Typer(
     add_completion=False,
 )
 
-db_app = typer.Typer(help="Schema management and database inspection.", no_args_is_help=True)
+db_app = typer.Typer(
+    help="Schema management and database inspection.", no_args_is_help=True
+)
 app.add_typer(db_app, name="db")
 
 aoi_app = typer.Typer(help="Areas of interest: seed and inspect.", no_args_is_help=True)
 app.add_typer(aoi_app, name="aoi")
 
-intake_app = typer.Typer(help="Fetch, transform, and load sources.", no_args_is_help=True)
+intake_app = typer.Typer(
+    help="Fetch, transform, and load sources.", no_args_is_help=True
+)
 app.add_typer(intake_app, name="intake")
 
 app.add_typer(terrain_app, name="terrain")
@@ -115,8 +120,40 @@ def db_check() -> None:
             fg=typer.colors.RED,
         )
         raise typer.Exit(code=1)
-    typer.secho(f"\nOK: every geometry column is {PROJECT_CRS} or an explicit *_wgs84 export.",
-                fg=typer.colors.GREEN)
+    typer.secho(
+        f"\nOK: every geometry column is {PROJECT_CRS} or an explicit *_wgs84 export.",
+        fg=typer.colors.GREEN,
+    )
+
+
+@app.command("classes")
+def classes_list() -> None:
+    """List the target-class registry: detectability, grid, and parameters per class.
+
+    Every scoring, detection, validation, and render operation takes one of these
+    class_ids; this is where to look them up.
+    """
+    with connect() as conn:
+        registry = list_classes(conn)
+    if not registry:
+        typer.secho(
+            "ref.target_class is empty. Run: midden db init", fg=typer.colors.YELLOW
+        )
+        raise typer.Exit(code=1)
+    typer.echo(
+        f"{'class_id':<22}{'period':<12}{'grid':<11}{'detect':<10}{'burial':<8}morphology"
+    )
+    typer.echo("-" * 110)
+    for cls in registry:
+        burial = "yes" if cls.burial_sensitivity else "no"
+        typer.echo(
+            f"{cls.class_id:<22}{cls.period:<12}{cls.grid:<11}"
+            f"{cls.detectability:<10}{burial:<8}{cls.morphology}"
+        )
+    typer.echo(
+        "\nDetectability is per class, never global: a proxy result is not a detection, "
+        "and an invisible class's absence is not evidence."
+    )
 
 
 @aoi_app.command("seed")
@@ -156,19 +193,73 @@ def aoi_show(slug: str) -> None:
     with connect() as conn:
         a = get_aoi(conn, slug)
     xmin, ymin, xmax, ymax = a.bounds
-    typer.echo(f"slug       {a.slug}\nname       {a.name}\nkind/role  {a.kind} / {a.role}")
+    typer.echo(
+        f"slug       {a.slug}\nname       {a.name}\nkind/role  {a.kind} / {a.role}"
+    )
     typer.echo(f"area       {a.area_km2:.4f} km2")
-    typer.echo(f"extent     {xmin:.0f} {ymin:.0f} {xmax:.0f} {ymax:.0f}  ({PROJECT_CRS})")
+    typer.echo(
+        f"extent     {xmin:.0f} {ymin:.0f} {xmax:.0f} {ymax:.0f}  ({PROJECT_CRS})"
+    )
     typer.echo(f"span       {xmax - xmin:.0f} x {ymax - ymin:.0f} m")
     typer.echo(f"source     {a.source}")
 
 
+@aoi_app.command("create")
+def aoi_create(
+    slug: Annotated[str, typer.Argument(help="Slug for the new AOI.")],
+    wkt: Annotated[
+        str, typer.Option("--wkt", help=f"Polygon/MultiPolygon WKT in {PROJECT_CRS}.")
+    ],
+    name: Annotated[
+        str | None, typer.Option(help="Display name; defaults to the slug.")
+    ] = None,
+    role: Annotated[
+        str,
+        typer.Option(
+            help="prospect | control_positive | control_detection | shakeout."
+        ),
+    ] = "prospect",
+) -> None:
+    """Create or update an AOI from WKT, for hand-cut extents like validation windows.
+
+    Seeded AOIs come from the boundary services; this is the escape hatch for AOIs that
+    have no authoritative boundary, e.g. a small window around digitized histmap symbols.
+    """
+    import shapely
+
+    from midden.aoi import SeedSpec, to_multipolygon, upsert_aoi
+
+    geometry = shapely.from_wkt(wkt)
+    multipolygon, repaired = to_multipolygon(geometry, slug=slug)
+    spec = SeedSpec(
+        slug=slug,
+        name=name or slug,
+        county="",
+        kind="custom",
+        role=role,
+        layer="manual-wkt",
+        where="",
+    )
+    with connect() as conn:
+        action = upsert_aoi(conn, spec, multipolygon)
+    note = "  (geometry repaired: input polygon was invalid)" if repaired else ""
+    typer.echo(f"{action}  {slug}{note}")
+
+
 @intake_app.command("run")
 def intake_run(
-    source: Annotated[str | None, typer.Argument(help="Source name, or omit with --all.")] = None,
-    aoi: Annotated[str | None, typer.Option("--aoi", help="AOI slug to scope the fetch.")] = None,
-    all_sources: Annotated[bool, typer.Option("--all", help="Run every source.")] = False,
-    force: Annotated[bool, typer.Option("--force", help="Re-fetch even if cached.")] = False,
+    source: Annotated[
+        str | None, typer.Argument(help="Source name, or omit with --all.")
+    ] = None,
+    aoi: Annotated[
+        str | None, typer.Option("--aoi", help="AOI slug to scope the fetch.")
+    ] = None,
+    all_sources: Annotated[
+        bool, typer.Option("--all", help="Run every source.")
+    ] = False,
+    force: Annotated[
+        bool, typer.Option("--force", help="Re-fetch even if cached.")
+    ] = False,
 ) -> None:
     """Run a source's intake for an AOI."""
     config = settings()
@@ -227,7 +318,9 @@ def intake_status() -> None:
         last = recent.get(f"intake.{name}")
         when = last["started_at"].strftime("%Y-%m-%d %H:%M:%S") if last else "-"
         status = last["status"] if last else "never run"
-        typer.echo(f"{name:<20}{spec.fetch.driver:<14}{spec.load.target:<24}{when:<22}{status}")
+        typer.echo(
+            f"{name:<20}{spec.fetch.driver:<14}{spec.load.target:<24}{when:<22}{status}"
+        )
     typer.echo(f"\nregistered drivers: {', '.join(registered_drivers())}")
 
 
@@ -249,8 +342,10 @@ def doctor(
     try:
         with connect(config) as conn:
             version = conn.execute("SELECT postgis_version()").fetchone()
-        typer.secho(f"OK   postgres reachable, postgis {version['postgis_version']}",
-                    fg=typer.colors.GREEN)
+        typer.secho(
+            f"OK   postgres reachable, postgis {version['postgis_version']}",
+            fg=typer.colors.GREEN,
+        )
     except Exception as exc:  # noqa: BLE001 - reported, not raised, so doctor lists everything
         failures.append(f"postgres: {exc}")
         typer.secho(f"FAIL postgres: {exc}", fg=typer.colors.RED)
@@ -258,9 +353,13 @@ def doctor(
     # PDAL is called as a subprocess, never through the Python bindings (CLAUDE.md).
     pdal = shutil.which("pdal")
     if pdal:
-        out = subprocess.run([pdal, "--version"], capture_output=True, text=True, check=False)
-        typer.secho(f"OK   pdal CLI: {out.stdout.strip() or out.stderr.strip()}",
-                    fg=typer.colors.GREEN)
+        out = subprocess.run(
+            [pdal, "--version"], capture_output=True, text=True, check=False
+        )
+        typer.secho(
+            f"OK   pdal CLI: {out.stdout.strip() or out.stderr.strip()}",
+            fg=typer.colors.GREEN,
+        )
     else:
         failures.append("pdal not on PATH (brew install pdal)")
         typer.secho("FAIL pdal not on PATH — brew install pdal", fg=typer.colors.RED)
