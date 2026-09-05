@@ -145,6 +145,14 @@ def terrain_list(
 def terrain_preview(
     aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
     kind: Annotated[str, typer.Option("--kind", help="Raster kind.")] = "openness_pos",
+    variant: Annotated[
+        str | None,
+        typer.Option(
+            "--variant",
+            help="Asset variant (class id, or class-digest for a "
+            "sweep). Required when several are catalogued.",
+        ),
+    ] = None,
     out: Annotated[Path | None, typer.Option("--out", help="PNG path.")] = None,
     max_px: Annotated[
         int, typer.Option("--max-px", help="Cap on the long edge.")
@@ -159,9 +167,29 @@ def terrain_preview(
     if not rows:
         typer.secho(f"No {kind!r} raster for {aoi}.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
+    if variant is not None:
+        rows = [r for r in rows if (r["variant"] or "") == variant]
+    variants = sorted({r["variant"] or "" for r in rows})
+    if len(variants) > 1:
+        # Rendering an arbitrary variant would show one class's parameters under an
+        # unlabelled preview; make the choice explicit instead.
+        typer.secho(
+            f"{aoi}/{kind} has {len(variants)} variants: "
+            f"{[v or '(unqualified)' for v in variants]}. Pass --variant.",
+            fg=typer.colors.RED,
+        )
+        raise typer.Exit(code=1)
+    if not rows:
+        typer.secho(
+            f"No {kind!r} raster with variant {variant!r} for {aoi}.",
+            fg=typer.colors.RED,
+        )
+        raise typer.Exit(code=1)
 
+    chosen = rows[0]["variant"] or ""
     source = Path(rows[0]["path"])
-    dest = out or settings().repo_root / "exports" / f"{aoi}_{kind}.png"
+    suffix = f"_{chosen}" if chosen else ""
+    dest = out or settings().repo_root / "exports" / f"{aoi}_{kind}{suffix}.png"
     # Openness is meaningful in absolute degrees around 90, so it gets a fixed window
     # rather than a per-image percentile stretch that would make a sweep incomparable.
     stretch = (
@@ -171,7 +199,8 @@ def terrain_preview(
     )
     to_png(source, dest, stretch=stretch, max_px=max_px)
     typer.secho(
-        f"wrote {dest}  (stretch {stretch.low:.2f}..{stretch.high:.2f})",
+        f"wrote {dest}  (variant {chosen or '(unqualified)'}, "
+        f"stretch {stretch.low:.2f}..{stretch.high:.2f})",
         fg=typer.colors.GREEN,
     )
 

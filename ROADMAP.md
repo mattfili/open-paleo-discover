@@ -733,9 +733,17 @@ acceptance and every negative result is recorded in its own section above. Headl
   pipeline reproduced the recorded HAND modes (0.38/3.38/10.62) and the weight-set
   falsification (76.8th pctile vs 74.6 recorded — SSURGO/NHD drift, same verdict).
 
-Nothing is half-built. In-flight residue, deliberately left: the score `variant`
-convention means old unqualified assets are simply invisible to scenes (none exist in
-the fresh DB); `terrain preview` still picks the first variant of a kind.
+Nothing is half-built. An invariant-review pass over the merged diff found five edge
+violations, all fixed same-day: the MCP score mirror shipped without a derivation row
+(the `derivation_id=None` regression, again, on the agent-facing path); proxy-class
+validation printed HITs unqualified (now banner-flagged, and invisible classes refuse
+detection outright); `load-sites` accepted lon/lat degrees as UTM metres (now rejected,
+plus a sheet-footprint containment check); class-labelled scenes could fall back to
+unqualified openness/slrm renders (class-qualified kinds no longer substitute); and
+`terrain preview` picked an arbitrary variant (now requires `--variant` when several
+exist). Remaining process gap from that review: the firing rule's openness-tail
+semantics are covered by neither the evals nor a test — G1 (run the evals) should add
+them as cases.
 
 Suggested next action, in order:
 

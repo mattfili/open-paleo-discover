@@ -56,6 +56,14 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose â
         f"(derivation {report['derivation_id']})",
         bold=True,
     )
+    if report["detectability"] == "proxy":
+        typer.secho(
+            f"PROXY CLASS: {class_id} has no direct LiDAR signature. A HIT below is "
+            "surrogate-landform signal (e.g. a cave entrance for saltpeter_works), "
+            "never a detection of the class itself.",
+            fg=typer.colors.YELLOW,
+            bold=True,
+        )
     typer.echo(f"{'symbol':<28}{'tol_m':>6}  {'hit':<5}{'fired on':<28}detail")
     typer.echo("-" * 100)
     for r in report["results"]:

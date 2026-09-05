@@ -427,8 +427,34 @@ def midden_score_overlay(
     destination = settings().aoi_cog_dir(aoi) / f"score{suffix}_10m_{target_class}.tif"
     write_score_raster(result.frame, Path(template), destination)
     if not regional:
+        from midden import __version__
+        from midden.derivation import open_derivation
+
+        # Same derivation the CLI opens: a catalogued surface with no provenance row
+        # is untraceable, which is the derivation_id=None regression this mirrors.
         with connect() as conn:
-            publish_score(conn, get_aoi(conn, aoi), destination, class_id=target_class)
+            area = get_aoi(conn, aoi)
+            with open_derivation(
+                conn,
+                operation="score.overlay",
+                tool="midden.features.score",
+                tool_version=__version__,
+                aoi_id=area.id,
+                params={
+                    "class_id": target_class,
+                    "weights": str(weights_path),
+                    "weight_set": result.weight_set,
+                    "regional": regional,
+                },
+                inputs=[str(stack.path)],
+            ) as derivation_id:
+                publish_score(
+                    conn,
+                    area,
+                    destination,
+                    class_id=target_class,
+                    derivation_id=derivation_id,
+                )
 
     scores = result.frame.score
     return {

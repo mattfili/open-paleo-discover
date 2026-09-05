@@ -367,4 +367,5 @@ def validate_histmap(
         "hits": len(hits),
         "recall": recall,
         "unreviewed": sum(1 for r in results if r.review_status == "unreviewed"),
+        "detectability": cls.detectability,
     }

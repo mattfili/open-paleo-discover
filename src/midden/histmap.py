@@ -346,6 +346,36 @@ def load_sites(
             f"Unknown class_id(s) {sorted(unknown)}; see `midden classes`."
         )
 
+    # CRS trap: RFC 7946 GeoJSON is WGS84 by definition, and most tools export lon/lat.
+    # Degrees stamped as UTM metres would poison ref.control_sites silently — points
+    # would sit near the false origin and later read as EPT "data gaps", not errors.
+    degreeish = [
+        f["properties"]["name"]
+        for f in features
+        if abs(f["geometry"]["coordinates"][0]) <= 360
+        and abs(f["geometry"]["coordinates"][1]) <= 90
+    ]
+    if degreeish:
+        raise ValueError(
+            f"{geojson_path}: coordinates for {degreeish} look like lon/lat degrees. "
+            f"Sites files must be EPSG:26916 metres (the tiles' index.json CRS)."
+        )
+    outside = [
+        f["properties"]["name"]
+        for f in features
+        if not fetch_all(
+            conn,
+            "SELECT ST_Contains(footprint, ST_SetSRID(ST_MakePoint(%s, %s), 26916)) AS ok "
+            "FROM ref.histmap_sheet WHERE sheet_id = %s",
+            (*f["geometry"]["coordinates"], sheet_id),
+        )[0]["ok"]
+    ]
+    if outside:
+        raise ValueError(
+            f"{geojson_path}: {outside} fall outside sheet {sheet_id}'s footprint — "
+            f"wrong sheet, wrong CRS, or a bad tile transform."
+        )
+
     with open_derivation(
         conn,
         operation="histmap.digitize",

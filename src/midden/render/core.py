@@ -168,17 +168,29 @@ def _vector(
     )
 
 
+#: Kinds whose content depends on per-class parameters (openness radius, SLRM radius,
+#: weight set). These are never substituted across classes: a global-radius openness
+#: render shown under a class's label would present the wrong parameters as that
+#: class's, which is what per-class parameters exist to prevent.
+CLASS_QUALIFIED_KINDS = frozenset({"openness_pos", "openness_neg", "slrm", "score"})
+
+
 def _select_assets(rows: list[dict], class_id: str | None) -> dict[str, Any]:
     """Pick one catalog row per kind, honouring class qualification. Pure.
 
-    A class's own variant wins over the unqualified ('') asset; assets carrying another
-    class's variant (or a sweep digest) are skipped. A score surface is never selected
-    without a class — an unqualified score render is forbidden (CLAUDE.md), so when no
-    class is given the score kind silently stays out of the scene rather than showing a
-    surface whose hypothesis the reader cannot know.
+    A class's own variant wins over the unqualified ('') asset, and class-qualified
+    kinds NEVER fall back to an unqualified asset: with a class given, a legacy
+    global-parameter openness/slrm/score render stays out of the scene rather than
+    masquerading under the class's label. Assets carrying another class's variant (or
+    a sweep digest) are skipped. A score surface is never selected without a class —
+    an unqualified score render is forbidden (CLAUDE.md).
     """
     unqualified = {
-        r["kind"]: r for r in rows if not (r["variant"] or "") and r["kind"] != "score"
+        r["kind"]: r
+        for r in rows
+        if not (r["variant"] or "")
+        and r["kind"] != "score"
+        and not (class_id and r["kind"] in CLASS_QUALIFIED_KINDS)
     }
     class_rows = (
         {r["kind"]: r for r in rows if (r["variant"] or "") == class_id}

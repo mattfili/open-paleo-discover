@@ -179,6 +179,11 @@ def run_detection_grid(
             f"{cls.detectability!r}; running a detection chain for it would report "
             "absence as evidence. Detection runs are for detection-grid classes."
         )
+    if cls.detectability == "invisible":
+        raise ValueError(
+            f"Class {class_id!r} is declared invisible: no LiDAR signature exists, "
+            "so a detection run can only report absence as evidence."
+        )
     openness_params = resolve_class_params(
         cls, "terrain.openness", (overrides or {}).get("openness")
     )
