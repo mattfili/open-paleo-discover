@@ -60,6 +60,21 @@ Do not reimplement what is in `scripts/` inside those skills. `wbt_helpers.py`,
 `hydro_chain.py`, `run_pipeline.py`, `dem_from_ept.py`, `inspect.py`, and `control_check.py`
 are meant to be imported or invoked, not paraphrased.
 
+Eight more, added 2026-09-04. The QA four are checklists that run *after* work and gate
+whether it counts as done; the domain four carry the citable method literature that G2
+requires — each flags its unsourced claims rather than asserting them.
+
+| Skill | Load it when |
+|---|---|
+| `raster-qa` | Immediately after any raster is produced — terrain run, DEM, warp, score. Runs `check_raster.py`; a raster that fails is not catalogued or interpreted. |
+| `render-qa` | After any render or QGIS styling, before the output is explained. Samples known cells; the map must agree with its own caption. |
+| `derivation-check` | After any operation that writes an artifact, before reporting it done. Verifies the provenance row is complete and closed. |
+| `histmap-digitize` | Digitizing, reviewing, or re-loading a historic quad (A1). Symbol→class mapping and the provenance rules. |
+| `spatial-validation` | Writing or reviewing B1–B5, any enrichment number, any claim the model "works". Spatial nulls, positional error, blocked holdout. |
+| `settlement-ecology` | Proposing, reviewing, or explaining any C-series feature or weight-set rationale. Catchment, cost distance, IFD, landform association. |
+| `holocene-geomorphology` | Burial-risk values, terrace chronology, which surface was occupiable when, karst (C2), chert (C4). |
+| `survey-design` | F1/F2, A2 recall and tolerance radii, effort allocation, anything person-days. |
+
 ---
 
 ## Invariants
