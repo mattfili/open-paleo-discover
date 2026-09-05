@@ -26,8 +26,21 @@ LiDAR-visible, have public label sources, and are what the detection grid was bu
 per-class detection params as JSONB), plus `ref.control_sites` and `ref.histmap_sheet` for
 A1. `src/midden/registry.py` is the accessor; `midden classes` lists the registry.
 `resolve_class_params` raises rather than falling back to a global default when a class row
-is missing a known detection parameter. The `--class` requirement on score/detect/render
-(the rest of the acceptance) is in flight.
+is missing a known detection parameter.
+
+**Scope acceptance met, and D with it (2026-09-04):** `midden score run/controls/weights`,
+`midden terrain run --grid detection`, and their MCP mirrors (`midden_score_overlay`,
+`midden_derive_terrain`, `midden_sweep`) all require a class; `midden render` and
+`midden_render_*` drop class-qualified layers (score included) from any scene without one,
+so no unqualified score surface is produced or rendered. Detection parameter *values* come
+only from the registry (`terrain/params.py` keeps the schema: names, units, why); sweeps
+record their class in the derivation and in every asset variant. Score surfaces are
+published as `score_10m_<class>.tif` with the class in `raster_asset.variant`, and score
+runs finally open a derivation row (they previously passed `derivation_id=None`).
+`weights/default.yml` is now `weights/open_habitation.yml` — weight sets are keyed by
+class. Known residue: `terrain preview` / `midden_preview_raster` still pick the first
+catalogued asset of a kind regardless of variant; ambiguity predates this change (sweeps
+created it) and is now more visible.
 
 Every class declares its own detectability and parameters, because they
 are not shared: a 10 m charcoal hearth and a 100 m earthwork cannot be found with the same
@@ -428,9 +441,14 @@ Two conditions.
    rivers of this size has not been found. That gap goes in the sources file rather than
    being papered over, and it stays recorded until it is closed.
 
-### D. Per-class detection parameters
+### D. Per-class detection parameters — done 2026-09-04
 
-`terrain.openness.search_radius_m` is currently a single global value. It cannot be.
+Built with the registry: values live in `ref.target_class.params`, detection runs take
+`--class`, `terrain/params.py` keeps only the parameter schema, and sweeps record their
+class. See the Scope section above for the full acceptance record. The original argument,
+kept for the reader:
+
+`terrain.openness.search_radius_m` was a single global value. It cannot be.
 
 A charcoal hearth is a ~10 m circular platform. A mound platform is 30–100 m. A mill race is
 a metre-wide linear cut. One radius serves none of them well — and the parameter that Known
@@ -531,11 +549,11 @@ novel for geospatial work.
 
 ## Priority
 
-1. **Scope** — `ref.target_class` and the registry. Everything below reads from it.
+1. ~~**Scope**~~ — done 2026-09-04. `ref.target_class` built; everything takes `--class`.
 2. **A1** — historic quads into `ref.control_sites`, manual, three sheets. Retires n=2.
 3. **A2** — the vanished-feature test. Validates or falsifies the detection chain against
    public ground truth, no permission and no fieldwork.
-4. **D** — per-class detection parameters. Prerequisite for A2 meaning anything.
+4. ~~**D**~~ — done 2026-09-04, with item 1.
 5. **Known broken #2** — hearth-scale AOI at Montgomery Bell, now as `charcoal_hearth` with
    its own radius rather than a global one.
 6. **B1 + B2** — permutation and ablation. Retires the pass/fail threshold, answers the

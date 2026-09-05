@@ -20,25 +20,44 @@ render_app = typer.Typer(
 )
 
 
-def _scene(aoi: str, kinds: str | None, visible: str | None):
+def _scene(aoi: str, kinds: str | None, visible: str | None, class_id: str | None):
     """Build a scene for an AOI, optionally restricting the layers."""
-    selected = tuple(k.strip() for k in kinds.split(",") if k.strip()) if kinds else DEFAULT_RASTERS
+    selected = (
+        tuple(k.strip() for k in kinds.split(",") if k.strip())
+        if kinds
+        else DEFAULT_RASTERS
+    )
     with connect() as conn:
-        return build_scene(conn, get_aoi(conn, aoi), kinds=selected, visible=visible)
+        return build_scene(
+            conn, get_aoi(conn, aoi), kinds=selected, visible=visible, class_id=class_id
+        )
 
 
 @render_app.command("qgis")
 def render_qgis(
     aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
-    out: Annotated[Path | None, typer.Option("--out", help="Destination .qgs path.")] = None,
-    kinds: Annotated[str | None, typer.Option("--kinds", help="Comma-separated raster kinds.")] = None,
+    class_id: Annotated[
+        str | None,
+        typer.Option(
+            "--class",
+            help="Target class whose surfaces to show. Without it, "
+            "class-qualified layers (score, detection renders) "
+            "stay out of the scene.",
+        ),
+    ] = None,
+    out: Annotated[
+        Path | None, typer.Option("--out", help="Destination .qgs path.")
+    ] = None,
+    kinds: Annotated[
+        str | None, typer.Option("--kinds", help="Comma-separated raster kinds.")
+    ] = None,
 ) -> None:
     """Emit a QGIS project with the AOI's layers pre-loaded and styled.
 
     QGIS is the interactive surface for this project (spec.md §8). The project file embeds
     absolute paths, which is why *.qgs is gitignored.
     """
-    scene = _scene(aoi, kinds, None)
+    scene = _scene(aoi, kinds, None, class_id)
     destination = out or settings().repo_root / "exports" / "qgis" / f"{aoi}.qgs"
     render_qgis_project(scene, destination)
     typer.secho(f"wrote {destination}", fg=typer.colors.GREEN)
@@ -49,13 +68,29 @@ def render_qgis(
 @render_app.command("map")
 def render_map(
     aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
-    out: Annotated[Path | None, typer.Option("--out", help="Destination .html path.")] = None,
-    kinds: Annotated[str | None, typer.Option("--kinds", help="Comma-separated raster kinds.")] = None,
-    visible: Annotated[str | None, typer.Option("--visible", help="Layer shown on open.")] = None,
-    max_px: Annotated[int, typer.Option("--max-px", help="Cap on each raster's long edge.")] = 1500,
+    class_id: Annotated[
+        str | None,
+        typer.Option(
+            "--class",
+            help="Target class whose surfaces to show. Without it, "
+            "class-qualified layers stay out of the scene.",
+        ),
+    ] = None,
+    out: Annotated[
+        Path | None, typer.Option("--out", help="Destination .html path.")
+    ] = None,
+    kinds: Annotated[
+        str | None, typer.Option("--kinds", help="Comma-separated raster kinds.")
+    ] = None,
+    visible: Annotated[
+        str | None, typer.Option("--visible", help="Layer shown on open.")
+    ] = None,
+    max_px: Annotated[
+        int, typer.Option("--max-px", help="Cap on each raster's long edge.")
+    ] = 1500,
 ) -> None:
     """Export a single self-contained HTML file: no server, no tiles, no external CSS."""
-    scene = _scene(aoi, kinds, visible)
+    scene = _scene(aoi, kinds, visible, class_id)
     destination = out or settings().repo_root / "exports" / f"{aoi}.html"
     render_artifact(scene, destination, max_px=max_px)
     size = destination.stat().st_size

@@ -26,7 +26,13 @@ import yaml
 
 from midden.features.normalize import normalize
 
-__all__ = ["ScoreResult", "WeightSet", "load_weights", "score_stack", "write_score_raster"]
+__all__ = [
+    "ScoreResult",
+    "WeightSet",
+    "load_weights",
+    "score_stack",
+    "write_score_raster",
+]
 
 #: Features that must never be scored, whatever a weight set says. `dist_to_road`
 #: correlates with the survey record rather than the archaeological one — it is the
@@ -47,7 +53,8 @@ class WeightSet(NamedTuple):
     def scored_features(self) -> dict[str, dict[str, Any]]:
         """Features with a non-zero weight. Zero-weighted entries document a decision."""
         return {
-            name: spec for name, spec in self.features.items()
+            name: spec
+            for name, spec in self.features.items()
             if float(spec.get("weight", 0.0)) > 0.0
         }
 
@@ -135,8 +142,14 @@ def write_score_raster(
     grid[np.asarray(rows), np.asarray(cols)] = frame[column].to_numpy(dtype="float32")
 
     profile.update(
-        driver="GTiff", dtype="float32", count=1, nodata=np.nan,
-        compress="DEFLATE", tiled=True, blockxsize=256, blockysize=256,
+        driver="GTiff",
+        dtype="float32",
+        count=1,
+        nodata=np.nan,
+        compress="DEFLATE",
+        tiled=True,
+        blockxsize=256,
+        blockysize=256,
     )
     profile.pop("predictor", None)
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -145,21 +158,37 @@ def write_score_raster(
     return dest
 
 
-def publish_score(conn, aoi, source: Path, *, kind: str = "score",
-                  derivation_id: int | None = None) -> int:
-    """Convert a score raster to a COG and catalog it.
+def publish_score(
+    conn,
+    aoi,
+    source: Path,
+    *,
+    class_id: str,
+    kind: str = "score",
+    derivation_id: int | None = None,
+) -> int:
+    """Convert a score raster to a COG and catalog it, qualified by target class.
 
     Without this the surface exists on disk but is invisible to everything that reads the
     catalog — which is midden_list_rasters, midden_preview_raster, and every render scene.
+    The class rides in the asset's variant: an unqualified score surface is meaningless
+    (CLAUDE.md), and two classes' surfaces for the same AOI must never clobber each other.
     """
     from midden.config import settings
     from midden.terrain.cog import register_asset, write_cog
 
-    dest = settings().aoi_cog_dir(aoi.slug) / f"{kind}_10m.tif"
+    dest = settings().aoi_cog_dir(aoi.slug) / f"{kind}_10m_{class_id}.tif"
     if source.resolve() != dest.resolve():
         write_cog(source, dest)
     else:
         write_cog(source, dest.with_suffix(".cog.tif"))
         dest.with_suffix(".cog.tif").replace(dest)
-    return register_asset(conn, aoi_id=aoi.id, kind=kind, grid="model", path=dest,
-                          derivation_id=derivation_id)
+    return register_asset(
+        conn,
+        aoi_id=aoi.id,
+        kind=kind,
+        grid="model",
+        path=dest,
+        derivation_id=derivation_id,
+        variant=class_id,
+    )

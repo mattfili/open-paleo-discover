@@ -35,8 +35,10 @@ def midden_preview_raster(
     aoi: Annotated[str, Field(description="AOI slug.")],
     kind: Annotated[
         str,
-        Field(description="Raster kind: openness_pos, openness_neg, slrm, hand, "
-                          "slope, dem, hillshade_multi, ground_count."),
+        Field(
+            description="Raster kind: openness_pos, openness_neg, slrm, hand, "
+            "slope, dem, hillshade_multi, ground_count."
+        ),
     ] = "openness_pos",
     max_px: Annotated[
         int, Field(description="Cap on the long edge in pixels.", ge=64, le=2000)
@@ -54,7 +56,9 @@ def midden_preview_raster(
 
     source = Path(row["path"])
     stretch = (
-        openness_stretch() if kind.startswith("openness") else percentile_stretch(source)
+        openness_stretch()
+        if kind.startswith("openness")
+        else percentile_stretch(source)
     )
     with tempfile.TemporaryDirectory() as directory:
         destination = Path(directory) / f"{aoi}_{kind}.png"
@@ -62,8 +66,10 @@ def midden_preview_raster(
         image = Image(path=destination)
         block = image.to_image_content()
 
-    legend = _OPENNESS_LEGEND if kind.startswith("openness") else (
-        "Bright is high, dark is low, within a 2-98 percentile stretch."
+    legend = (
+        _OPENNESS_LEGEND
+        if kind.startswith("openness")
+        else ("Bright is high, dark is low, within a 2-98 percentile stretch.")
     )
     caption = (
         f"{aoi} / {kind} at {row['resolution_m']:g} m ({row['grid']} grid). "
@@ -72,14 +78,23 @@ def midden_preview_raster(
     return [caption, block]
 
 
-
 def midden_render_map(
     aoi: Annotated[str, Field(description="AOI slug.")],
+    target_class: Annotated[
+        str | None,
+        Field(
+            description="Target class whose surfaces to show. Without it, "
+            "class-qualified layers (score, detection renders) stay out "
+            "of the scene — an unqualified score is never rendered."
+        ),
+    ] = None,
     kinds: Annotated[
         list[str] | None,
         Field(description="Raster kinds to include. Defaults to whatever the AOI has."),
     ] = None,
-    visible: Annotated[str | None, Field(description="Layer shown when the map opens.")] = None,
+    visible: Annotated[
+        str | None, Field(description="Layer shown when the map opens.")
+    ] = None,
     max_px: Annotated[
         int, Field(description="Cap on each raster's long edge.", ge=256, le=2000)
     ] = 1200,
@@ -99,7 +114,13 @@ def midden_render_map(
 
     selected = tuple(kinds) if kinds else DEFAULT_RASTERS
     with connect() as conn:
-        scene = build_scene(conn, get_aoi(conn, aoi), kinds=selected, visible=visible)
+        scene = build_scene(
+            conn,
+            get_aoi(conn, aoi),
+            kinds=selected,
+            visible=visible,
+            class_id=target_class,
+        )
 
     destination = settings().repo_root / "exports" / f"{aoi}.html"
     render_artifact(scene, destination, max_px=max_px)
@@ -114,7 +135,17 @@ def midden_render_map(
 
 def midden_render_qgis_project(
     aoi: Annotated[str, Field(description="AOI slug.")],
-    kinds: Annotated[list[str] | None, Field(description="Raster kinds to include.")] = None,
+    target_class: Annotated[
+        str | None,
+        Field(
+            description="Target class whose surfaces to show. Without it, "
+            "class-qualified layers (score, detection renders) stay out "
+            "of the scene."
+        ),
+    ] = None,
+    kinds: Annotated[
+        list[str] | None, Field(description="Raster kinds to include.")
+    ] = None,
 ) -> dict:
     """Emit a QGIS project with the AOI's layers pre-loaded and styled.
 
@@ -128,12 +159,15 @@ def midden_render_qgis_project(
 
     selected = tuple(kinds) if kinds else DEFAULT_RASTERS
     with connect() as conn:
-        scene = build_scene(conn, get_aoi(conn, aoi), kinds=selected)
+        scene = build_scene(
+            conn, get_aoi(conn, aoi), kinds=selected, class_id=target_class
+        )
 
     destination = settings().repo_root / "exports" / "qgis" / f"{aoi}.qgs"
     render_qgis_project(scene, destination)
     return {
-        "aoi": aoi, "path": str(destination),
+        "aoi": aoi,
+        "path": str(destination),
         "raster_layers": [r.kind for r in scene.rasters],
         "vector_layers": [v.name for v in scene.vectors],
     }

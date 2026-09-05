@@ -25,7 +25,9 @@ terrain_app = typer.Typer(
 MAX_DETECTION_KM2 = 25.0
 
 
-def _check_detection_preflight(area, ept_project: str | None, max_area_km2: float) -> None:
+def _check_detection_preflight(
+    area, ept_project: str | None, max_area_km2: float
+) -> None:
     """Refuse a detection run that cannot work, with the next action rather than a hang."""
     if ept_project is None:
         typer.secho(
@@ -48,13 +50,27 @@ def _check_detection_preflight(area, ept_project: str | None, max_area_km2: floa
 @terrain_app.command("run")
 def terrain_run(
     aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
-    grid: Annotated[str, typer.Option("--grid", help="'model' (10 m) or 'detection' (0.5 m).")] = "model",
+    grid: Annotated[
+        str, typer.Option("--grid", help="'model' (10 m) or 'detection' (0.5 m).")
+    ] = "model",
+    class_id: Annotated[
+        str | None,
+        typer.Option(
+            "--class",
+            help="Target class whose registry parameters the detection "
+            "chain runs with; required for --grid detection. "
+            "See `midden classes`.",
+        ),
+    ] = None,
     ept_project: Annotated[
         str | None,
-        typer.Option("--ept-project", help="EPT project name; required for --grid detection."),
+        typer.Option(
+            "--ept-project", help="EPT project name; required for --grid detection."
+        ),
     ] = None,
     max_area_km2: Annotated[
-        float, typer.Option("--max-area", help="Refuse a detection run larger than this.")
+        float,
+        typer.Option("--max-area", help="Refuse a detection run larger than this."),
     ] = MAX_DETECTION_KM2,
 ) -> None:
     """Derive terrain for an AOI on one grid and register the outputs as COGs."""
@@ -63,13 +79,24 @@ def terrain_run(
         area = get_aoi(conn, aoi)
 
         if grid == "detection":
+            if class_id is None:
+                typer.secho(
+                    "--grid detection needs --class: detection parameters are per class, "
+                    "never global. List classes with `midden classes`.",
+                    fg=typer.colors.RED,
+                )
+                raise typer.Exit(code=1)
             _check_detection_preflight(area, ept_project, max_area_km2)
-            result = run_detection_grid(conn, area, ept_project=ept_project, config=config)
+            result = run_detection_grid(
+                conn, area, ept_project=ept_project, class_id=class_id, config=config
+            )
         elif grid == "model":
             result = run_model_grid(conn, area, config=config)
         else:
-            typer.secho(f"Unknown grid {grid!r}; expected 'model' or 'detection'.",
-                        fg=typer.colors.RED)
+            typer.secho(
+                f"Unknown grid {grid!r}; expected 'model' or 'detection'.",
+                fg=typer.colors.RED,
+            )
             raise typer.Exit(code=1)
 
     typer.secho(
@@ -87,16 +114,22 @@ def terrain_run(
 
 @terrain_app.command("list")
 def terrain_list(
-    aoi: Annotated[str | None, typer.Option("--aoi", help="Filter by AOI slug.")] = None,
-    kind: Annotated[str | None, typer.Option("--kind", help="Filter by raster kind.")] = None,
+    aoi: Annotated[
+        str | None, typer.Option("--aoi", help="Filter by AOI slug.")
+    ] = None,
+    kind: Annotated[
+        str | None, typer.Option("--kind", help="Filter by raster kind.")
+    ] = None,
 ) -> None:
     """List catalogued raster assets."""
     with connect() as conn:
         aoi_id = get_aoi(conn, aoi).id if aoi else None
         rows = list_assets(conn, aoi_id=aoi_id, kind=kind)
     if not rows:
-        typer.secho("No raster assets. Run: midden terrain run --aoi <slug>",
-                    fg=typer.colors.YELLOW)
+        typer.secho(
+            "No raster assets. Run: midden terrain run --aoi <slug>",
+            fg=typer.colors.YELLOW,
+        )
         raise typer.Exit(code=1)
     typer.echo(f"{'aoi':<22}{'kind':<16}{'grid':<11}{'res':>6}  {'variant':<11}path")
     typer.echo("-" * 110)
@@ -112,7 +145,9 @@ def terrain_preview(
     aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
     kind: Annotated[str, typer.Option("--kind", help="Raster kind.")] = "openness_pos",
     out: Annotated[Path | None, typer.Option("--out", help="PNG path.")] = None,
-    max_px: Annotated[int, typer.Option("--max-px", help="Cap on the long edge.")] = 1500,
+    max_px: Annotated[
+        int, typer.Option("--max-px", help="Cap on the long edge.")
+    ] = 1500,
 ) -> None:
     """Render a catalogued raster to a PNG you can look at."""
     from midden.render.preview import openness_stretch, percentile_stretch, to_png
@@ -128,10 +163,16 @@ def terrain_preview(
     dest = out or settings().repo_root / "exports" / f"{aoi}_{kind}.png"
     # Openness is meaningful in absolute degrees around 90, so it gets a fixed window
     # rather than a per-image percentile stretch that would make a sweep incomparable.
-    stretch = openness_stretch() if kind.startswith("openness") else percentile_stretch(source)
+    stretch = (
+        openness_stretch()
+        if kind.startswith("openness")
+        else percentile_stretch(source)
+    )
     to_png(source, dest, stretch=stretch, max_px=max_px)
-    typer.secho(f"wrote {dest}  (stretch {stretch.low:.2f}..{stretch.high:.2f})",
-                fg=typer.colors.GREEN)
+    typer.secho(
+        f"wrote {dest}  (stretch {stretch.low:.2f}..{stretch.high:.2f})",
+        fg=typer.colors.GREEN,
+    )
 
 
 @terrain_app.command("params")
@@ -144,3 +185,8 @@ def terrain_params() -> None:
             f"{p.derivation:<20}{p.name:<24}{p.default!s:>10} {p.unit:<9}{p.grid or '-'}"
         )
         typer.echo(f"{'':20}{p.why}")
+    typer.echo(
+        "\nDetection-grid rows are the parameter schema only: the values a detection run "
+        "actually uses come from ref.target_class per class (`midden classes`), never "
+        "from these defaults."
+    )

@@ -26,24 +26,48 @@ __all__ = ["RasterLayer", "Scene", "VectorLayer", "build_scene"]
 #: Openness gets a window fixed on 90 degrees rather than a percentile stretch, so two
 #: renders of different ground stay comparable and flat is always mid-grey.
 RASTER_STYLES: dict[str, dict[str, Any]] = {
-    "openness_pos": {"palette": "grey", "window": (84.0, 96.0),
-                     "legend": "bright = convex (mounds, hearths, ridges)"},
-    "openness_neg": {"palette": "grey", "window": (84.0, 96.0),
-                     "legend": "bright = concave (pits, ditches, relict channels)"},
-    "slrm": {"palette": "grey", "percentile": (2, 98),
-             "legend": "local relief; bright = locally high"},
-    "hillshade_multi": {"palette": "grey", "percentile": (2, 98),
-                        "legend": "multi-azimuth shaded relief (context only)"},
-    "score": {"palette": "viridis", "percentile": (1, 99),
-              "legend": "suitability, high = better landform (not a probability)"},
-    "hand": {"palette": "viridis", "percentile": (2, 98),
-             "legend": "height above nearest drainage, metres"},
+    "openness_pos": {
+        "palette": "grey",
+        "window": (84.0, 96.0),
+        "legend": "bright = convex (mounds, hearths, ridges)",
+    },
+    "openness_neg": {
+        "palette": "grey",
+        "window": (84.0, 96.0),
+        "legend": "bright = concave (pits, ditches, relict channels)",
+    },
+    "slrm": {
+        "palette": "grey",
+        "percentile": (2, 98),
+        "legend": "local relief; bright = locally high",
+    },
+    "hillshade_multi": {
+        "palette": "grey",
+        "percentile": (2, 98),
+        "legend": "multi-azimuth shaded relief (context only)",
+    },
+    "score": {
+        "palette": "viridis",
+        "percentile": (1, 99),
+        "legend": "suitability, high = better landform (not a probability)",
+    },
+    "hand": {
+        "palette": "viridis",
+        "percentile": (2, 98),
+        "legend": "height above nearest drainage, metres",
+    },
     "slope": {"palette": "viridis", "percentile": (2, 98), "legend": "slope, degrees"},
-    "terrace": {"palette": "terrace", "window": (0.0, 4.0),
-                "legend": "0 none, 1 T0, 2 T1, 3 T2"},
+    "terrace": {
+        "palette": "terrace",
+        "window": (0.0, 4.0),
+        "legend": "0 none, 1 T0, 2 T1, 3 T2",
+    },
     "dem": {"palette": "grey", "percentile": (2, 98), "legend": "elevation, metres"},
-    "ground_count": {"palette": "viridis", "percentile": (2, 98),
-                     "legend": "ground returns per cell; 0 means interpolated, not measured"},
+    "ground_count": {
+        "palette": "viridis",
+        "percentile": (2, 98),
+        "legend": "ground returns per cell; 0 means interpolated, not measured",
+    },
 }
 
 #: What a reader needs told about these surfaces before they read anything into them.
@@ -61,8 +85,15 @@ SCENE_NOTES = (
 
 #: Raster kinds a scene shows by default, in draw order (bottom first).
 DEFAULT_RASTERS = (
-    "hillshade_multi", "dem", "hand", "slope", "terrace",
-    "score", "openness_neg", "openness_pos", "slrm",
+    "hillshade_multi",
+    "dem",
+    "hand",
+    "slope",
+    "terrace",
+    "score",
+    "openness_neg",
+    "openness_pos",
+    "slrm",
 )
 
 
@@ -115,7 +146,9 @@ class Scene:
         return not self.rasters and not self.vectors
 
 
-def _vector(conn: psycopg.Connection, name: str, sql: str, params, **style) -> VectorLayer | None:
+def _vector(
+    conn: psycopg.Connection, name: str, sql: str, params, **style
+) -> VectorLayer | None:
     """Build a vector layer from a query returning GeoJSON geometries."""
     rows = fetch_all(conn, sql, params)
     if not rows:
@@ -135,28 +168,54 @@ def _vector(conn: psycopg.Connection, name: str, sql: str, params, **style) -> V
     )
 
 
+def _select_assets(rows: list[dict], class_id: str | None) -> dict[str, Any]:
+    """Pick one catalog row per kind, honouring class qualification. Pure.
+
+    A class's own variant wins over the unqualified ('') asset; assets carrying another
+    class's variant (or a sweep digest) are skipped. A score surface is never selected
+    without a class — an unqualified score render is forbidden (CLAUDE.md), so when no
+    class is given the score kind silently stays out of the scene rather than showing a
+    surface whose hypothesis the reader cannot know.
+    """
+    unqualified = {
+        r["kind"]: r for r in rows if not (r["variant"] or "") and r["kind"] != "score"
+    }
+    class_rows = (
+        {r["kind"]: r for r in rows if (r["variant"] or "") == class_id}
+        if class_id
+        else {}
+    )
+    return {**unqualified, **class_rows}
+
+
 def build_scene(
     conn: psycopg.Connection,
     aoi: Aoi,
     *,
     kinds: tuple[str, ...] = DEFAULT_RASTERS,
     visible: str | None = None,
+    class_id: str | None = None,
 ) -> Scene:
     """Assemble a scene for one AOI from the raster catalog and PostGIS vectors.
 
     Only catalogued rasters appear, so a scene never points at a file that a derivation
     did not actually produce. Layers a reader most likely wants on top are ordered last.
+    Pass `class_id` to see class-qualified surfaces (score, detection renders); without
+    it the scene shows only unqualified terrain.
     """
-    catalogued = {r["kind"]: r for r in list_assets(conn, aoi_id=aoi.id)}
+    catalogued = _select_assets(list_assets(conn, aoi_id=aoi.id), class_id)
     rasters = _raster_layers(catalogued, kinds, visible)
     xmin, ymin, xmax, ymax = aoi.geom.bounds
     vectors = _vector_layers(conn, aoi)
+    qualifier = f" · class: {class_id}" if class_id else ""
     return Scene(
         aoi_slug=aoi.slug,
         title=aoi.name,
-        subtitle=f"{aoi.role} · {aoi.area_km2:.2f} km² · EPSG:26916",
+        subtitle=f"{aoi.role} · {aoi.area_km2:.2f} km² · EPSG:26916{qualifier}",
         bounds=(xmin, ymin, xmax, ymax),
-        rasters=rasters, vectors=vectors, notes=list(SCENE_NOTES),
+        rasters=rasters,
+        vectors=vectors,
+        notes=list(SCENE_NOTES),
     )
 
 
@@ -171,13 +230,20 @@ def _raster_layers(
         if row is None:
             continue
         style = RASTER_STYLES.get(kind, {"palette": "grey", "percentile": (2, 98)})
-        layers.append(RasterLayer(
-            name=kind.replace("_", " "), kind=kind, path=Path(row["path"]),
-            grid=row["grid"], resolution_m=row["resolution_m"],
-            legend=style.get("legend", ""), palette=style.get("palette", "grey"),
-            window=style.get("window"), percentile=style.get("percentile"),
-            visible=(kind == chosen),
-        ))
+        layers.append(
+            RasterLayer(
+                name=kind.replace("_", " "),
+                kind=kind,
+                path=Path(row["path"]),
+                grid=row["grid"],
+                resolution_m=row["resolution_m"],
+                legend=style.get("legend", ""),
+                palette=style.get("palette", "grey"),
+                window=style.get("window"),
+                percentile=style.get("percentile"),
+                visible=(kind == chosen),
+            )
+        )
     return layers
 
 
@@ -185,27 +251,49 @@ def _vector_layers(conn: psycopg.Connection, aoi: Aoi) -> list[VectorLayer]:
     """Build the AOI boundary, hydrography, and confluence overlays."""
     xmin, ymin, xmax, ymax = aoi.geom.bounds
     return [
-        layer for layer in (
-            _vector(conn, "AOI boundary",
-                    "SELECT slug, ST_AsGeoJSON(geom_wgs84) AS gj FROM derived.aoi WHERE id = %s",
-                    (aoi.id,), geometry="polygon", stroke="#f472b6", fill=None, width=2.5,
-                    legend="area of interest"),
-            _vector(conn, "Flowlines",
-                    """SELECT gnis_name, stream_order,
+        layer
+        for layer in (
+            _vector(
+                conn,
+                "AOI boundary",
+                "SELECT slug, ST_AsGeoJSON(geom_wgs84) AS gj FROM derived.aoi WHERE id = %s",
+                (aoi.id,),
+                geometry="polygon",
+                stroke="#f472b6",
+                fill=None,
+                width=2.5,
+                legend="area of interest",
+            ),
+            _vector(
+                conn,
+                "Flowlines",
+                """SELECT gnis_name, stream_order,
                               ST_AsGeoJSON(ST_Transform(geom, 4326)) AS gj
                        FROM ref.nhd_flowline
                        WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 26916)""",
-                    (xmin, ymin, xmax, ymax), geometry="line", stroke="#38bdf8", width=1.6,
-                    legend="NHDPlus HR flowlines"),
-            _vector(conn, "Confluences",
-                    """SELECT order_minor, order_major,
+                (xmin, ymin, xmax, ymax),
+                geometry="line",
+                stroke="#38bdf8",
+                width=1.6,
+                legend="NHDPlus HR flowlines",
+            ),
+            _vector(
+                conn,
+                "Confluences",
+                """SELECT order_minor, order_major,
                               ST_AsGeoJSON(ST_Transform(geom, 4326)) AS gj
                        FROM ref.confluence
                        WHERE order_minor >= 2 AND order_minor < order_major
                          AND geom && ST_MakeEnvelope(%s, %s, %s, %s, 26916)""",
-                    (xmin, ymin, xmax, ymax), geometry="point", stroke="#fbbf24",
-                    fill="#fbbf24", width=1.0, legend="tributary junctions"),
-        ) if layer is not None
+                (xmin, ymin, xmax, ymax),
+                geometry="point",
+                stroke="#fbbf24",
+                fill="#fbbf24",
+                width=1.0,
+                legend="tributary junctions",
+            ),
+        )
+        if layer is not None
     ]
 
 
