@@ -19,6 +19,7 @@ from midden.commands.histmap import histmap_app
 from midden.commands.render import render_app
 from midden.commands.semantic import semantic_app
 from midden.commands.terrain import terrain_app
+from midden.commands.validate import validate_app
 from midden.config import settings
 from midden.db import (
     apply_schema,
@@ -54,6 +55,7 @@ app.add_typer(intake_app, name="intake")
 
 app.add_typer(terrain_app, name="terrain")
 app.add_typer(histmap_app, name="histmap")
+app.add_typer(validate_app, name="validate")
 app.add_typer(semantic_app, name="semantic")
 app.add_typer(features_app, name="features")
 app.add_typer(score_app, name="score")
