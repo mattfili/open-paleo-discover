@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import psycopg
 import rasterio
 import rasterio.shutil
@@ -26,7 +27,15 @@ _EPSG = int(PROJECT_CRS.split(":")[1])
 class RasterInfo:
     """Summary of a raster on disk, read once."""
 
-    __slots__ = ("bounds", "crs_epsg", "height", "nodata", "path", "resolution_m", "width")
+    __slots__ = (
+        "bounds",
+        "crs_epsg",
+        "height",
+        "nodata",
+        "path",
+        "resolution_m",
+        "width",
+    )
 
     def __init__(self, path: Path) -> None:
         with rasterio.open(path) as src:
@@ -54,16 +63,22 @@ def write_cog(src: Path, dest: Path, *, overwrite: bool = True) -> Path:
 
     GDAL's COG driver builds the overviews and the internal tiling itself, so this is a
     single copy rather than a build-overviews-then-copy dance.
+
+    Integer rasters get a predictor; floating-point ones do not. WhiteboxTools panics on
+    float predictors after exiting 0, and while today's chains feed WBT only from
+    scratch intermediates, a catalogued COG must stay safe to hand to any consumer.
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
     if dest.exists() and not overwrite:
         return dest
+    with rasterio.open(src) as probe:
+        is_float = np.issubdtype(np.dtype(probe.dtypes[0]), np.floating)
     rasterio.shutil.copy(
         str(src),
         str(dest),
         driver="COG",
         compress="DEFLATE",
-        predictor="YES",
+        predictor="NO" if is_float else "YES",
         overview_resampling="average",
         blocksize=512,
     )
@@ -108,8 +123,16 @@ def register_asset(
             created_at = now()
         RETURNING id
         """,
-        (aoi_id, kind, grid, info.resolution_m, variant,
-         str(path.resolve()), footprint, derivation_id),
+        (
+            aoi_id,
+            kind,
+            grid,
+            info.resolution_m,
+            variant,
+            str(path.resolve()),
+            footprint,
+            derivation_id,
+        ),
     )
     return row[0]["id"]
 

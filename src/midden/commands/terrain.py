@@ -31,9 +31,10 @@ def _check_detection_preflight(
     """Refuse a detection run that cannot work, with the next action rather than a hang."""
     if ept_project is None:
         typer.secho(
-            "--grid detection needs --ept-project. Middle TN is covered by "
-            "USGS_LPC_TN_Middle_B1_2018_LAS_2019 (all four control AOIs); "
-            "browse others at https://usgs.entwine.io/",
+            "--grid detection needs --ept-project. Middle TN splits across "
+            "USGS_LPC_TN_Middle_B1_2018_LAS_2019 (harpeth-narrows) and "
+            "..._B2_... (montgomery-bell); actual coverage is in hobu/usgs-lidar "
+            "boundaries/resources.geojson, not the ept.json cube bounds.",
             fg=typer.colors.RED,
         )
         raise typer.Exit(code=1)

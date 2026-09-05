@@ -25,7 +25,9 @@ READ_ONLY = {"readOnlyHint": True}
 #: large AOI is refused with a suggestion rather than left to hang (spec.md §9).
 MAX_DETECTION_KM2 = 25.0
 
-#: The EPT project covering all four Middle Tennessee control AOIs.
+#: Default EPT project. Covers harpeth-narrows but NOT montgomery-bell, which is in
+#: USGS_LPC_TN_Middle_B2_2018_LAS_2019 — the cube bounds in ept.json contain the park,
+#: the flight coverage does not. Check hobu/usgs-lidar boundaries/resources.geojson.
 DEFAULT_EPT_PROJECT = "USGS_LPC_TN_Middle_B1_2018_LAS_2019"
 
 

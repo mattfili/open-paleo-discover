@@ -649,6 +649,13 @@ Each of these was learned the expensive way. They are in the code as comments to
   polygon — `mupolygonkey` is.
 - **Ibis has no cross-backend joins.** DuckDB is the single connection; `ref.*` and
   `derived.*` are attached with `read_postgres`.
+- **`USGS_LPC_TN_Middle_B1_2018_LAS_2019` does not cover Montgomery Bell.** The recorded
+  claim that it "covers all four control AOIs" was never tested for the park (Known broken
+  #2 — no detection run ever happened there) and is false: the ept.json cube bounds
+  contain the park but the actual flight coverage is `..._B2_...`. PDAL reports it as
+  "Unable to write GDAL data with no points". Per-AOI coverage lives in
+  hobu/usgs-lidar `boundaries/resources.geojson`; check it, not the cube bounds.
+  Discovered 2026-09-04 by the first Montgomery Bell detection run.
 - **HTMC contains partial "advance sheets" that georeference correctly and are mostly
   blank paper.** Burns 1936 covers only the western third of its cell; Montgomery Bell
   falls in the blank part, discovered only by checking per-tile ink fraction. Check

@@ -153,8 +153,11 @@ def _disc_masks(
     values = src.read(1, window=clipped, masked=True)
     transform = src.window_transform(clipped)
     rows_idx, cols_idx = np.mgrid[0 : values.shape[0], 0 : values.shape[1]]
-    xs, ys = rasterio.transform.xy(transform, rows_idx, cols_idx)
-    dist = np.hypot(np.asarray(xs) - x, np.asarray(ys) - y)
+    # Cell-centre coordinates from the affine directly: rasterio.transform.xy
+    # flattens 2D index arrays, which breaks the mask broadcasting downstream.
+    xs = transform.c + (cols_idx + 0.5) * transform.a + (rows_idx + 0.5) * transform.b
+    ys = transform.f + (cols_idx + 0.5) * transform.d + (rows_idx + 0.5) * transform.e
+    dist = np.hypot(xs - x, ys - y)
     valid = ~values.mask if np.ma.is_masked(values) else np.ones(values.shape, bool)
     return values, (dist <= r_disc) & valid, (dist > r_disc) & (dist <= r_bg) & valid
 
