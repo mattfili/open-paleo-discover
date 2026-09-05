@@ -224,6 +224,20 @@ VALUES
      'Rectangularity at 4 m is a strong cultural indicator. Historic quads mark '
      'structures: symbol + cellar hole is near-certain confirmation.'),
 
+    ('civic_structure', 'historic',
+     'School or church building site: foundation, chimney fall, terraced ground; 4-10 m footprint',
+     'detection', 'direct', false, 'usgs_histmap',
+     '{"openness": {"search_radius_m": 8.0, "num_directions": 16},
+       "slrm": {"smoothing_radius_m": 10.0},
+       "min_area_m2": 9,
+       "detect": {"surfaces": {"openness_neg": "high", "slrm": "low"},
+                  "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0}}',
+     'Added 2026-09-05 (owner decision, 23 symbols on the first two sheets). Same '
+     'detection signature as homestead, so the two pool naturally at 0.5 m; separate '
+     'class because the siting model differs (crossroads/centrality vs '
+     'water/fields/springhouse), and a class is a siting model plus a signature. '
+     'Unpooling must never depend on parsing name strings.'),
+
     ('family_cemetery', 'historic',
      'Rows of small regular depressions, low enclosure wall or fence line',
      'detection', 'direct', false, 'usgs_histmap',

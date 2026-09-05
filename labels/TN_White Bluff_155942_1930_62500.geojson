@@ -11,7 +11,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Collier Bend Sch",
     "positional_confidence_m": 95.0
    }
@@ -41,7 +41,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Lillamay Sch",
     "positional_confidence_m": 95.0
    }
@@ -56,7 +56,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Harpeth Valley Sch",
     "positional_confidence_m": 95.0
    }
@@ -71,7 +71,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Stringfellow Sch",
     "positional_confidence_m": 95.0
    }
@@ -86,7 +86,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Cedar Hill Sch",
     "positional_confidence_m": 95.0
    }
@@ -101,7 +101,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Taylortown Sch",
     "positional_confidence_m": 150
    }
@@ -116,7 +116,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Blackwood Sch",
     "positional_confidence_m": 95.0
    }
@@ -131,7 +131,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Claylick Sch",
     "positional_confidence_m": 95.0
    }
@@ -146,7 +146,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Frog Pond Ch",
     "positional_confidence_m": 95.0
    }
@@ -161,7 +161,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Pleasant View Ch",
     "positional_confidence_m": 95.0
    }
@@ -176,7 +176,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Johnson Sch",
     "positional_confidence_m": 120
    }
@@ -191,7 +191,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Bar Sch",
     "positional_confidence_m": 95.0
    }
@@ -206,7 +206,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "New Hope Sch",
     "positional_confidence_m": 95.0
    }
@@ -221,7 +221,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "South Harpeth Sch",
     "positional_confidence_m": 95.0
    }
@@ -236,7 +236,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Sams Creek Sch",
     "positional_confidence_m": 120
    }
@@ -251,7 +251,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Chestnut Ridge Ch",
     "positional_confidence_m": 95.0
    }
@@ -266,7 +266,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Opossum Sch",
     "positional_confidence_m": 95.0
    }
@@ -281,7 +281,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Jackson Ch",
     "positional_confidence_m": 95.0
    }
@@ -296,7 +296,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Williams Chapel",
     "positional_confidence_m": 95.0
    }
@@ -311,7 +311,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Marrowbone Sch",
     "positional_confidence_m": 120
    }
@@ -326,7 +326,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Sams Creek Ch",
     "positional_confidence_m": 120
    }

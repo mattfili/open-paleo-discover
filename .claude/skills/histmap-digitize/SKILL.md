@@ -54,10 +54,13 @@ unknown ids. Standard USGS topographic symbols of the 1890s–1950s:
 | dashed/unimproved road, "Ford" | `road_trace` | digitize the ford point or a representative node, not the whole line |
 | "Saltpeter Cave", "Cave" with works | `saltpeter_works` | proxy class — the label is the evidence, not a LiDAR signature |
 | "Mound", "Indian Mound" | `mound_earthwork` | rare but gold when present |
+| church cross, "Sch", "School", "Ch." | `civic_structure` | same detection signature as homestead (foundation, terraced ground), different siting model (crossroads/centrality); owner decision 2026-09-05 after 23 such symbols on the first two sheets |
 
-Symbols with no registry class (church, school, spring house without other
-context) are **not** loaded, but note them in the session summary — repeated
-unmappable symbols are an argument for a registry addition, made with counts.
+Symbols with no registry class are **not** loaded, but note them in the
+session summary — repeated unmappable symbols are an argument for a registry
+addition, made with counts. `civic_structure` is the precedent: 23 symbols
+across two sheets, added by owner decision rather than silently absorbed
+into `homestead`.
 
 ## Rules that are not optional
 

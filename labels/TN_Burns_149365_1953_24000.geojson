@@ -26,7 +26,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Camp Ground Ch",
     "positional_confidence_m": 45.0
    }
@@ -41,7 +41,7 @@
     ]
    },
    "properties": {
-    "class_id": "homestead",
+    "class_id": "civic_structure",
     "name": "Acorn Hill Ch",
     "positional_confidence_m": 70
    }

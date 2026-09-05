@@ -267,14 +267,19 @@ per-point `positional_confidence_m` (sheet NMAS + pointing error, 45–150 m) an
 `review_status='unreviewed'` — machine labels are never silently promoted. Eight points sit
 *inside* detection AOIs (three ore pits + Jackson Cem in montgomery-bell; Cedar Hill Sch in
 harpeth-narrows), which is what A2 runs against. **n=2 is retired: n=37 across four
-classes** (23 homestead, 9 family_cemetery, 4 iron_works, 1 road_trace).
+classes** (23 civic_structure, 9 family_cemetery, 4 iron_works, 1 road_trace —
+re-mapped 2026-09-05, below).
 
 Findings from the pass, recorded: (a) no "Mill" label survives on the 1930/1953 editions —
 mill culture predates them, so A2's vanished-structure test runs on `homestead` /
 `family_cemetery` / `iron_works` instead of `mill_seat`, whose labels need an 1890s-1900s
 edition (Greenbrier 1903 1:125,000 exists but its ~78 m NMAS error is marginal); (b) schools
-and churches map to class `homestead` deliberately — the detection signature (building
-foundation, cellar, terraced yard) is the same, and the name field keeps what it was.
+and churches were first mapped to `homestead`; on 2026-09-05 the owner chose a separate
+`civic_structure` class instead (registry seed + histmap-digitize table updated): same
+detection signature so the two pool naturally at 0.5 m, but a different siting model
+(crossroads/centrality vs water/fields/springhouse), and unpooling must never depend on
+parsing name strings. All 23 points re-mapped and re-loaded; `homestead` currently has
+zero labels — the next sheet's isolated black-square dwellings are its fuel.
 
 Historic topo quads are listed under Not built as an `http_file` driver target, valued for
 showing pre-impoundment floodplain and vanished roads. Under the widened scope they are
@@ -774,8 +779,9 @@ Suggested next action, in order:
    (green), exceeded-but-noisy (yellow, "ground is textured"), or uninformative (red).
    Discs are now tolerance + per-class `feature_radius_m` (new registry field), per
    spatial-validation §2. Reruns on Burns 1953: iron_works 4/4 recall vs 73%
-   background; family_cemetery 8/8 vs 96% — both self-reported weakly informative,
-   consistent with the A2 falsification. Zero can never be claimed: (r+1)/(k+1).
+   background; family_cemetery 8/8 vs 96%; civic_structure (post-split, 2026-09-05)
+   2/2 vs 92% — all self-reported weakly informative, consistent with the A2
+   falsification. Zero can never be claimed: (r+1)/(k+1).
 2. **Review the 37 unreviewed labels — human step, surface is ready.** 37 review
    cards under `exports/review/<sheet>/` (quad crop + detection renders where they
    exist, red ring = recorded tolerance). Review is human by the `histmap-digitize`
@@ -784,8 +790,8 @@ Suggested next action, in order:
    is plausibly the drainage, not the cemetery. Open convention conflict, raised with
    the skill's author session and undecided: 23 school/church points are loaded as
    `homestead` (rationale recorded here), while `histmap-digitize` says such symbols
-   are not loaded absent a registry class — bless the mapping, add a class, or drop
-   23/37 labels.
+   are not loaded absent a registry class — resolved 2026-09-05: `civic_structure`
+   added, 23 points re-mapped, cards regenerated.
 3. **Shape-aware firing rules** for cemetery/homestead/ore-pit (rectangularity,
    row-regularity, pit-plus-spoil pairing) — amplitude alone is falsified.
 4. Then item 5 (hearth-scale Montgomery Bell as `charcoal_hearth` — note the park is
