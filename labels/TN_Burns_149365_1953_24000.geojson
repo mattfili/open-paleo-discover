@@ -1,0 +1,230 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     474298.3,
+     3994450.2
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Jackson Cem",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     473719.4,
+     3994048.0
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Camp Ground Ch",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     475825.8,
+     3996140.2
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Acorn Hill Ch",
+    "positional_confidence_m": 70
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     474416.1,
+     3994962.1
+    ]
+   },
+   "properties": {
+    "class_id": "iron_works",
+    "name": "ore pit (pick symbol) A",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     475053.9,
+     3994954.0
+    ]
+   },
+   "properties": {
+    "class_id": "iron_works",
+    "name": "ore pit (pick symbol) B",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     475100.7,
+     3993755.5
+    ]
+   },
+   "properties": {
+    "class_id": "iron_works",
+    "name": "ore pit (pick symbol) C",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     473556.9,
+     3992423.1
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Hall Cem",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     474399.9,
+     3992195.6
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Ladd Cem",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     473282.7,
+     3991062.1
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Richardson Cem (S)",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     476772.4,
+     3996201.1
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Price Cem",
+    "positional_confidence_m": 70
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     473542.7,
+     3997432.1
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Richardson Cem (N)",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     473794.6,
+     3989662.6
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Fulgum Cem",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     475324.1,
+     3989591.5
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Welch Cem",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     476333.6,
+     3992536.8
+    ]
+   },
+   "properties": {
+    "class_id": "iron_works",
+    "name": "Bakersworks",
+    "positional_confidence_m": 45.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     476136.6,
+     3990505.6
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Thompson Cem",
+    "positional_confidence_m": 45.0
+   }
+  }
+ ]
+}

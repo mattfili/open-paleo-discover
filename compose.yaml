@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.postgis
+    # postgis/postgis publishes no arm64 manifest; on Apple Silicon this runs amd64
+    # under Rosetta (OrbStack), which is fine for a local POC.
+    platform: linux/amd64
     image: midden/postgis:17-3.5
     restart: unless-stopped
     environment:

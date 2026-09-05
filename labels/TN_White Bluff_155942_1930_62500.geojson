@@ -1,0 +1,335 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     483757.0,
+     4010424.9
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Collier Bend Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     484545.1,
+     4009150.1
+    ]
+   },
+   "properties": {
+    "class_id": "road_trace",
+    "name": "Travis Ford",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     495658.6,
+     4009060.2
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Lillamay Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     485354.5,
+     4004103.8
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Harpeth Valley Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     486740.3,
+     4002649.2
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Stringfellow Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     489892.9,
+     4000729.1
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Cedar Hill Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     482498.1,
+     3997888.6
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Taylortown Sch",
+    "positional_confidence_m": 150
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     491818.3,
+     3995852.1
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Blackwood Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     480382.2,
+     4001628.3
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Claylick Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     479271.4,
+     3997941.5
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Frog Pond Ch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     480302.9,
+     3998110.7
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Pleasant View Ch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     482736.1,
+     3992091.2
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Johnson Sch",
+    "positional_confidence_m": 120
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     488237.3,
+     3991128.5
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Bar Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     486068.6,
+     3985706.6
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "New Hope Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     494717.0,
+     3991244.8
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "South Harpeth Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     497520.5,
+     4004564.0
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Sams Creek Sch",
+    "positional_confidence_m": 120
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     499599.3,
+     3996904.7
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Chestnut Ridge Ch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     480117.8,
+     3989293.0
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Opossum Sch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     479350.8,
+     3987568.6
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Jackson Ch",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     481027.6,
+     4007605.6
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Williams Chapel",
+    "positional_confidence_m": 95.0
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     498446.2,
+     4011059.7
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Marrowbone Sch",
+    "positional_confidence_m": 120
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     496806.4,
+     4006875.6
+    ]
+   },
+   "properties": {
+    "class_id": "homestead",
+    "name": "Sams Creek Ch",
+    "positional_confidence_m": 120
+   }
+  }
+ ]
+}

@@ -7,11 +7,13 @@
 # Weights are relative and normalized at runtime; they do not need to sum to 1.
 # Every feature is normalized to 0-1 before weighting, per the `normalize` block.
 
-name: default
+name: open_habitation
 description: >
-  Starting hypothesis for Middle Tennessee river valleys. Seeded by judgement, not
-  fitted to anything. Expect to change it after the first control run.
-version: 1
+  Starting hypothesis for open_habitation (precontact, proxy) in Middle Tennessee
+  river valleys. Seeded by judgement, not fitted to anything. Falsified by the
+  2026-09-02 control run (ROADMAP known-broken 1: terrace_class carries no signal);
+  kept unchanged so the B1/B2 fixes measure against it.
+version: 2
 
 features:
 
