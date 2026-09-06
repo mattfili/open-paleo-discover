@@ -294,3 +294,26 @@ ON CONFLICT (class_id) DO UPDATE SET
 
 -- Review notes travel with the point (added 2026-09-05 with the first human review).
 ALTER TABLE ref.control_sites ADD COLUMN IF NOT EXISTS review_note text;
+
+-- ---------------------------------------------------------------------------
+-- Shape gates, added 2026-09-06 after the amplitude-only rule was falsified by
+-- its own negative control (94-100% background fire; ROADMAP A2). Gates come
+-- from each class's morphology column, never from tuning against controls:
+-- max_cells bounds the plausible footprint, elongation separates compact
+-- anomalies from the background's linear texture (gullies, roadbeds), and
+-- iron_works' pair block encodes pit-plus-spoil (a sinkhole has no spoil).
+-- Full detect blocks: jsonb || merges shallow, so each is restated whole.
+-- ---------------------------------------------------------------------------
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_pos": "high", "openness_neg": "high", "slrm": "high"}, "threshold_pctile": 95, "min_cells": 200, "feature_radius_m": 40.0, "max_cells": 40000, "max_elongation": 3.0}}' WHERE class_id = 'mound_earthwork';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 40, "feature_radius_m": 10.0, "max_cells": 8000, "max_elongation": 6.0}}' WHERE class_id = 'rockshelter';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "openness_pos": "high"}, "threshold_pctile": 95, "min_cells": 12, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0}}' WHERE class_id = 'chert_quarry';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0}}' WHERE class_id = 'cave_entrance';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"slrm": "high", "openness_pos": "high"}, "threshold_pctile": 95, "min_cells": 50, "feature_radius_m": 7.0, "max_cells": 1200, "max_elongation": 2.0}}' WHERE class_id = 'charcoal_hearth';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_pos": "high", "openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 30, "feature_radius_m": 5.0, "max_cells": 8000, "max_elongation": 3.0, "pair": {"surfaces": ["openness_neg", "openness_pos"], "max_gap_m": 30.0}}}' WHERE class_id = 'iron_works';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 8, "feature_radius_m": 10.0, "max_cells": 4000, "min_elongation": 2.5}}' WHERE class_id = 'mill_seat';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0}}' WHERE class_id = 'homestead';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0}}' WHERE class_id = 'civic_structure';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 8, "feature_radius_m": 10.0, "max_cells": 10000, "max_elongation": 2.5}}' WHERE class_id = 'family_cemetery';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 40, "feature_radius_m": 10.0, "min_elongation": 3.0}}' WHERE class_id = 'road_trace';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0}}' WHERE class_id = 'saltpeter_works';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_pos": "high", "slrm": "high"}, "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0, "min_elongation": 3.0}}' WHERE class_id = 'field_boundary';

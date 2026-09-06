@@ -878,7 +878,28 @@ Suggested next action, in order:
    `homestead` (rationale recorded here), while `histmap-digitize` says such symbols
    are not loaded absent a registry class — resolved 2026-09-05: `civic_structure`
    added, 23 points re-mapped, cards regenerated.
-3. **Shape-aware firing rules** for cemetery/homestead/ore-pit (rectangularity,
-   row-regularity, pit-plus-spoil pairing) — amplitude alone is falsified.
+3. **Shape-aware firing rules — first iteration built and measured 2026-09-06.**
+   Per-cluster morphometry gates (min/max cells, min/max elongation — a race wants
+   elongation, a cemetery rejects it) plus a relational `pair` rule, all from
+   morphology priors in the registry, never tuned against controls. Results, gated
+   vs amplitude-only backgrounds:
+
+   | class (sheet) | recall | background fire | verdict |
+   |---|---|---|---|
+   | iron_works (Burns, pit+spoil pair) | 2/4 | 94% → **11%** | **carries information** |
+   | family_cemetery (Burns) | 6/6 | 96% → 97% | still uninformative |
+   | civic_structure (Burns) | 2/2 | 92% → 72% | still weak |
+   | civic_structure (White Bluff) | 3/3 | 100% → 97% | still uninformative |
+
+   The split is the lesson: the RELATIONAL prior (pit-plus-spoil within 30 m) is a
+   real detector; single-cluster shape gates are not — a compact 2 m² blob past p95
+   exists nearly everywhere in textured ground (one tree throw qualifies). iron's two
+   misses are legible: Bakersworks is a works building complex the pit prior rightly
+   does not describe (argues for splitting ore_pit from iron_works, or a per-symbol
+   sub-kind), and pit C centres on a no-ground-return hole. Next iteration:
+   relational rules for the other classes — row-of-depressions with regular spacing
+   for cemeteries (the catalog's own identifier), foundation-plus-yard for
+   structures. Amplitude alone remains falsified; single-blob morphometry now
+   joins it, measured.
 4. Then item 5 (hearth-scale Montgomery Bell as `charcoal_hearth` — note the park is
    in EPT project `..._B2_...`, not B1) and item 6 (B1+B2).

@@ -178,14 +178,17 @@ def _fire_on_surface(
     tail: str,
     threshold_pctile: float,
     min_cells: int,
+    detect: dict | None = None,
 ) -> dict[str, Any]:
     """Apply the firing rule on one surface. Pure.
 
     `tail` is which extreme the class's morphology lives in: a mill race is LOW in SLRM
     (a cut) but HIGH in negative openness (concave). The threshold is a percentile of
     the annulus (local background), and the hit requires a connected cluster of
-    `min_cells` beyond it inside the disc — one lucky cell proves nothing.
+    `min_cells` beyond it inside the disc that also passes the class's shape gates
+    (`_cluster_qualifies`) — one lucky cell proves nothing, and neither does a gully.
     """
+    detect = detect or {}
     data = np.ma.filled(values, np.nan)
     bg = data[annulus]
     disc_vals = data[disc]
@@ -203,14 +206,93 @@ def _fire_on_surface(
         extreme = float(np.nanmin(disc_vals))
         pctile = float((bg > extreme).mean() * 100.0)
 
-    labelled, n = ndimage.label(np.nan_to_num(beyond.astype(float)) > 0)
-    largest = int(np.bincount(labelled.ravel())[1:].max()) if n else 0
+    clusters = _cluster_morphometry(beyond)
+    qualifying = [c for c in clusters if _cluster_qualifies(c, detect, min_cells)]
+    largest = max((c["cells"] for c in clusters), default=0)
     return {
         "valid": True,
-        "fired": largest >= min_cells,
+        "fired": bool(qualifying),
         "cluster_cells": largest,
+        "clusters": qualifying[:5],
         "pctile_max": round(pctile, 1),
     }
+
+
+def _cluster_morphometry(beyond: np.ndarray) -> list[dict[str, Any]]:
+    """Connected clusters of beyond-threshold cells, with shape metrics. Pure.
+
+    Elongation is the square root of the covariance eigenvalue ratio of the cluster's
+    cell coordinates — 1.0 for a disc, large for a gully. This is the metric that
+    separates the background's linear texture (drainage, roadbeds) from the compact
+    anomalies most classes predict: the recorded false-fires (Jackson Cem's creek,
+    94% background rates) were overwhelmingly linear.
+    """
+    labelled, n = ndimage.label(np.nan_to_num(beyond.astype(float)) > 0)
+    clusters = []
+    for label_id in range(1, n + 1):
+        rows, cols = np.nonzero(labelled == label_id)
+        cells = int(rows.size)
+        if cells < 4:
+            elongation = 1.0
+        else:
+            cov = np.cov(np.stack([rows, cols]).astype(float))
+            eig = np.sort(np.linalg.eigvalsh(cov))
+            elongation = float(np.sqrt(eig[1] / max(eig[0], 1e-9)))
+        clusters.append(
+            {
+                "cells": cells,
+                "elongation": round(elongation, 1),
+                "centroid_rc": (float(rows.mean()), float(cols.mean())),
+            }
+        )
+    return clusters
+
+
+def _cluster_qualifies(cluster: dict, detect: dict, min_cells: int) -> bool:
+    """Shape gates from the class's morphology priors. Pure.
+
+    min/max cells bound the feature's plausible footprint; min/max elongation encode
+    whether the class IS linear (a mill race wants elongation, a cemetery rejects
+    it). Gates come from the registry's morphology column, never from tuning against
+    the controls.
+    """
+    if cluster["cells"] < min_cells:
+        return False
+    max_cells = detect.get("max_cells")
+    if max_cells is not None and cluster["cells"] > max_cells:
+        return False
+    max_elong = detect.get("max_elongation")
+    if max_elong is not None and cluster["elongation"] > max_elong:
+        return False
+    min_elong = detect.get("min_elongation")
+    if min_elong is not None and cluster["elongation"] < min_elong:
+        return False
+    return True
+
+
+def _pair_satisfied(detail: dict[str, dict], detect: dict, cell_m: float = 0.5) -> bool:
+    """The pairing rule: qualifying clusters on both named surfaces within reach.
+
+    Encodes pit-plus-spoil for ore pits (a dissolution sinkhole has no spoil; the
+    pairing is what separates them, per the feature catalog). Centroids are compared
+    in the shared window's row/col space, so both surfaces must cover the disc.
+    """
+    pair = detect.get("pair")
+    if not pair:
+        return True
+    a, b = pair["surfaces"]
+    ca = (detail.get(a) or {}).get("clusters") or []
+    cb = (detail.get(b) or {}).get("clusters") or []
+    max_gap = float(pair["max_gap_m"]) / cell_m
+    return any(
+        np.hypot(
+            p["centroid_rc"][0] - q["centroid_rc"][0],
+            p["centroid_rc"][1] - q["centroid_rc"][1],
+        )
+        <= max_gap
+        for p in ca
+        for q in cb
+    )
 
 
 def _apply_rule(
@@ -235,10 +317,15 @@ def _apply_rule(
             tail=tails[kind],
             threshold_pctile=float(detect["threshold_pctile"]),
             min_cells=int(detect["min_cells"]),
+            detect=detect,
         )
         detail[kind] = outcome
         if outcome.get("fired"):
             fired.append(kind)
+    if fired and not _pair_satisfied(detail, detect):
+        for kind in fired:
+            detail[kind]["pair_failed"] = True
+        fired = []
     return fired, detail
 
 
