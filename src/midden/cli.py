@@ -208,6 +208,34 @@ def aoi_show(slug: str) -> None:
     typer.echo(f"source     {a.source}")
 
 
+labels_app = typer.Typer(
+    help="Label sources beyond histmap sheets.", no_args_is_help=True
+)
+app.add_typer(labels_app, name="labels")
+
+
+@labels_app.command("seed-nrhp")
+def labels_seed_nrhp() -> None:
+    """Seed mound_earthwork labels from public NRHP archaeological points (A3).
+
+    Address-restricted listings are excluded rather than approximated — on this
+    service most are simply absent from the points layer. Idempotent by REFNUM.
+    """
+    from midden.nrhp import seed_nrhp
+
+    with connect() as conn:
+        report = seed_nrhp(conn)
+    for r in report:
+        why = f"  ({r['why']})" if r.get("why") else ""
+        typer.echo(f"{r['action']:>9}  {r['refnum']}  {r['name']}{why}")
+    inserted = sum(1 for r in report if r["action"] == "inserted")
+    typer.secho(
+        f"\n{inserted} label(s) inserted, class mound_earthwork, "
+        f"review_status=unreviewed.",
+        fg=typer.colors.GREEN,
+    )
+
+
 @aoi_app.command("create")
 def aoi_create(
     slug: Annotated[str, typer.Argument(help="Slug for the new AOI.")],

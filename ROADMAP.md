@@ -221,7 +221,12 @@ So the central claim of the detection half — *does this resolve features at th
 care about* — is unverified. The park is 10.9 km² (~44 M cells at 0.5 m), so cut a small
 AOI around the known iron-district features rather than grinding the whole park.
 
-### 3. Seven of thirteen AOIs have no terrain at all
+### 3. Seven of thirteen AOIs have no terrain at all — beaman-park RESOLVED 2026-09-06
+
+`beaman-park` model terrain derived (plus `castalian-springs`, `fewkes-group`,
+`old-stone-fort` this round). B3's blocking dependency is gone; what B3 still needs
+is Highland Rim labels to evaluate against — old-stone-fort is the first. Original
+list kept below.
 
 Missing: `beaman-park`, `bledsoe-creek`, `castalian-springs-nr`, `cedars-of-lebanon`,
 `harpeth-hidden-lake`, `harpeth-newsoms-mill`, `harpeth-highway-70`, `long-hunter`.
@@ -382,7 +387,33 @@ texture at that scale. Recorded consequences:
 4. `USGS_LPC_TN_Middle_B1/B2` seam: Burns 1953 straddles it; validate reports a
    coverage-gap symbol as "no data", never as a miss.
 
-#### A3. NRHP for the monumental precontact classes
+#### A3. NRHP for the monumental precontact classes — EXECUTED 2026-09-06
+
+`midden labels seed-nrhp` (`src/midden/nrhp.py`) seeds `ref.control_sites` from the
+TNMap NRHP points layer: four public archaeological points as `mound_earthwork`
+(Glass Mounds, Castalian Springs, Old Stone Fort, Fewkes Group), source='nrhp',
+positional_confidence_m=150 (named parameter — service points are property-placed,
+not surveyed). Address-restricted listings are excluded rather than approximated —
+and on this service they are mostly absent outright (Mound Bottom itself does not
+appear in the points layer). The layer has no resource-type field, so selection is a
+recorded name-pattern WHERE (gotcha: bare '%INDIAN%' matched 'Indiana Avenue';
+the pattern keeps a trailing space). Fewkes' boundary-increase REFNUM is excluded
+as a same-site duplicate.
+
+Two new `control_positive` AOIs seeded from the boundaries layer: `fewkes-group`
+(Little Harpeth Mississippian mound group) and `old-stone-fort` (Woodland hilltop
+enclosure at the Duck River forks — the first control outside the Central Basin).
+Glass Mounds stays point-only: a discontinuous two-polygon district fails the
+exactly-one-feature seeding rule.
+
+**Four-frame B1 panel (v3 weights, open_habitation):** mound-bottom p=0.13,
+castalian p=0.11, fewkes 89.3 pct / 11.1x but p=0.13, **old-stone-fort 83.9 pct /
+10.3x, p=0.045 — the first control to clear its matched null.** Reading: the weight
+set captures generic valley-bottom suitability everywhere; what separates OSF is
+plausibly the confluence term (it sits at the forks; castalian's ablation ranked
+confluence first). Also: OSF's HAND histogram has TEN modes — mode-counting terrace
+logic would have been meaningless there, confirming C1's deletion. NRHP points are
+`unreviewed`; the review bench is histmap-specific, so their review loop is open.
 
 `ref.control_sites` seeded from NRHP archaeological listings intersecting the Central Basin
 and Highland Rim; address-restricted rows excluded rather than approximated. Under the

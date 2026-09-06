@@ -92,58 +92,161 @@ class Aoi:
 #: `priest-drawdown` is deliberately absent: it is derived, not fetched (spec.md §7), and
 #: arrives in M5.
 SEED: tuple[SeedSpec, ...] = (
-    SeedSpec("radnor-lake", "Radnor Lake State Natural Area", "Davidson",
-             "state_park", "prospect", TDEC_PUBLIC_ACCESS,
-             "NAME_2='Radnor Lake State Natural Area'",
-             "Mature forest, minimal disturbance. Good bare-earth test case."),
-    SeedSpec("harpeth-hidden-lake", "Harpeth River SP - Hidden Lake", "Cheatham",
-             "state_park", "prospect", TDEC_PUBLIC_ACCESS,
-             "NAME_2='Hidden Lake Entrance'",
-             "Former quarry and resort. Expect 20th-c. earthmoving beside real terrace."),
-    SeedSpec("harpeth-highway-70", "Harpeth River SP - Highway 70 Canoe Access", "Cheatham",
-             "state_park", "shakeout", TDEC_PUBLIC_ACCESS,
-             "NAME_2='Highway 70 Canoe Access'",
-             "1 acre. Fast iteration only; too small for meaningful hydrology unbuffered."),
-    SeedSpec("harpeth-newsoms-mill", "Harpeth River SP - Newsom's Mill", "Davidson",
-             "state_park", "prospect", TDEC_PUBLIC_ACCESS,
-             "NAME_2='Newsom''s Mill Site'",
-             "Historic mill. Mills mean fords, and fords are long-duration crossings."),
-    SeedSpec("beaman-park", "Alvin G. Beaman Park", "Davidson",
-             "metro_park", "prospect", NASHVILLE_PARKS,
-             "Name='Alvin G. Beaman Park'",
-             "Metro Parks, not TDEC. Dissected Highland Rim - the one non-Central-Basin AOI."),
-    SeedSpec("long-hunter", "Long Hunter State Park", "Wilson",
-             "state_park", "prospect", TDEC_PUBLIC_ACCESS,
-             "NAME_1='Long Hunter State Park' AND NAME_2 IS NULL",
-             "Percy Priest shoreline. Main unit only; the glade and Sellars Farm are separate."),
-    SeedSpec("harpeth-narrows", "Harpeth River SP - Narrows of the Harpeth", "Cheatham",
-             "state_park", "control_detection", TDEC_PUBLIC_ACCESS,
-             "NAME_2='Narrows of the Harpeth'",
-             "Montgomery Bell Tunnel, c.1819. A cut earthwork that must appear in openness."),
-    SeedSpec("mound-bottom", "Mound Bottom State Archaeological Area", "Cheatham",
-             "state_park", "control_positive", TDEC_PUBLIC_ACCESS,
-             "NAME_2='Mound Bottom State Archaeological Area'",
-             "Mississippian mound complex. Managed access, guided tours only."),
-    SeedSpec("castalian-springs", "Castalian Springs Mound Site (NHL)", "Sumner",
-             "custom", "control_positive", TNMAP_NRHP,
-             "Resource_Name='Castalian Springs (NHL Boundary)'",
-             "NHL boundary, REFNUM 71000838. The scored control_positive footprint."),
-    SeedSpec("castalian-springs-nr", "Castalian Springs (NR district)", "Sumner",
-             "custom", "prospect", TNMAP_NRHP,
-             "Resource_Name='Castalian Springs (NR Boundary)'",
-             "Wider National Register district. Context only; not the scored control."),
-    SeedSpec("bledsoe-creek", "Bledsoe Creek State Park", "Sumner",
-             "state_park", "prospect", TDEC_PUBLIC_ACCESS,
-             "NAME_1='Bledsoe Creek State Park'",
-             "Old Hickory shoreline; pairs with Castalian Springs."),
-    SeedSpec("cedars-of-lebanon", "Cedars of Lebanon State Park", "Wilson",
-             "state_park", "prospect", TDEC_PUBLIC_ACCESS,
-             "NAME_1='Cedars of Lebanon State Park'",
-             "Cedar glade / karst. Different landform regime - useful contrast."),
-    SeedSpec("montgomery-bell", "Montgomery Bell State Park", "Dickson",
-             "state_park", "control_detection", TDEC_PUBLIC_ACCESS,
-             "NAME_1='Montgomery Bell State Park' AND NAME_2 IS NULL",
-             "19th-c. iron district. Charcoal hearths set search_radius_m."),
+    SeedSpec(
+        "radnor-lake",
+        "Radnor Lake State Natural Area",
+        "Davidson",
+        "state_park",
+        "prospect",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_2='Radnor Lake State Natural Area'",
+        "Mature forest, minimal disturbance. Good bare-earth test case.",
+    ),
+    SeedSpec(
+        "harpeth-hidden-lake",
+        "Harpeth River SP - Hidden Lake",
+        "Cheatham",
+        "state_park",
+        "prospect",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_2='Hidden Lake Entrance'",
+        "Former quarry and resort. Expect 20th-c. earthmoving beside real terrace.",
+    ),
+    SeedSpec(
+        "harpeth-highway-70",
+        "Harpeth River SP - Highway 70 Canoe Access",
+        "Cheatham",
+        "state_park",
+        "shakeout",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_2='Highway 70 Canoe Access'",
+        "1 acre. Fast iteration only; too small for meaningful hydrology unbuffered.",
+    ),
+    SeedSpec(
+        "harpeth-newsoms-mill",
+        "Harpeth River SP - Newsom's Mill",
+        "Davidson",
+        "state_park",
+        "prospect",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_2='Newsom''s Mill Site'",
+        "Historic mill. Mills mean fords, and fords are long-duration crossings.",
+    ),
+    SeedSpec(
+        "beaman-park",
+        "Alvin G. Beaman Park",
+        "Davidson",
+        "metro_park",
+        "prospect",
+        NASHVILLE_PARKS,
+        "Name='Alvin G. Beaman Park'",
+        "Metro Parks, not TDEC. Dissected Highland Rim - the one non-Central-Basin AOI.",
+    ),
+    SeedSpec(
+        "long-hunter",
+        "Long Hunter State Park",
+        "Wilson",
+        "state_park",
+        "prospect",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_1='Long Hunter State Park' AND NAME_2 IS NULL",
+        "Percy Priest shoreline. Main unit only; the glade and Sellars Farm are separate.",
+    ),
+    SeedSpec(
+        "harpeth-narrows",
+        "Harpeth River SP - Narrows of the Harpeth",
+        "Cheatham",
+        "state_park",
+        "control_detection",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_2='Narrows of the Harpeth'",
+        "Montgomery Bell Tunnel, c.1819. A cut earthwork that must appear in openness.",
+    ),
+    SeedSpec(
+        "mound-bottom",
+        "Mound Bottom State Archaeological Area",
+        "Cheatham",
+        "state_park",
+        "control_positive",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_2='Mound Bottom State Archaeological Area'",
+        "Mississippian mound complex. Managed access, guided tours only.",
+    ),
+    SeedSpec(
+        "castalian-springs",
+        "Castalian Springs Mound Site (NHL)",
+        "Sumner",
+        "custom",
+        "control_positive",
+        TNMAP_NRHP,
+        "Resource_Name='Castalian Springs (NHL Boundary)'",
+        "NHL boundary, REFNUM 71000838. The scored control_positive footprint.",
+    ),
+    SeedSpec(
+        "castalian-springs-nr",
+        "Castalian Springs (NR district)",
+        "Sumner",
+        "custom",
+        "prospect",
+        TNMAP_NRHP,
+        "Resource_Name='Castalian Springs (NR Boundary)'",
+        "Wider National Register district. Context only; not the scored control.",
+    ),
+    # A3 (2026-09-06): public NRHP archaeological boundaries as additional
+    # control_positive footprints for B1. Glass Mounds (15000333) is deliberately
+    # absent: a discontinuous two-polygon district fails the exactly-one-feature rule;
+    # its point label still arrives via `midden labels seed-nrhp`.
+    SeedSpec(
+        "fewkes-group",
+        "Fewkes Group Archeological Site",
+        "Williamson",
+        "custom",
+        "control_positive",
+        TNMAP_NRHP,
+        "Resource_Name='Fewkes Group Archeological Site'",
+        "Mississippian mound group on the Little Harpeth, REFNUM 80003880.",
+    ),
+    SeedSpec(
+        "old-stone-fort",
+        "Old Stone Fort",
+        "Coffee",
+        "custom",
+        "control_positive",
+        TNMAP_NRHP,
+        "Resource_Name='Old Stone Fort'",
+        "Woodland hilltop enclosure at the Duck River forks, REFNUM 73001757. "
+        "Highland Rim margin: the first control outside the Central Basin.",
+    ),
+    SeedSpec(
+        "bledsoe-creek",
+        "Bledsoe Creek State Park",
+        "Sumner",
+        "state_park",
+        "prospect",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_1='Bledsoe Creek State Park'",
+        "Old Hickory shoreline; pairs with Castalian Springs.",
+    ),
+    SeedSpec(
+        "cedars-of-lebanon",
+        "Cedars of Lebanon State Park",
+        "Wilson",
+        "state_park",
+        "prospect",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_1='Cedars of Lebanon State Park'",
+        "Cedar glade / karst. Different landform regime - useful contrast.",
+    ),
+    SeedSpec(
+        "montgomery-bell",
+        "Montgomery Bell State Park",
+        "Dickson",
+        "state_park",
+        "control_detection",
+        TDEC_PUBLIC_ACCESS,
+        "NAME_1='Montgomery Bell State Park' AND NAME_2 IS NULL",
+        "19th-c. iron district. Charcoal hearths set search_radius_m.",
+    ),
 )
 
 
@@ -164,7 +267,11 @@ def to_multipolygon(geom: BaseGeometry, *, slug: str) -> tuple[MultiPolygon, boo
         geom = MultiPolygon([geom])
     elif not isinstance(geom, MultiPolygon):
         # make_valid can return a GeometryCollection; keep only the polygonal parts.
-        parts = [g for g in getattr(geom, "geoms", []) if isinstance(g, Polygon | MultiPolygon)]
+        parts = [
+            g
+            for g in getattr(geom, "geoms", [])
+            if isinstance(g, Polygon | MultiPolygon)
+        ]
         if not parts:
             raise ValueError(
                 f"{slug}: boundary has no polygonal component after repair "
@@ -235,8 +342,13 @@ def seed_aois(
 def _row_to_aoi(row: dict[str, Any]) -> Aoi:
     """Build an Aoi from a query row carrying WKT geometry."""
     return Aoi(
-        id=row["id"], slug=row["slug"], name=row["name"], kind=row["kind"],
-        role=row["role"], area_km2=row["area_km2"], source=row.get("source"),
+        id=row["id"],
+        slug=row["slug"],
+        name=row["name"],
+        kind=row["kind"],
+        role=row["role"],
+        area_km2=row["area_km2"],
+        source=row.get("source"),
         geom=shapely.from_wkt(row["wkt"]),
     )
 
@@ -250,15 +362,20 @@ _SELECT = """
 def list_aois(conn: psycopg.Connection, role: str | None = None) -> list[Aoi]:
     """Return every AOI, optionally filtered by role, largest first."""
     where, params = ("WHERE role = %s", (role,)) if role else ("", ())
-    return [_row_to_aoi(r) for r in
-            fetch_all(conn, f"{_SELECT} {where} ORDER BY area_km2 DESC", params)]
+    return [
+        _row_to_aoi(r)
+        for r in fetch_all(conn, f"{_SELECT} {where} ORDER BY area_km2 DESC", params)
+    ]
 
 
 def get_aoi(conn: psycopg.Connection, slug: str) -> Aoi:
     """Return one AOI by slug, or raise with the available slugs listed."""
     rows = fetch_all(conn, f"{_SELECT} WHERE slug = %s", (slug,))
     if not rows:
-        known = [r["slug"] for r in fetch_all(conn, "SELECT slug FROM derived.aoi ORDER BY slug")]
+        known = [
+            r["slug"]
+            for r in fetch_all(conn, "SELECT slug FROM derived.aoi ORDER BY slug")
+        ]
         raise KeyError(
             f"No AOI {slug!r}. Known: {', '.join(known) or '(none - run: midden aoi seed)'}"
         )
