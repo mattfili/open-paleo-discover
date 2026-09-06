@@ -529,9 +529,19 @@ the widened scope opens up.
 
 Removed from `weights/open_habitation.yml` (v3) with the B2 ablation number recorded
 in the file's own description. The terrace raster remains catalogued for the
-write-up. The follow-on stands open: feed continuous `hand_m` and `flood_freq` as
-fitted features rather than re-encoding the interpretive category. Original
-rationale kept below.
+write-up. ~~The follow-on stands open~~ — CLOSED 2026-09-06, weight set v4: `hand_m` enters
+as a **band** response (full score 2-12 m HAND, falloff 15 m — Smith 1978's
+lowest-non-flooding-surface association; bounds bracket the observed tread modes;
+`normalize_band` added) and `flood_freq` as categorical from SSURGO (None=1.0 ...
+Frequent=0.1; new stack column). One literature-derived change, tested once across
+all four frames, improved every one: mound-bottom 78.0→79.3 (p .135→.10), castalian
+92.1→**95.5** (p .08), fewkes 89.3→92.9, old-stone-fort 83.9→87.9 (p .045).
+Ablation: flood_freq carries at both tested frames (-3.7 MB, -1.4 castalian) —
+the soils anchor works; hand_m splits (carries at castalian -2.0, harmful at MB
++2.9 — the MB platform sits at ~11.7 m HAND, the band's edge, the old third-mode
+problem in continuous form). Cross-frame feature disagreement (hand at MB, slope at
+castalian) remains the standing B3 argument; v4 is kept on the frame-level
+criterion, not per-feature tuning. Original rationale kept below.
 
 The fix proposed under Known broken **#1** — anchor HAND modes to SSURGO `flood_freq` — is
 better than reweighting and should still not be built. `terrace_class` is a human

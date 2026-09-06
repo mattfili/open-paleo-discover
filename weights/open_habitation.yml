@@ -16,9 +16,38 @@ description: >
   ablation number (removing it raises mound-bottom +2.5 pctile and doubles
   enrichment 4.15x -> 8.36x - actively harmful; ROADMAP C1). Continuous HAND
   + flood_freq as fitted features are the C1 follow-on.
-version: 3
+version: 4
 
 features:
+
+  # C1 follow-on (2026-09-06): the terrace concept re-enters as two continuous,
+  # separately-ablatable features instead of one ordinal category.
+  hand_m:
+    weight: 2.0
+    normalize:
+      # Band, not a slope: habitation concentrates on the lowest NON-flooding
+      # surface (Smith 1978, Mississippian settlement patterns) - HAND near zero
+      # floods, the sweet range is the low tread, uplands decline. Band bounds
+      # bracket the observed T1 tread modes at the controls (3.4-10.6 m HAND);
+      # swept parameters, recorded per run.
+      method: band
+      band_lo: 2.0
+      band_hi: 12.0
+      falloff: 15.0
+
+  flood_freq:
+    weight: 1.0
+    normalize:
+      # SSURGO flooding frequency: T0 is definitionally the surface that floods.
+      # Scores penalise the cell's own habitability; adjacency to floodable
+      # fields is what the distance features carry.
+      method: categorical
+      values:
+        "None": 1.0
+        "Very rare": 0.9
+        "Rare": 0.7
+        "Occasional": 0.35
+        "Frequent": 0.1
 
 
   dist_to_stream_m:

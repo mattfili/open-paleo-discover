@@ -15,8 +15,13 @@ from typing import Any
 
 import numpy as np
 
-__all__ = ["METHODS", "normalize", "normalize_categorical", "normalize_inverse_linear",
-           "normalize_threshold_decay"]
+__all__ = [
+    "METHODS",
+    "normalize",
+    "normalize_categorical",
+    "normalize_inverse_linear",
+    "normalize_threshold_decay",
+]
 
 
 def _require(spec: dict[str, Any], *names: str) -> float:
@@ -50,7 +55,7 @@ def normalize_categorical(values: np.ndarray, spec: dict[str, Any]) -> np.ndarra
     for key, score in table.items():
         try:
             lookup[float(key)] = float(score)
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             lookup[str(key)] = float(score)
 
     out = np.full(values.shape, np.nan, dtype="float32")
@@ -82,7 +87,9 @@ def normalize_inverse_linear(values: np.ndarray, spec: dict[str, Any]) -> np.nda
     optimum = _require(spec, "optimum_m", "optimum")
     falloff = _require(spec, "falloff_m", "falloff")
     if falloff <= optimum:
-        raise ValueError(f"inverse_linear needs falloff > optimum, got {falloff} <= {optimum}.")
+        raise ValueError(
+            f"inverse_linear needs falloff > optimum, got {falloff} <= {optimum}."
+        )
     scaled = 1.0 - (values - optimum) / (falloff - optimum)
     return np.clip(scaled, 0.0, 1.0).astype("float32")
 
@@ -99,10 +106,34 @@ def normalize_threshold_decay(values: np.ndarray, spec: dict[str, Any]) -> np.nd
     return np.clip(scaled, 0.0, 1.0).astype("float32")
 
 
+def normalize_band(values: np.ndarray, spec: dict[str, Any]) -> np.ndarray:
+    """Full score inside an optimal band, falling linearly to zero over a falloff.
+
+    The response shape the terrace-edge association needs (Smith 1978, Mississippian
+    settlement on the lowest non-flooding surface): HAND near zero floods, the sweet
+    range is the low tread, and suitability declines toward the uplands — a hump, not
+    a monotone slope. `band_lo`/`band_hi` bound the full-score range; `falloff` is the
+    distance beyond either edge at which the score reaches zero.
+    """
+    lo = _require(spec, "band_lo")
+    hi = _require(spec, "band_hi")
+    falloff = _require(spec, "falloff_m", "falloff")
+    if hi <= lo or falloff <= 0:
+        raise ValueError(
+            f"band needs band_hi > band_lo and falloff > 0, got {lo}, {hi}, {falloff}."
+        )
+    below = np.clip(1.0 - (lo - values) / falloff, 0.0, 1.0)
+    above = np.clip(1.0 - (values - hi) / falloff, 0.0, 1.0)
+    return np.where(values < lo, below, np.where(values > hi, above, 1.0)).astype(
+        "float32"
+    )
+
+
 METHODS = {
     "categorical": normalize_categorical,
     "inverse_linear": normalize_inverse_linear,
     "threshold_decay": normalize_threshold_decay,
+    "band": normalize_band,
 }
 
 

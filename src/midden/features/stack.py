@@ -57,12 +57,18 @@ class StackResult(NamedTuple):
     columns: list[str]
 
 
-def _load_rasters(conn: psycopg.Connection, aoi: Aoi) -> tuple[dict[str, np.ndarray], dict]:
+def _load_rasters(
+    conn: psycopg.Connection, aoi: Aoi
+) -> tuple[dict[str, np.ndarray], dict]:
     """Read every modelling-grid feature raster for an AOI onto one common grid."""
     arrays: dict[str, np.ndarray] = {}
     profile: dict | None = None
     for kind, column in FEATURE_KINDS.items():
-        rows = [r for r in list_assets(conn, aoi_id=aoi.id, kind=kind) if r["grid"] == "model"]
+        rows = [
+            r
+            for r in list_assets(conn, aoi_id=aoi.id, kind=kind)
+            if r["grid"] == "model"
+        ]
         if not rows:
             raise ValueError(
                 f"{aoi.slug}: no modelling-grid {kind!r} raster. "
@@ -82,13 +88,16 @@ def _load_rasters(conn: psycopg.Connection, aoi: Aoi) -> tuple[dict[str, np.ndar
     return arrays, profile
 
 
-def _rasterize(frame: gpd.GeoDataFrame, profile: dict, value_column: str | None) -> np.ndarray:
+def _rasterize(
+    frame: gpd.GeoDataFrame, profile: dict, value_column: str | None
+) -> np.ndarray:
     """Burn vector features onto the stack grid, as a value or a presence mask."""
     if frame.empty:
         return np.zeros((profile["height"], profile["width"]), dtype="float32")
     shapes = (
         zip(frame.geometry, frame[value_column], strict=True)
-        if value_column else ((geom, 1) for geom in frame.geometry)
+        if value_column
+        else ((geom, 1) for geom in frame.geometry)
     )
     return rasterio.features.rasterize(
         shapes,
@@ -111,7 +120,10 @@ def _distance_and_nearest(
             np.full(shape, np.nan, "float32") if values is not None else None
         )
     if values is None:
-        return (distance_transform_edt(empty, sampling=resolution_m).astype("float32"), None)
+        return (
+            distance_transform_edt(empty, sampling=resolution_m).astype("float32"),
+            None,
+        )
 
     distance, indices = distance_transform_edt(
         empty, sampling=resolution_m, return_indices=True
@@ -135,7 +147,10 @@ def _hydrography(conn: psycopg.Connection, profile: dict) -> gpd.GeoDataFrame:
         bounds,
     )
     return gpd.GeoDataFrame(
-        {"comid": [r["comid"] for r in rows], "stream_order": [r["stream_order"] for r in rows]},
+        {
+            "comid": [r["comid"] for r in rows],
+            "stream_order": [r["stream_order"] for r in rows],
+        },
         geometry=gpd.GeoSeries.from_wkt([r["wkt"] for r in rows]),
         crs=PROJECT_CRS,
     )
@@ -162,7 +177,9 @@ def _confluences(conn: psycopg.Connection, profile: dict) -> gpd.GeoDataFrame:
     )
 
 
-def _soils(conn: psycopg.Connection, profile: dict) -> tuple[np.ndarray, np.ndarray, list[str]]:
+def _soils(
+    conn: psycopg.Connection, profile: dict
+) -> tuple[np.ndarray, np.ndarray, list[str]]:
     """Rasterise SSURGO drainage class and burial risk onto the stack grid.
 
     Drainage class is a phrase, so it is burnt as an integer code and mapped back to its
@@ -175,7 +192,7 @@ def _soils(conn: psycopg.Connection, profile: dict) -> tuple[np.ndarray, np.ndar
     rows = fetch_all(
         conn,
         """
-        SELECT drainage_class, burial_risk, ST_AsText(geom) AS wkt
+        SELECT drainage_class, flood_freq, burial_risk, ST_AsText(geom) AS wkt
         FROM ref.ssurgo_mapunit
         WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 26916)
         """,
@@ -183,11 +200,18 @@ def _soils(conn: psycopg.Connection, profile: dict) -> tuple[np.ndarray, np.ndar
     )
     shape = (profile["height"], profile["width"])
     if not rows:
-        return (np.full(shape, 0, "float32"), np.full(shape, np.nan, "float32"), [])
+        return (
+            np.full(shape, 0, "float32"),
+            np.full(shape, 0, "float32"),
+            np.full(shape, np.nan, "float32"),
+            [],
+            [],
+        )
 
     frame = gpd.GeoDataFrame(
         {
             "drainage_class": [r["drainage_class"] for r in rows],
+            "flood_freq": [r["flood_freq"] for r in rows],
             "burial_risk": [float(r["burial_risk"] or 0.0) for r in rows],
         },
         geometry=gpd.GeoSeries.from_wkt([r["wkt"] for r in rows]),
@@ -196,11 +220,19 @@ def _soils(conn: psycopg.Connection, profile: dict) -> tuple[np.ndarray, np.ndar
     labels = sorted({c for c in frame.drainage_class if c})
     codes = {label: index + 1 for index, label in enumerate(labels)}
     frame["drainage_code"] = frame.drainage_class.map(codes).fillna(0).astype("float32")
+    # Same label-coding trick for SSURGO flooding frequency (C1 follow-on): T0 is
+    # definitionally the surface that floods, so flood_freq is the soils-anchored
+    # signal terrace_class tried and failed to encode ordinally.
+    flood_labels = sorted({c for c in frame.flood_freq if c})
+    flood_codes = {label: index + 1 for index, label in enumerate(flood_labels)}
+    frame["flood_code"] = frame.flood_freq.map(flood_codes).fillna(0).astype("float32")
 
     return (
         _rasterize(frame, profile, "drainage_code"),
+        _rasterize(frame, profile, "flood_code"),
         _rasterize(frame, profile, "burial_risk"),
         labels,
+        flood_labels,
     )
 
 
@@ -212,16 +244,18 @@ def _assemble(
     rows, cols = np.mgrid[0:height, 0:width]
     xs, ys = rasterio.transform.xy(profile["transform"], rows.ravel(), cols.ravel())
 
-    frame = pd.DataFrame({"easting": np.asarray(xs, "float64"),
-                          "northing": np.asarray(ys, "float64")})
+    frame = pd.DataFrame(
+        {"easting": np.asarray(xs, "float64"), "northing": np.asarray(ys, "float64")}
+    )
     for column, values in arrays.items():
         frame[column] = values.ravel()
 
     # A cell with no elevation-derived value is outside the computed surface entirely.
     valid = frame[["hand_m", "slope_deg"]].notna().all(axis=1)
     if clip_to_aoi:
-        points = gpd.GeoSeries(gpd.points_from_xy(frame.easting, frame.northing),
-                               crs=PROJECT_CRS)
+        points = gpd.GeoSeries(
+            gpd.points_from_xy(frame.easting, frame.northing), crs=PROJECT_CRS
+        )
         valid &= points.within(aoi.geom).to_numpy()
     return frame.loc[valid].reset_index(drop=True)
 
@@ -245,7 +279,9 @@ def build_feature_stack(
 
     flowlines = _hydrography(conn, profile)
     order_raster = _rasterize(flowlines, profile, "stream_order")
-    dist_stream, nearest_order = _distance_and_nearest(order_raster, order_raster, resolution_m)
+    dist_stream, nearest_order = _distance_and_nearest(
+        order_raster, order_raster, resolution_m
+    )
     arrays["dist_to_stream_m"] = dist_stream
     arrays["stream_order_nearest"] = nearest_order
 
@@ -254,15 +290,18 @@ def build_feature_stack(
     dist_confluence, _ = _distance_and_nearest(confluence_raster, None, resolution_m)
     arrays["dist_to_confluence_m"] = dist_confluence
 
-    drainage_codes, burial, labels = _soils(conn, profile)
+    drainage_codes, flood_codes, burial, labels, flood_labels = _soils(conn, profile)
     arrays["drainage_code"] = drainage_codes
+    arrays["flood_code"] = flood_codes
     arrays["burial_risk"] = burial
 
     frame = _assemble(arrays, profile, aoi, clip_to_aoi)
     # Codes back to labels: the weight set matches phrases, not integers.
     code_to_label = {float(i + 1): label for i, label in enumerate(labels)}
     frame["drainage_class"] = frame.drainage_code.map(code_to_label)
-    frame = frame.drop(columns=["drainage_code"])
+    flood_to_label = {float(i + 1): label for i, label in enumerate(flood_labels)}
+    frame["flood_freq"] = frame.flood_code.map(flood_to_label)
+    frame = frame.drop(columns=["drainage_code", "flood_code"])
     if frame.empty:
         raise ValueError(
             f"{aoi.slug}: the feature stack has no valid cells. Either the rasters are "
@@ -306,7 +345,14 @@ def register_stack(
             derivation_id = EXCLUDED.derivation_id, created_at = now()
         RETURNING id
         """,
-        (aoi.id, resolution_m, str(result.path.resolve()), result.rows,
-         json.dumps(result.columns), footprint, derivation_id),
+        (
+            aoi.id,
+            resolution_m,
+            str(result.path.resolve()),
+            result.rows,
+            json.dumps(result.columns),
+            footprint,
+            derivation_id,
+        ),
     )
     return row[0]["id"]
