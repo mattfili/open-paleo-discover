@@ -672,7 +672,23 @@ belief that then shapes feature design. The openness sign convention is the wors
 confidently inverted explanation flips every downstream reading silently, which is exactly
 why the invariant exists.
 
-#### G1. Run the evals
+#### G1. Run the evals — RUNNING 2026-09-06, first execution found a real bug
+
+`midden evals` parses `plugin/mcp/evals.xml` and runs a mechanical checker per case:
+facts against the live database, conventions where they are encoded (render legends
+for the openness sign, the weight set for burial-risk-never-summed, the registry for
+per-class detectability, params for the two-grids rule). Non-zero exit on failure.
+Two new cases added per the acceptance: #11 two-grids, #12 proxy-never-a-detection.
+
+The first execution earned its keep three ways: it caught a REAL crash in
+`midden_get_model_schema` (boring-semantic-layer's API drifted under `uv sync`;
+every schema call raised TypeError — fixed version-robustly); it caught two answers
+staled by this week's own work (#1 control_positive is now four; #4 the Duck River
+joined the Harpeth at order 6 when old-stone-fort's flowlines arrived — intake is
+AOI-scoped, so that answer grows with coverage, now said in the answer); and it
+encodes the sign convention as an executable check. 12/12 pass. Deliberately NOT
+faked: whether a model can *drive* the tool surface and narrate the conventions is
+the LLM half — `claude plugin eval` is the harness for that, still open.
 
 `plugin/mcp/evals.xml` has hand-checked answers and has never been executed against the
 server. Under the interpretive framing this is the only thing standing between the tool and
@@ -727,7 +743,7 @@ novel for geospatial work.
    its own radius rather than a global one.
 6. ~~**B1 + B2**~~ — done 2026-09-05. Threshold retired; terrace_class answered with +2.5/-x2 evidence.
 7. ~~**C1**~~ — done 2026-09-05 (minimal: deletion recorded with B2's number; HAND+flood_freq fitting remains).
-8. **G1** — run the evals.
+8. ~~**G1**~~ — running since 2026-09-06 (`midden evals`, 12/12; LLM-driving half open).
 9. **C2–C5** — feature families. Cheapest accuracy available.
 10. **A4** — confuser registry, opportunistically while working existing AOIs.
 11. **B3 + Known broken #3** — `beaman-park` terrain, then holdout.

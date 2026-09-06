@@ -357,6 +357,43 @@ def intake_status() -> None:
 
 
 @app.command()
+def evals() -> None:
+    """Run the MCP evals against the live surface (G1). Non-zero exit on failure.
+
+    Mechanical checkers only: facts against the database, conventions where they are
+    encoded (render legends, weight set, registry, params). The LLM-driving half is
+    `claude plugin eval`'s job and is not faked here.
+    """
+    from midden.evals import run_evals
+
+    config = settings()
+    with connect(config) as conn:
+        results = run_evals(conn, config.repo_root / "plugin" / "mcp" / "evals.xml")
+
+    failed = 0
+    for r in results:
+        mark = "PASS" if r["ok"] else ("----" if r["ok"] is None else "FAIL")
+        colour = (
+            typer.colors.GREEN
+            if r["ok"]
+            else typer.colors.YELLOW
+            if r["ok"] is None
+            else typer.colors.RED
+        )
+        typer.secho(f"{mark}  #{r['id']:<3} {r['note']}", fg=colour)
+        if r["ok"] is False:
+            failed += 1
+            typer.echo(f"      q: {r['question'][:90]}")
+    unchecked = sum(1 for r in results if r["ok"] is None)
+    typer.echo(
+        f"\n{len(results) - failed - unchecked} passed, {failed} failed, "
+        f"{unchecked} awaiting the LLM harness"
+    )
+    if failed:
+        raise typer.Exit(code=1)
+
+
+@app.command()
 def doctor(
     check_whitebox: Annotated[
         bool,

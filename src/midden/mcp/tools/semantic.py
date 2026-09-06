@@ -16,10 +16,16 @@ def _describe(model: Any) -> dict[str, Any]:
     """Summarise one semantic model's dimensions and measures with their descriptions."""
 
     def fields(collection) -> dict[str, str]:
-        return {
-            name: (getattr(collection[name], "description", None) or "")
-            for name in collection
-        }
+        # boring-semantic-layer's API drifted: older versions expose a mapping of
+        # name -> field (with descriptions), newer ones a bare tuple of names.
+        # Handle both; a missing description is "", never a crash.
+        try:
+            return {
+                name: (getattr(collection[name], "description", None) or "")
+                for name in collection
+            }
+        except TypeError, KeyError:
+            return {str(name): "" for name in collection}
 
     return {
         "description": getattr(model, "description", None) or "",
@@ -41,7 +47,9 @@ def midden_list_semantic_models() -> dict[str, Any]:
 
 
 def midden_get_model_schema(
-    model: Annotated[str, Field(description="Model name from midden_list_semantic_models.")],
+    model: Annotated[
+        str, Field(description="Model name from midden_list_semantic_models.")
+    ],
 ) -> dict[str, Any]:
     """Return one model's dimensions and measures, each with its description.
 
@@ -83,7 +91,9 @@ def midden_query(  # cq-allow: 53 lines, of which 32 are logic; the remainder is
     ] = None,
     order_by: Annotated[str | None, Field(description="Field to sort by.")] = None,
     descending: Annotated[bool, Field(description="Sort descending.")] = False,
-    limit: Annotated[int, Field(description="Maximum rows returned.", ge=1, le=5000)] = 100,
+    limit: Annotated[
+        int, Field(description="Maximum rows returned.", ge=1, le=5000)
+    ] = 100,
 ) -> dict[str, Any]:
     """Query a semantic model by named dimensions and measures.
 

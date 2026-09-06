@@ -15,7 +15,7 @@
 
   <qa_pair id="1">
     <question>How many areas of interest have the role control_positive, and what are their slugs?</question>
-    <answer>Two: castalian-springs and mound-bottom.</answer>
+    <answer>Four: castalian-springs, mound-bottom, fewkes-group and old-stone-fort. (Two until 2026-09-06, when A3 seeded Fewkes Group and Old Stone Fort from the public NRHP boundaries.)</answer>
     <expected_tools>midden_list_aois</expected_tools>
     <notes>A control_positive AOI is a published site that falsifies a weight set. Answerable with midden_list_aois(role="control_positive").</notes>
   </qa_pair>
@@ -34,7 +34,7 @@
 
   <qa_pair id="4">
     <question>What is the highest Strahler stream order present in the flowline data, and which named stream carries it?</question>
-    <answer>Order 6, carried by the Harpeth River.</answer>
+    <answer>Order 6. The Harpeth River carries it; since the old-stone-fort frame's flowlines arrived (2026-09-06) the Duck River does too — intake is AOI-scoped, so the set of order-6 carriers grows with coverage.</answer>
     <expected_tools>midden_list_semantic_models, midden_get_model_schema, midden_query</expected_tools>
     <notes>Requires querying the nhd_flowline model with dimension gnis_name or stream_order and measure max_stream_order or reach_count.</notes>
   </qa_pair>
@@ -74,6 +74,20 @@
     <question>You are choosing a search radius for openness so that charcoal hearths resolve. Which AOI should you sweep against, and which should you never use?</question>
     <answer>Sweep against montgomery-bell, a control_detection AOI whose 19th-century iron district leaves relict charcoal hearths — flat circular platforms roughly 10 m across. Never tune against a prospect AOI: there is no ground truth there, so a parameter fitted to it is fitted to noise. Use midden_sweep, then midden_preview_raster on each variant; openness previews hold a fixed display window centred on 90 degrees so variants stay comparable.</answer>
     <expected_tools>midden_list_aois, midden_sweep, midden_preview_raster</expected_tools>
+  </qa_pair>
+
+  <qa_pair id="11">
+    <question>You have a suitability model fitted at 10 m and want to spot individual charcoal hearths with it. Will that work, and what is the rule?</question>
+    <answer>No. Two grids, two jobs: predictive modelling runs at 10 m and feature detection at 0.5 m, and they are never mixed. A hearth is ~10 m across — a single cell at model resolution — so detection at 10 m is blind, and a model fitted at 0.5 m is noise that will not fit in memory. Detection runs take --class and read the class's own parameters from ref.target_class.</answer>
+    <expected_tools>midden_list_parameters</expected_tools>
+    <notes>The two-grids rule; added 2026-09-06 per G1's acceptance.</notes>
+  </qa_pair>
+
+  <qa_pair id="12">
+    <question>A validation run for saltpeter_works reports a hit. May you report that saltpeter works were detected?</question>
+    <answer>No. saltpeter_works is declared detectability=proxy in ref.target_class: the LiDAR signal is a surrogate (a cave-entrance-shaped concavity), never a detection of the class itself. Never present a proxy result as a detection, and never run a detection chain for an invisible class and report absence as evidence. The validate command prints this qualification itself for proxy classes.</answer>
+    <expected_tools>midden_class_brief</expected_tools>
+    <notes>Per-class detectability; added 2026-09-06 per G1's acceptance.</notes>
   </qa_pair>
 
 </evaluation>
