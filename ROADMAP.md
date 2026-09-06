@@ -150,7 +150,18 @@ Numbered in the order they were found, not the order to fix them — **Priority*
 work order, and it does not follow this numbering. Items 1–4 predate the scope widening;
 5 and 6 came with it, and 5 is the binding constraint on 4.
 
-### 1. The weight set is falsified — `terrace_class` is the cause
+### 1. The weight set is falsified — `terrace_class` was the cause — RESOLVED 2026-09-05
+
+B2's ablation put a number on the 2026-09-02 diagnosis: holding `terrace_class` out
+RAISES mound-bottom +2.5 pctile and doubles top-5% enrichment (4.15x -> 8.36x) — the
+feature was actively harmful, not merely uninformative. Deleted per C1 (weight set v3);
+slope (-5.5) and drainage (-4.5) carry the signal there. Cross-frame caution, recorded:
+at castalian-springs the ranking disagrees — `dist_to_confluence_m` carries most (-13.2)
+and `slope_deg` flags harmful (+6.6, enrich 20x without it) — so no further reweighting
+is licensed by two controls; that is B3's argument. v3 numbers: mound-bottom 78.0 pct /
+8.36x (p=0.135), castalian 92.1 / 6.38x (p=0.11). Original diagnosis kept below.
+
+#### Original diagnosis (2026-09-02)
 
 ```
 mound-bottom       74.6th percentile, needs 95.0   FAIL
@@ -220,7 +231,12 @@ valley; Beaman is dissected Highland Rim with steep hollows and headwater stream
 `spec.md` §2 says including it is "what keeps the model from learning 'Middle Tennessee
 means big river terrace'" — which is currently exactly what it could be learning.
 
-### 4. The control test and the enrichment statistic measure different things
+### 4. The control test and the enrichment statistic measure different things — RESOLVED by B1, 2026-09-05
+
+`midden score validate` now reports both statistics against a matched-footprint null
+with an empirical p, retiring the bare threshold. First honest read: mound-bottom's
+76.8 mean pctile has p=0.13 against landform-matched footprints in its own frame — the
+old FAIL was real, and now has an error bar. Original framing kept below.
 
 `control_check.py` tests the **mean** percentile over a control footprint. Those footprints
 are whole management units including river channel and bluffs, so even a good model cannot
@@ -394,7 +410,14 @@ anyway — marginal cost is zero and they are the hard negatives that set precis
 
 Every test below runs per `class_id`, and **A1** is what makes any of them meaningful.
 
-#### B1. Permutation test replaces the pass/fail threshold
+#### B1. Permutation test replaces the pass/fail threshold — BUILT 2026-09-05
+
+`midden score validate --aoi --class [--draws]` (`features/validate_score.py`): the
+null translates and right-angle-rotates the control's own footprint to random
+positions in the background frame, accepting only landform-matched draws (lowland
+fraction by HAND<15 m within ±0.15 — named parameters, recorded). Empirical
+p=(r+1)/(k+1); results in a `score.validate` derivation. `control_check.py` stands as
+the skill's quick gate; this is the test of record.
 
 The current test asks "is the mean percentile above 95." That is a threshold with no error
 bar, on footprints that **#4** already shows cannot average that high.
@@ -406,7 +429,12 @@ Degrades gracefully — a weak honest answer at low n, a strong one at high n.
 **Acceptance.** `midden score validate --aoi <aoi> --class <class>` emits enrichment, null
 summary, and p. `control_check.py` wraps this or is deleted.
 
-#### B2. Feature ablation
+#### B2. Feature ablation — BUILT 2026-09-05
+
+`midden score ablate --aoi --class`: per-feature hold-out refits with the same
+footprint null on each refit surface, plus the normalised-feature correlation matrix
+(shared signal makes solo deltas small — slope/twi at -0.68 here). Delivered the
+terrace_class number that justified C1, and the cross-frame slope disagreement.
 
 Hold each feature out in turn, refit, report delta-enrichment. A feature whose removal does
 not move enrichment is not carrying signal regardless of its weight. This is the
@@ -436,7 +464,11 @@ that caveat.
 This is measurement, not correction. Correction needs survey-coverage polygons that are not
 public. Keep the distinction explicit so it does not blur in a later write-up.
 
-#### B5. Define the background frame
+#### B5. Define the background frame — DEFINED 2026-09-05
+
+spec.md §7 now defines it once: an AOI's regional buffered extent (clip_to_aoi=false,
+model buffer 2,000 m, minus nodata). Every validate/ablate derivation records
+`frame` and `frame_cells`; B1's nulls draw from it and nowhere else.
 
 "Regional" and "surrounding buffered extent" appear in the **#1** diagnosis with no written
 definition, and they determine every enrichment number here. Define once in `spec.md`,
@@ -462,7 +494,13 @@ the widened scope opens up.
 
 ### C. Features
 
-#### C1. Delete `terrace_class` rather than repair it
+#### C1. Delete `terrace_class` rather than repair it — DELETED 2026-09-05
+
+Removed from `weights/open_habitation.yml` (v3) with the B2 ablation number recorded
+in the file's own description. The terrace raster remains catalogued for the
+write-up. The follow-on stands open: feed continuous `hand_m` and `flood_freq` as
+fitted features rather than re-encoding the interpretive category. Original
+rationale kept below.
 
 The fix proposed under Known broken **#1** — anchor HAND modes to SSURGO `flood_freq` — is
 better than reweighting and should still not be built. `terrace_class` is a human
@@ -656,9 +694,8 @@ novel for geospatial work.
 4. ~~**D**~~ — done 2026-09-04, with item 1.
 5. **Known broken #2** — hearth-scale AOI at Montgomery Bell, now as `charcoal_hearth` with
    its own radius rather than a global one.
-6. **B1 + B2** — permutation and ablation. Retires the pass/fail threshold, answers the
-   `terrace_class` question with evidence.
-7. **C1** — delete `terrace_class`, after B2 records why.
+6. ~~**B1 + B2**~~ — done 2026-09-05. Threshold retired; terrace_class answered with +2.5/-x2 evidence.
+7. ~~**C1**~~ — done 2026-09-05 (minimal: deletion recorded with B2's number; HAND+flood_freq fitting remains).
 8. **G1** — run the evals.
 9. **C2–C5** — feature families. Cheapest accuracy available.
 10. **A4** — confuser registry, opportunistically while working existing AOIs.

@@ -253,6 +253,217 @@ def _write_controls(destination: Path) -> None:
     )
 
 
+def _regional_fit(aoi: str, class_id: str, weights: Path | None):
+    """Score the regional frame and collect control footprints inside it.
+
+    Returns (scored ScoreResult, raw stack frame, weight_set, {slug: geom}, frame
+    descriptor for provenance). The background frame (B5) is the AOI's regional
+    buffered extent — the same frame the regional surface is computed on.
+    """
+    import shapely
+
+    weights_path = _class_weights(class_id, weights)
+    weight_set = load_weights(weights_path)
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        stack = build_feature_stack(conn, area, clip_to_aoi=False)
+        raw = pd.read_parquet(stack.path)
+        controls = {
+            r["slug"]: shapely.from_wkb(bytes(r["wkb"]))
+            for r in fetch_all(
+                conn,
+                """SELECT slug, ST_AsBinary(geom) AS wkb FROM derived.aoi
+                   WHERE role = 'control_positive'
+                     AND ST_Intersects(geom, ST_MakeEnvelope(%s, %s, %s, %s, 26916))""",
+                (
+                    raw.easting.min(),
+                    raw.northing.min(),
+                    raw.easting.max(),
+                    raw.northing.max(),
+                ),
+            )
+        }
+    if not controls:
+        raise typer.BadParameter(
+            f"No control_positive AOI intersects {aoi}'s regional frame; the test "
+            "has nothing to measure. Seed controls or pick another AOI."
+        )
+    result = score_stack(raw, weight_set)
+    frame_desc = {
+        "frame": f"regional buffered extent of {aoi} (clip_to_aoi=false)",
+        "frame_cells": len(raw),
+        "weights": str(weights_path),
+    }
+    return result, raw, weight_set, controls, frame_desc
+
+
+@score_app.command("validate")
+def score_validate(
+    aoi: Annotated[
+        str, typer.Option("--aoi", help="AOI whose regional frame to test.")
+    ],
+    class_id: Annotated[
+        str, typer.Option("--class", help="Class whose surface to test.")
+    ],
+    weights: Annotated[Path | None, typer.Option("--weights")] = None,
+    draws: Annotated[
+        int, typer.Option("--draws", help="Matched null footprints per control.")
+    ] = 199,
+    seed: Annotated[int, typer.Option("--seed")] = 42,
+) -> None:
+    """B1: matched-footprint permutation test — effect size with an error bar.
+
+    The null translates each control's own footprint to random landform-matched
+    positions in the background frame; the unit of permutation is the footprint,
+    never the cell. Replaces the pass/fail threshold: reports observed, the null
+    distribution, and empirical p = (r+1)/(k+1).
+    """
+    from midden import __version__
+    from midden.derivation import open_derivation
+    from midden.features.validate_score import permutation_test
+
+    result, _raw, _ws, controls, frame_desc = _regional_fit(aoi, class_id, weights)
+    outcomes = {
+        slug: permutation_test(result.frame, geom, draws=draws, seed=seed)
+        for slug, geom in controls.items()
+    }
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        with open_derivation(
+            conn,
+            operation="score.validate",
+            tool="midden.features.validate_score",
+            tool_version=__version__,
+            aoi_id=area.id,
+            params={
+                "class_id": class_id,
+                "draws": draws,
+                "seed": seed,
+                **frame_desc,
+                "results": outcomes,
+            },
+            inputs=[f"controls: {sorted(controls)}"],
+        ):
+            pass
+
+    typer.secho(
+        f"\nB1 permutation test — {class_id} on {aoi}'s regional frame", bold=True
+    )
+    typer.echo(
+        f"{'control':<20}{'obs pct':>9}{'null pct (q05-q95)':>22}"
+        f"{'obs enr':>9}{'null q95':>10}{'p(pct)':>9}"
+    )
+    typer.echo("-" * 82)
+    for slug, o in outcomes.items():
+        if "error" in o:
+            typer.echo(f"{slug:<20}  {o['error']}")
+            continue
+        null = o["null"]
+        typer.echo(
+            f"{slug:<20}{o['observed']['pct_mean']:>9.1f}"
+            f"{null['pct_mean']['q05']:>13.1f}-{null['pct_mean']['q95']:<7.1f}"
+            f"{o['observed']['top5_enrich']:>7.2f}x"
+            f"{null['top5_enrich']['q95']:>9.2f}x"
+            f"{o['p_pct_mean']:>9}"
+        )
+    typer.echo(
+        "\nHow to read this. 'obs pct' is the footprint's mean score percentile; the "
+        "null range is what same-shaped, landform-matched footprints score elsewhere "
+        "in the frame. p is one-sided and floored at 1/(draws+1) — a small p says the "
+        "control sits high relative to matched ground, not that the model is right. "
+        "Enrichment is top-5% occupancy over chance (1.0x = chance)."
+    )
+
+
+@score_app.command("ablate")
+def score_ablate(
+    aoi: Annotated[
+        str, typer.Option("--aoi", help="AOI whose regional frame to test.")
+    ],
+    class_id: Annotated[
+        str, typer.Option("--class", help="Class whose weight set to ablate.")
+    ],
+    weights: Annotated[Path | None, typer.Option("--weights")] = None,
+    draws: Annotated[
+        int, typer.Option("--draws", help="Null footprints per refit surface.")
+    ] = 99,
+    seed: Annotated[int, typer.Option("--seed")] = 42,
+) -> None:
+    """B2: hold each feature out, refit, and report delta-enrichment per control.
+
+    A feature whose removal does not move the statistic is not carrying signal
+    regardless of its weight; one whose removal raises it is actively harmful. The
+    correlation matrix ships alongside because correlated features share signal —
+    a small solo delta can mean 'shared', never only 'absent'.
+    """
+    from midden import __version__
+    from midden.derivation import open_derivation
+    from midden.features.validate_score import ablate
+
+    _result, raw, weight_set, controls, frame_desc = _regional_fit(
+        aoi, class_id, weights
+    )
+    report = ablate(raw, weight_set, controls, draws=draws, seed=seed)
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        with open_derivation(
+            conn,
+            operation="score.ablate",
+            tool="midden.features.validate_score",
+            tool_version=__version__,
+            aoi_id=area.id,
+            params={
+                "class_id": class_id,
+                "draws": draws,
+                "seed": seed,
+                **frame_desc,
+                "results": report["ablations"],
+                "baseline": report["baseline"],
+                "correlations": report["correlations"],
+            },
+            inputs=[f"controls: {sorted(controls)}"],
+        ):
+            pass
+
+    typer.secho(
+        f"\nB2 ablation — {class_id} on {aoi}'s regional frame "
+        f"(delta vs full model; negative = surface got worse without it)",
+        bold=True,
+    )
+    for slug, base in report["baseline"].items():
+        typer.echo(
+            f"\n[{slug}]  full model: pct {base['observed']['pct_mean']:.1f}, "
+            f"enrich {base['observed']['top5_enrich']:.2f}x, p {base.get('p_pct_mean')}"
+        )
+        typer.echo(
+            f"{'feature held out':<24}{'pct':>7}{'delta':>8}{'enrich':>9}{'delta':>8}"
+        )
+        typer.echo("-" * 58)
+        rows = sorted(
+            report["ablations"].items(), key=lambda kv: kv[1][slug]["delta_pct_mean"]
+        )
+        for name, per in rows:
+            r = per[slug]
+            flag = "  <- harmful in the stack" if r["delta_pct_mean"] > 0.5 else ""
+            typer.echo(
+                f"{name:<24}{r['pct_mean']:>7.1f}{r['delta_pct_mean']:>+8.1f}"
+                f"{r['top5_enrich']:>8.2f}x{r['delta_top5_enrich']:>+8.2f}{flag}"
+            )
+    typer.echo(
+        "\nnormalised-feature correlations (shared signal makes solo deltas small):"
+    )
+    names = list(report["correlations"])
+    typer.echo(" " * 24 + "".join(f"{n[:10]:>11}" for n in names))
+    for a in names:
+        typer.echo(
+            f"{a:<24}"
+            + "".join(
+                f"{v:>11.2f}" if v is not None else f"{'-':>11}"
+                for v in (report["correlations"][a][b] for b in names)
+            )
+        )
+
+
 @score_app.command("weights")
 def score_weights(
     class_id: Annotated[

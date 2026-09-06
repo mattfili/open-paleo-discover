@@ -12,20 +12,14 @@ description: >
   Starting hypothesis for open_habitation (precontact, proxy) in Middle Tennessee
   river valleys. Seeded by judgement, not fitted to anything. Falsified by the
   2026-09-02 control run (ROADMAP known-broken 1: terrace_class carries no signal);
-  kept unchanged so the B1/B2 fixes measure against it.
-version: 2
+  terrace_class deleted 2026-09-05 on the B2
+  ablation number (removing it raises mound-bottom +2.5 pctile and doubles
+  enrichment 4.15x -> 8.36x - actively harmful; ROADMAP C1). Continuous HAND
+  + flood_freq as fitted features are the C1 follow-on.
+version: 3
 
 features:
 
-  terrace_class:
-    weight: 3.0
-    normalize:
-      method: categorical
-      # T1 is the target: flat, drained, close to water, rarely flooded.
-      # T0 floods annually -- sites there are scoured or buried.
-      # T2+ are older surfaces, further from water, often thinner soils.
-      values: {0: 0.0, 1: 0.2, 2: 1.0, 3: 0.6, 4: 0.4}
-      # NOTE the index shift: terrace_extract.py writes 0 = none, 1 = T0, 2 = T1.
 
   dist_to_stream_m:
     weight: 2.0

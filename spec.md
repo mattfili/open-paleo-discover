@@ -559,6 +559,17 @@ unbuilt item in the project for the labelling reason above.
 
 ## 7. Terrain derivation and scoring
 
+### The background frame (B5, added 2026-09-05)
+
+Every enrichment, percentile, or null-distribution number is relative to a **background
+frame**, and a number without its frame is not a result. The frame is defined once,
+here: **an AOI's regional buffered extent** — the model-grid stack computed with
+`clip_to_aoi=false`, i.e. the AOI bounding box plus the model-grid buffer (2,000 m),
+minus nodata. "Regional" in any diagnosis means exactly this. Every validation run
+records the frame (`frame`, `frame_cells`) in its `derivation.params`, and B1's null
+footprints are drawn from it and nowhere else. Cross-AOI comparisons of enrichment
+numbers are comparisons of different frames and must say so.
+
 ### Derivation chain
 
 ```
