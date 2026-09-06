@@ -179,6 +179,7 @@ def _fire_on_surface(
     threshold_pctile: float,
     min_cells: int,
     detect: dict | None = None,
+    kind: str = "",
 ) -> dict[str, Any]:
     """Apply the firing rule on one surface. Pure.
 
@@ -207,15 +208,24 @@ def _fire_on_surface(
         pctile = float((bg > extreme).mean() * 100.0)
 
     clusters = _cluster_morphometry(beyond)
-    qualifying = [c for c in clusters if _cluster_qualifies(c, detect, min_cells)]
     largest = max((c["cells"] for c in clusters), default=0)
-    return {
+    result: dict[str, Any] = {
         "valid": True,
-        "fired": bool(qualifying),
         "cluster_cells": largest,
-        "clusters": qualifying[:5],
         "pctile_max": round(pctile, 1),
     }
+    multi = detect.get("multi")
+    if multi and multi.get("surface") == kind:
+        # Multi-element classes fire on arrangement, not on any single cluster:
+        # one big blob at cemetery scale is exactly the wrong shape.
+        outcome = _multi_satisfied(clusters, multi)
+        result["multi"] = outcome
+        result["fired"] = outcome["satisfied"]
+        return result
+    qualifying = [c for c in clusters if _cluster_qualifies(c, detect, min_cells)]
+    result["fired"] = bool(qualifying)
+    result["clusters"] = qualifying[:5]
+    return result
 
 
 def _cluster_morphometry(beyond: np.ndarray) -> list[dict[str, Any]]:
@@ -233,15 +243,23 @@ def _cluster_morphometry(beyond: np.ndarray) -> list[dict[str, Any]]:
         rows, cols = np.nonzero(labelled == label_id)
         cells = int(rows.size)
         if cells < 4:
-            elongation = 1.0
+            elongation, fill = 1.0, 1.0
         else:
-            cov = np.cov(np.stack([rows, cols]).astype(float))
-            eig = np.sort(np.linalg.eigvalsh(cov))
+            coords = np.stack([rows, cols]).astype(float)
+            cov = np.cov(coords)
+            eig, vec = np.linalg.eigh(cov)
             elongation = float(np.sqrt(eig[1] / max(eig[0], 1e-9)))
+            # Fill ratio of the PCA-oriented bounding box: near 1 for a clean
+            # rectangle or disc, low for a ragged natural blob. Rectangularity at
+            # building scale is a strong cultural indicator (feature catalog).
+            rotated = vec.T @ (coords - coords.mean(axis=1, keepdims=True))
+            extent = rotated.max(axis=1) - rotated.min(axis=1) + 1.0
+            fill = float(cells / max(extent[0] * extent[1], 1.0))
         clusters.append(
             {
                 "cells": cells,
                 "elongation": round(elongation, 1),
+                "fill_ratio": round(fill, 2),
                 "centroid_rc": (float(rows.mean()), float(cols.mean())),
             }
         )
@@ -267,7 +285,44 @@ def _cluster_qualifies(cluster: dict, detect: dict, min_cells: int) -> bool:
     min_elong = detect.get("min_elongation")
     if min_elong is not None and cluster["elongation"] < min_elong:
         return False
+    min_fill = detect.get("min_fill_ratio")
+    if min_fill is not None and cluster["fill_ratio"] < min_fill:
+        return False
     return True
+
+
+def _multi_satisfied(
+    clusters: list[dict], multi: dict, cell_m: float = 0.5
+) -> dict[str, Any]:
+    """The multi-element rule: N regular small elements, not one blob. Pure.
+
+    Encodes the cemetery identifier from the feature catalog — rows of small regular
+    depressions. Elements are grave-scale clusters; the rule needs at least
+    `min_elements` of them with mean nearest-neighbour spacing under `nn_max_m` and
+    spacing regularity (CV of NN distances) under `nn_cv_max`. Regular spacing is
+    what a tree-throw carpet does not have: windthrow is Poisson in position, so its
+    NN-distance CV sits near 1, while graves in rows sit near constant spacing.
+    """
+    elements = [
+        c
+        for c in clusters
+        if multi["element_min_cells"] <= c["cells"] <= multi["element_max_cells"]
+        and c["elongation"] <= multi["element_max_elongation"]
+    ]
+    result: dict[str, Any] = {"elements": len(elements)}
+    if len(elements) < int(multi["min_elements"]):
+        result["satisfied"] = False
+        return result
+    pts = np.array([c["centroid_rc"] for c in elements])
+    d2 = np.hypot(pts[:, None, 0] - pts[None, :, 0], pts[:, None, 1] - pts[None, :, 1])
+    np.fill_diagonal(d2, np.inf)
+    nn_m = d2.min(axis=1) * cell_m
+    result["nn_mean_m"] = round(float(nn_m.mean()), 1)
+    result["nn_cv"] = round(float(nn_m.std() / max(nn_m.mean(), 1e-9)), 2)
+    result["satisfied"] = result["nn_mean_m"] <= float(multi["nn_max_m"]) and result[
+        "nn_cv"
+    ] <= float(multi["nn_cv_max"])
+    return result
 
 
 def _pair_satisfied(detail: dict[str, dict], detect: dict, cell_m: float = 0.5) -> bool:
@@ -318,6 +373,7 @@ def _apply_rule(
             threshold_pctile=float(detect["threshold_pctile"]),
             min_cells=int(detect["min_cells"]),
             detect=detect,
+            kind=kind,
         )
         detail[kind] = outcome
         if outcome.get("fired"):

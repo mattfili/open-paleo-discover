@@ -917,5 +917,23 @@ Suggested next action, in order:
    for cemeteries (the catalog's own identifier), foundation-plus-yard for
    structures. Amplitude alone remains falsified; single-blob morphometry now
    joins it, measured.
+
+   **Round 2, same day — the relational programme measured to its ceiling:**
+
+   | rule | recall | background | reading |
+   |---|---|---|---|
+   | cemetery multi-element (>=4 grave-scale elements, regular NN spacing) | 0/6 | 97% → **16%** | quiet at last, but graves do not resolve as separate clusters in 0.5 m forest LiDAR — the rule best-matched to the catalog is falsified by the data's granularity; a cemetery here is ONE compact anomaly |
+   | civic fill-ratio (PCA-OBB >= 0.55), Burns 45-70 m discs | 2/2 | 72% → 32% | helps where labels are tight |
+   | civic fill-ratio, White Bluff 95-150 m discs | 1/3 | 71% | breaks where labels are coarse — tolerance quality, not rule design, binds |
+
+   Three rule families measured (amplitude, blob shape, element arrangement): at
+   current data and label quality, single-surface geometry cannot separate
+   grave/building-scale features from Highland Rim texture. What remains, in order
+   of leverage: (a) label precision — 1:24,000 sheets and re-digitization shrink
+   discs, and Burns-vs-White-Bluff shows the effect directly; (b) relational priors
+   where the morphology truly is relational (pit+spoil carries information; it
+   stays); (c) confuser-context discrimination beyond geometry. The registry keeps
+   the best-motivated rule per class with these numbers attached; nothing was tuned
+   against the controls to manufacture a pass.
 4. Then item 5 (hearth-scale Montgomery Bell as `charcoal_hearth` — note the park is
    in EPT project `..._B2_...`, not B1) and item 6 (B1+B2).

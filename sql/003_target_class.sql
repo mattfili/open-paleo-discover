@@ -317,3 +317,12 @@ UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openne
 UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 40, "feature_radius_m": 10.0, "min_elongation": 3.0}}' WHERE class_id = 'road_trace';
 UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0}}' WHERE class_id = 'saltpeter_works';
 UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_pos": "high", "slrm": "high"}, "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 5.0, "min_elongation": 3.0}}' WHERE class_id = 'field_boundary';
+
+-- Relational rules round 2, 2026-09-06: multi-element for cemeteries (rows of small
+-- regular depressions — the catalog's own identifier; a tree-throw carpet is Poisson
+-- in position so its NN-spacing CV sits near 1, graves in rows near constant), and a
+-- PCA-oriented-bounding-box fill gate for structures (nature rarely makes clean
+-- rectangles at 4 m). Later UPDATE wins over the earlier block above; restated whole.
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 8, "feature_radius_m": 10.0, "multi": {"surface": "openness_neg", "min_elements": 4, "element_min_cells": 4, "element_max_cells": 80, "element_max_elongation": 4.0, "nn_max_m": 8.0, "nn_cv_max": 0.6}}}' WHERE class_id = 'family_cemetery';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0, "min_fill_ratio": 0.55}}' WHERE class_id = 'homestead';
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0, "min_fill_ratio": 0.55}}' WHERE class_id = 'civic_structure';
