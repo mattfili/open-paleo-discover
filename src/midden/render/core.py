@@ -223,7 +223,7 @@ def build_scene(
         zones = _vector(
             conn,
             f"Candidate zones ({class_id})",
-            """SELECT rank, round(pct_mean::numeric, 1) AS pct_mean, burial_risk,
+            """SELECT rank, round(pct_mean::numeric, 1)::float8 AS pct_mean, burial_risk,
                       ST_AsGeoJSON(ST_Transform(cz.geom, 4326)) AS gj
                FROM derived.candidate_zone cz
                WHERE cz.aoi_id = %s AND cz.class_id = %s ORDER BY rank""",
