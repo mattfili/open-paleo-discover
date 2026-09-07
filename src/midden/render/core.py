@@ -219,6 +219,23 @@ def build_scene(
     rasters = _raster_layers(catalogued, kinds, visible)
     xmin, ymin, xmax, ymax = aoi.geom.bounds
     vectors = _vector_layers(conn, aoi)
+    if class_id:
+        zones = _vector(
+            conn,
+            f"Candidate zones ({class_id})",
+            """SELECT rank, round(pct_mean::numeric, 1) AS pct_mean, burial_risk,
+                      ST_AsGeoJSON(ST_Transform(cz.geom, 4326)) AS gj
+               FROM derived.candidate_zone cz
+               WHERE cz.aoi_id = %s AND cz.class_id = %s ORDER BY rank""",
+            (aoi.id, class_id),
+            geometry="polygon",
+            stroke="#f59e0b",
+            fill="#f59e0b",
+            width=2.0,
+            legend="ranked survey candidates (F1); burial_risk is a separate finding",
+        )
+        if zones is not None:
+            vectors.append(zones)
     qualifier = f" · class: {class_id}" if class_id else ""
     return Scene(
         aoi_slug=aoi.slug,

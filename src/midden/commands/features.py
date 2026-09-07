@@ -464,6 +464,96 @@ def score_ablate(
         )
 
 
+@score_app.command("polygons")
+def score_polygons(
+    aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
+    class_id: Annotated[
+        str, typer.Option("--class", help="Class whose surface to polygonise.")
+    ],
+    weights: Annotated[Path | None, typer.Option("--weights")] = None,
+    top_pct: Annotated[
+        float, typer.Option("--top-pct", help="Percent of cells to keep.")
+    ] = 5.0,
+    min_cells: Annotated[
+        int, typer.Option("--min-cells", help="Drop zones smaller than this.")
+    ] = 4,
+) -> None:
+    """F1: the class's top-percentile cells as ranked survey-candidate polygons.
+
+    Clipped to the AOI (a survey zone outside the unit is not walkable permission-wise),
+    ranked by mean cell percentile then area. burial_risk rides as a separate column:
+    a high-scoring zone with high burial risk means right landform, invisible to
+    LiDAR — probe it, don't image it.
+    """
+    from midden import __version__
+    from midden.derivation import open_derivation
+    from midden.features.polygons import build_zones, store_zones
+
+    weight_set = load_weights(_class_weights(class_id, weights))
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        stack = build_feature_stack(conn, area, clip_to_aoi=True)
+    frame = pd.read_parquet(stack.path)
+    result = score_stack(frame, weight_set)
+    zones = build_zones(result.frame, top_pct=top_pct, min_cells=min_cells)
+
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        with open_derivation(
+            conn,
+            operation="score.polygons",
+            tool="midden.features.polygons",
+            tool_version=__version__,
+            aoi_id=area.id,
+            params={
+                "class_id": class_id,
+                "top_pct": top_pct,
+                "min_cells": min_cells,
+                "weight_set": result.weight_set,
+                "n_zones": len(zones),
+            },
+            inputs=[str(stack.path)],
+        ) as derivation_id:
+            stored = store_zones(
+                conn, area, class_id, zones, derivation_id=derivation_id
+            )
+
+    if not zones:
+        typer.secho(
+            f"{aoi}/{class_id}: no zone of {min_cells}+ cells in the top "
+            f"{top_pct:g}% — nothing worth walking at this threshold.",
+            fg=typer.colors.YELLOW,
+        )
+        return
+    typer.secho(
+        f"\n{aoi} / {class_id}: {stored} ranked zone(s) "
+        f"(top {top_pct:g}%, derivation {derivation_id})",
+        bold=True,
+    )
+    typer.echo(
+        f"{'rank':>4}{'area_m2':>10}{'pct':>7}{'score':>8}{'HAND m':>8}{'burial':>8}"
+    )
+    typer.echo("-" * 48)
+    for z in zones[:15]:
+        burial = f"{z['burial_risk']:.2f}" if z["burial_risk"] is not None else "-"
+        hand = f"{z['hand_mean_m']:.1f}" if z["hand_mean_m"] is not None else "-"
+        typer.echo(
+            f"{z['rank']:>4}{z['area_m2']:>10.0f}{z['pct_mean']:>7.1f}"
+            f"{z['score_mean']:>8.3f}{hand:>8}{burial:>8}"
+        )
+    if len(zones) > 15:
+        typer.echo(f"  ... {len(zones) - 15} more in derived.candidate_zone")
+    typer.echo(
+        "\nHow to read this. Rank orders zones by mean cell percentile (area breaks "
+        "ties): where the landform argues hardest for this class, per the current "
+        "weight set — a hypothesis, not a probability. burial: mean companion-band "
+        "value, deliberately not in the score — high burial on a high rank means "
+        "'right ground, LiDAR-blind; survey by probe/auger'. Zones inherit every "
+        "caveat of the weight set that made them (see score validate for its error "
+        "bars)."
+    )
+
+
 @score_app.command("weights")
 def score_weights(
     class_id: Annotated[

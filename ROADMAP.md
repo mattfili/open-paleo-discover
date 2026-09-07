@@ -554,7 +554,7 @@ record the frame used per run in the provenance ledger, and have B1's null draw 
 | NLCD canopy (`canopy_pct`) | §7 | Companion band: a predictor of data quality, not of settlement. Distinguishes a weak result in forest from a weak result in an open field. |
 | `midden_render_chart` | §9 | Needs a chart backend dependency (Altair or similar). |
 | Evals actually executed | §9 | `plugin/mcp/evals.xml` is written with hand-checked answers but has never been run against the server. See **G1**. |
-| Ranked polygon output | §11 M5 | Scoring produces a raster; polygonising the top percentile is not implemented. See **F1** — this gap is the product. |
+| ~~Ranked polygon output~~ | §11 M5 | **F1 built 2026-09-06**: `midden score polygons --aoi --class` → ranked zones in `derived.candidate_zone` (mean-percentile rank, area tiebreak, burial as a separate column), rendered as a scene vector layer when a class is given. Zones on all four control frames (MB 12, castalian 1, fewkes 2, OSF 5); MB's all sit on the 4.6-11.8 m HAND tread. F2 (survey ordering) remains. |
 
 The lettered sections below are the design for the items above and for the feature families
 the widened scope opens up.
