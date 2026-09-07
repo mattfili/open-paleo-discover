@@ -291,6 +291,31 @@ harpeth-narrows), which is what A2 runs against. **n=2 is retired: n=37 across f
 classes** (23 civic_structure, 9 family_cemetery, 4 iron_works, 1 road_trace —
 re-mapped 2026-09-05, below).
 
+**Precision pass, 2026-09-06 — the 1966 1:24,000 editions.** All 22 White Bluff
+points re-examined on the four 7.5' cells (Harpeth Valley / Kingston Springs /
+Lillamay / White Bluff, all 1966 — the oldest 24k editions for these cells; fetched,
+warped, catalogued). Outcome, three kinds:
+
+- **7 relocations** onto 1966 symbols at 35-45 m confidence (from 95-150 m): the five
+  surviving churches (Frog Pond '..Chapel', Pleasant View, Chestnut Ridge as
+  'Charlotte Ch', Sams Creek Ch — 187 m off the 1930-derived position — and Jackson
+  Ch as 'Jacksons Temple'), New Hope (church-with-cross at the site by 1966), and
+  Claylick (unlabeled building persisting at the school position). Plus Jackson Cem
+  relocated on Burns 1953 per the owner's review note (~69 m N, onto the dashed
+  square; the original click was on the label lettering).
+- **3 bonus cemeteries** the 1966 sheets label outright: Taylortown Cem, Thornton
+  Cem, Pinkerton Cem — all with dashed enclosures, all new family_cemetery points.
+- **15 vanishings, dated**: Collier Bend/Harpeth Valley/Stringfellow/Taylortown/
+  Lillamay/Cedar Hill/Sams Creek/Marrowbone/Johnson/Bar/Opossum/Blackwood/South
+  Harpeth schools, Williams Chapel, and Travis Ford are on the 1930 sheet and absent
+  by 1966 — the vanished-feature window 1930-1966, exactly the dated public ground
+  truth A2 runs on. Their 1930-derived points stand (coarse tolerance and all);
+  rural school consolidation is the likely mechanism. The five owner-rejected WB
+  points are all in this set, consistent with reading a symbol that had no 1966
+  counterpart to check against.
+
+All new points are machine-digitized `unreviewed`; the review-bench loop applies.
+
 Findings from the pass, recorded: (a) no "Mill" label survives on the 1930/1953 editions —
 mill culture predates them, so A2's vanished-structure test runs on `homestead` /
 `family_cemetery` / `iron_works` instead of `mill_seat`, whose labels need an 1890s-1900s

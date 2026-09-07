@@ -1,0 +1,37 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     499617.7,
+     3996833.6
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Chestnut Ridge Ch",
+    "positional_confidence_m": 35,
+    "note": "church-with-cross on 1966 sheet, labeled 'Charlotte Ch'"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     494781.5,
+     3991243.5
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Thornton Cem",
+    "positional_confidence_m": 35,
+    "note": "labeled dashed enclosure on 1966 sheet"
+   }
+  }
+ ]
+}

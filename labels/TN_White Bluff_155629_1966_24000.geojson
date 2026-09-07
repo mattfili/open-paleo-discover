@@ -1,0 +1,53 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     479427.8,
+     3987588.3
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Jackson Ch",
+    "positional_confidence_m": 35,
+    "note": "survives as 'Jacksons Temple' on 1966 sheet"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     486050.2,
+     3985734.9
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "New Hope Sch",
+    "positional_confidence_m": 35,
+    "note": "church-with-cross at the site by 1966"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     486067.3,
+     3985821.7
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Pinkerton Cem",
+    "positional_confidence_m": 40,
+    "note": "labeled cemetery, two dashed enclosures with crosses; point on the labeled upper one"
+   }
+  }
+ ]
+}

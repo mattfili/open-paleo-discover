@@ -225,6 +225,22 @@
     "name": "Thompson Cem",
     "positional_confidence_m": 45.0
    }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     474286.3,
+     3994518.9
+    ]
+   },
+   "properties": {
+    "class_id": "family_cemetery",
+    "name": "Jackson Cem (relocated)",
+    "positional_confidence_m": 40,
+    "note": "relocation of the rejected Jackson Cem point per owner review: symbol (dashed square) sits ~69 m N of the original click, which was on the label text"
+   }
   }
  ]
 }

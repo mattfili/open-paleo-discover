@@ -1,0 +1,21 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     496655.1,
+     4006765.1
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Sams Creek Ch",
+    "positional_confidence_m": 35,
+    "note": "church-with-cross survives, 'Sams Creek Ch' on 1966 sheet"
+   }
+  }
+ ]
+}
