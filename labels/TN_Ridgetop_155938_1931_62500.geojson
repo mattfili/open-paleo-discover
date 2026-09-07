@@ -1,0 +1,389 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     506747,
+     4020134
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Oakwood Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     510212,
+     4016801
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Greenville Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     510900,
+     4015744
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "St Lawrence Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     506985,
+     4014288
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Setters Sch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     511074,
+     4014273
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Oakland Ch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     512126,
+     4018827
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Joelton Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     517310,
+     4017542
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Lickton Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     514787,
+     4015278
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Weaver Sch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     518966,
+     4014992
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Little Creek Sch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     506308,
+     4023546
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "New Hope Ch (Ridgetop)",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     505504,
+     4022842
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Pinnacle Sch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     510545,
+     4023636
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Forest Grove Ch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     517157,
+     4024641
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Oak Grove Sch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     509789,
+     4034215
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Palestine Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     506308,
+     4032628
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Mt Zion Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     509471,
+     4031559
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Sharon Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     509354,
+     4031004
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Crunk Ch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     508244,
+     4029893
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Chestnut Grove Ch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     511930,
+     4032855
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Crossroads Sch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     515036,
+     4032697
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Lights Chapel",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     517405,
+     4032945
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Ebenezer Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     512433,
+     4030036
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Rock Springs Ch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     512777,
+     4029168
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Reeder Sch",
+    "positional_confidence_m": 120,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     515131,
+     4012041
+    ]
+   },
+   "properties": {
+    "class_id": "civic_structure",
+    "name": "Green Sch",
+    "positional_confidence_m": 90,
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+   }
+  }
+ ]
+}

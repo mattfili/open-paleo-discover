@@ -316,7 +316,15 @@ warped, catalogued). Outcome, three kinds:
 
 All new points are machine-digitized `unreviewed`; the review-bench loop applies.
 
-**Tight-disc validation of the 1966 points (same day):** Taylortown Cem is the
+**Ridgetop digitized 2026-09-07** — the last catalogued-but-undigitized sheet, and
+the Highland Rim label unit B3 has waited for: 24 civic_structure points (churches
+and schools across the dissected uplands from Joelton to Greenbrier), machine pass,
+unreviewed, tracked in `labels/`. Precontact Rim labels for B3-of-the-model remain
+absent (NRHP publishes none up here); what these buy immediately is the first
+cross-physiography DETECTION comparison — Rim texture vs Basin texture under the
+same rules — running now.
+
+**Tight-disc validation of the 1966 points (2026-09-06):** Taylortown Cem is the
 first cemetery to carry information — 1/1 recall vs a 23% background with the
 multi-element rule that scored 0/6 on coarse discs: at 40 m confidence the enclosure
 resolves as regular elements, at 95 m it drowned. Label precision was the binding
@@ -883,6 +891,15 @@ Each of these was learned the expensive way. They are in the code as comments to
   "Unable to write GDAL data with no points". Per-AOI coverage lives in
   hobu/usgs-lidar `boundaries/resources.geojson`; check it, not the cube bounds.
   Discovered 2026-09-04 by the first Montgomery Bell detection run.
+- **Histmap footprints include the paper collar.** `ref.histmap_sheet.footprint` is
+  the warped raster's extent, so ST_Contains checks pass on collar paper: Ridgetop
+  "contains" Beaman Park, but the map neatline stops at ~4011.7k N and covers only
+  the park's north edge. Check content coverage (ink), not the footprint, before
+  planning a digitization or validation around an AOI.
+- **A sheet's title year is the survey year, not the printing.** The "1931" Ridgetop
+  scan carries a 1950s collar (road classification style, USGS Historical File
+  stamp): symbols reflect revision up to the printing, so label dates carry that
+  window — recorded per point in review_note.
 - **HTMC contains partial "advance sheets" that georeference correctly and are mostly
   blank paper.** Burns 1936 covers only the western third of its cell; Montgomery Bell
   falls in the blank part, discovered only by checking per-tile ink fraction. Check
