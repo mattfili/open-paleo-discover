@@ -316,6 +316,17 @@ warped, catalogued). Outcome, three kinds:
 
 All new points are machine-digitized `unreviewed`; the review-bench loop applies.
 
+**Tight-disc validation of the 1966 points (same day):** Taylortown Cem is the
+first cemetery to carry information — 1/1 recall vs a 23% background with the
+multi-element rule that scored 0/6 on coarse discs: at 40 m confidence the enclosure
+resolves as regular elements, at 95 m it drowned. Label precision was the binding
+variable, demonstrated within one class. The surviving churches all miss on
+quiet-ish backgrounds (0/3 HV at 36%, 0/1 KS at 15%): standing buildings are
+removed by ground classification and leave only a leveled pad — the chain sees
+razed features better than living ones, so the vanished-feature test is strongest
+exactly where features vanished. Three sheet-edge clusters could draw no nulls
+(EPT seams) and say so rather than reporting unverified recall.
+
 Findings from the pass, recorded: (a) no "Mill" label survives on the 1930/1953 editions —
 mill culture predates them, so A2's vanished-structure test runs on `homestead` /
 `family_cemetery` / `iron_works` instead of `mill_seat`, whose labels need an 1890s-1900s
