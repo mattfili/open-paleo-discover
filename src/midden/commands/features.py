@@ -554,6 +554,87 @@ def score_polygons(
     )
 
 
+@score_app.command("plan")
+def score_plan(
+    aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
+    class_id: Annotated[
+        str, typer.Option("--class", help="Class whose zones to plan.")
+    ],
+    person_days: Annotated[
+        float, typer.Option("--person-days", help="Field budget.")
+    ] = 2.0,
+) -> None:
+    """F2: which zones, in what order, under a person-day budget.
+
+    Greedy expected-value-per-hour over the ranked zones, with the survey-method
+    arithmetic shown (direct classes get verification visits; proxy classes get
+    shovel-test grids whose costs the sampling literature sets), a labeled control
+    sample carved out so the survey can falsify the model, and the unmeasurable
+    access bias stated rather than omitted.
+    """
+    from midden import __version__
+    from midden.derivation import open_derivation
+    from midden.features.plan import build_plan
+
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        cls = get_class(conn, class_id)
+        plan = build_plan(conn, area, cls, person_days=person_days)
+        with open_derivation(
+            conn,
+            operation="score.plan",
+            tool="midden.features.plan",
+            tool_version=__version__,
+            aoi_id=area.id,
+            params={
+                "class_id": class_id,
+                "person_days": person_days,
+                "itinerary_zone_ids": [z["zone_id"] for z in plan["itinerary"]],
+                **plan["params"],
+            },
+            inputs=[f"derived.candidate_zone aoi={aoi} class={class_id}"],
+        ):
+            pass
+
+    typer.secho(
+        f"\nsurvey plan — {class_id} in {aoi}, {person_days:g} person-day(s) "
+        f"({plan['field_hours']:g} field hours)",
+        bold=True,
+    )
+    typer.echo(f"method: {plan['method']}  (class is {plan['detectability']})")
+    typer.echo(
+        f"\n{'order':>5}{'zone rank':>10}{'area_m2':>9}{'pct':>7}{'burial':>8}"
+        f"{'hours':>7}{'cum':>7}{'EV/hr':>7}"
+    )
+    typer.echo("-" * 62)
+    for i, z in enumerate(plan["itinerary"], 1):
+        burial = f"{z['burial_risk']:.2f}" if z["burial_risk"] is not None else "-"
+        typer.echo(
+            f"{i:>5}{z['rank']:>10}{z['area_m2']:>9.0f}{z['pct_mean']:>7.1f}"
+            f"{burial:>8}{z['effort_hours']:>7.1f}{z['cumulative_hours']:>7.1f}"
+            f"{z['ev_per_hour']:>7.2f}"
+        )
+    if plan["skipped"]:
+        typer.echo(f"unfunded at this budget: zone rank(s) {plan['skipped']}")
+    typer.secho(
+        f"\ncontrol sample: {plan['control_sample']['hours']} h "
+        f"({int(plan['params']['control_budget_fraction'] * 100)}% of budget)",
+        fg=typer.colors.YELLOW,
+        bold=True,
+    )
+    typer.echo(f"  {plan['control_sample']['instruction']}")
+    typer.secho(f"access bias: {plan['access_bias']}", fg=typer.colors.YELLOW)
+    typer.echo(
+        "\nHow to read this. EV is RELATIVE — the score surface ranks landform "
+        "argument strength, it does not give site probabilities, so this orders "
+        "effort rather than promising discoveries. Effort arithmetic: verification "
+        "visits for direct classes; for proxy classes, shovel tests at the recorded "
+        "spacing with per-test minutes — the sobering intersection/recovery math is "
+        "Krakker et al. 1983 and Nance & Ball 1986. Diminishing returns within a "
+        "zone (reconnaissance-then-concentrate) is not yet modeled; recorded."
+    )
+
+
 @score_app.command("weights")
 def score_weights(
     class_id: Annotated[

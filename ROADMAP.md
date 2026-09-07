@@ -690,7 +690,21 @@ exhaustive detection does not scale past a handful of parks, and there is no tri
 Some classes skip stage 1 — `rockshelter` is constrained to bluff lines, a cheaper mask than
 a suitability surface. Record which classes cascade and which gate on a hard constraint.
 
-### F. Product — ranked polygons, then the survey plan
+### F. Product — ranked polygons, then the survey plan — BOTH BUILT 2026-09-06
+
+F1: `midden score polygons` (see the Not-built table row). F2: `midden score plan
+--aoi --class --person-days N` orders the zones by relative expected value per hour
+under the budget, with the survey-method arithmetic explicit per class (direct =
+verification visits of LiDAR candidates; proxy = shovel-test grids at a recorded
+spacing — Krakker/Nance-and-Ball costs), a **labeled 15% control sample** on
+landform-matched low-score ground so the survey can falsify the model rather than
+confirm it (Orton), and the access-bias line stated NOT COMPUTABLE until a roads
+layer lands (B4). EV is openly relative: the plan orders effort, it does not promise
+discoveries. First run (mound-bottom, 2 person-days): 6 of 12 zones funded, and the
+top-ranked bulky zones lose to small excellent ones on EV/hour — the diminishing-
+bulk economics surfacing exactly as intended. Not yet modeled, recorded: within-zone
+diminishing returns (reconnaissance-then-concentrate, Thompson's adaptive logic).
+Original framing kept below.
 
 `README.md` promises "a ranked set of polygons worth walking." Ranked polygon output is in
 the table above as not built. That gap is the product.
@@ -794,7 +808,7 @@ novel for geospatial work.
 10. **A4** — confuser registry, opportunistically while working existing AOIs.
 11. **B3 + Known broken #3** — `beaman-park` terrain, then holdout.
 12. **C6** — portage, as a companion band with its test.
-13. **F1** polygonise, **E** cascade, then **F2**, **G3**, **G4**.
+13. ~~**F1**~~, ~~**F2**~~ — built 2026-09-06. Remaining: **E** cascade, **G3**, **G4**.
 
 ---
 
