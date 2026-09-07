@@ -1058,5 +1058,16 @@ Suggested next action, in order:
    stays); (c) confuser-context discrimination beyond geometry. The registry keeps
    the best-motivated rule per class with these numbers attached; nothing was tuned
    against the controls to manufacture a pass.
-4. Then item 5 (hearth-scale Montgomery Bell as `charcoal_hearth` — note the park is
+4. **Ticket (2026-09-07): seam-aware EPT project selection per cluster.** `validate
+   histmap` and detection runs take one global `--ept-project`, but coverage is a
+   patchwork whose true extents live in hobu/usgs-lidar `boundaries/resources.geojson`
+   (the ept.json cube bounds lie). Resolve the covering project per cluster AOI from
+   that index — falling back across candidates on a "no points" failure — so seam
+   clusters (the Montgomery Bell ore pits, 10 Ridgetop points, 7 White Bluff civic
+   points) stop reporting coverage gaps that a different project would fill. Related
+   observation, recorded: all iron_works labels cluster in one park that a block
+   seam bisects — spatially clustered labels inherit local data pathology along with
+   everything else local (the spatial-validation caution, appearing as a data-quality
+   effect rather than a statistical one).
+5. Then item 5 (hearth-scale Montgomery Bell as `charcoal_hearth` — note the park is
    in EPT project `..._B2_...`, not B1) and item 6 (B1+B2).
