@@ -21,9 +21,9 @@ Two sampling-theory constraints are structural, not optional:
   matched on landform, drawn the way B1 draws its nulls. A plan that only visits
   top-ranked zones can never learn the model is wrong — that is survey bias
   manufacturing its own validation (Orton 2000). The line item ships labeled.
-- **Access bias at plan time** is reported, not corrected — and with no public
-  roads layer loaded it is currently NOT COMPUTABLE, which the plan states
-  (see B4) instead of omitting.
+- **Access bias at plan time** is reported, not corrected: the plan points its
+  zones at the surface's measured B4 ratio (top-5% vs background road distance,
+  recorded on every score run) and asks that access-skips be logged as such.
 """
 
 from __future__ import annotations
