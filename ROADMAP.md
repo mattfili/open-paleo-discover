@@ -322,7 +322,14 @@ and schools across the dissected uplands from Joelton to Greenbrier), machine pa
 unreviewed, tracked in `labels/`. Precontact Rim labels for B3-of-the-model remain
 absent (NRHP publishes none up here); what these buy immediately is the first
 cross-physiography DETECTION comparison — Rim texture vs Basin texture under the
-same rules — running now.
+same rules. **Result: recall 8/14 vs 65% background** (10 further points in EPT
+coverage gaps, reported as such). Against the Basin's coarse-disc civic runs
+(96-100% background on White Bluff 1930 at comparable disc sizes), the Rim
+background fires markedly LESS — dissected upland texture produces fewer compact
+p95 anomalies than valley-bottom ground. Caveats recorded: disc sizes differ
+(90-125 m here vs 50-150 in the Basin set) and the verdict is still uninformative
+(recall under background); but the physiography-dependent texture difference B3
+predicted for the model side is now measured on the detection side.
 
 **Tight-disc validation of the 1966 points (2026-09-06):** Taylortown Cem is the
 first cemetery to carry information — 1/1 recall vs a 23% background with the
