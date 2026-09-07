@@ -793,7 +793,25 @@ it can be checked and so it can go into a methods appendix later.
 
 **C6**'s recorded portage gap is the template: where a source is missing, the skill says so.
 
-#### G3. Tools the interpretive use case needs
+#### G3. Tools the interpretive use case needs — BUILT 2026-09-07
+
+All four shipped in `mcp/tools/interpret.py`, read-only, registered on the server:
+
+- `midden_explain_cell` — per-feature decomposition (raw value, normalised value,
+  weight share, contribution; contributions sum to the score, mechanically checked
+  as eval #13), plus the in-AOI percentile and companion bands. Attribution over
+  assertion: numbers, never narrative. Categorical features return their label
+  strings (SSURGO's literal 'None' is a value, not an absence).
+- `midden_compare_landform` — two cells side by side with normalised deltas;
+  percentiles are flagged per-AOI and non-comparable across AOIs.
+- `midden_describe_aoi` — role (with meaning), terrain summary from the clipped
+  stack, raster coverage by grid and variant, soils mix, labels inside, zones.
+- `midden_class_brief` — registry row with detectability *meaning* spelled out,
+  known confusers from A4's ledger, label counts by source and review status, and
+  the class's latest validate-histmap numbers (recall + background fire rate).
+
+Reads only: an absent stack parquet raises with the build command rather than
+computing behind a readOnlyHint. Original tool list kept below.
 
 - **`midden_explain_cell`** — AOI plus coordinates returns per-feature values, their
   normalised percentiles, and each feature's contribution to the score. Feature attribution

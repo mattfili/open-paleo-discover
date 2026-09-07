@@ -90,4 +90,11 @@
     <notes>Per-class detectability; added 2026-09-06 per G1's acceptance.</notes>
   </qa_pair>
 
+  <qa_pair id="13">
+    <question>A cell at Mound Bottom scores in the top percentile. How do you find out why, and what form must the answer take?</question>
+    <answer>midden_explain_cell with the AOI, coordinates, and target class. The answer is a per-feature decomposition — raw value, normalised value, weight share, contribution — whose contributions sum to the score, plus the companion bands. Attribution over assertion: the tool returns numbers, never a narrative; a low score with high burial_risk means LiDAR-blind, not empty.</answer>
+    <expected_tools>midden_explain_cell</expected_tools>
+    <notes>G3's core loop; added 2026-09-07. Mechanically checked: contributions must sum to the score.</notes>
+  </qa_pair>
+
 </evaluation>

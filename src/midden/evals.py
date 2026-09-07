@@ -177,6 +177,24 @@ def _check_12(conn):
     )
 
 
+def _check_13(conn):
+    import pandas as pd
+
+    from midden.config import settings
+    from midden.mcp.tools.interpret import midden_explain_cell
+
+    stack = settings().parquet_dir / "mound-bottom_10m.parquet"
+    if not stack.exists():
+        return False, "no mound-bottom stack parquet; run midden features build"
+    frame = pd.read_parquet(stack)
+    row = frame.iloc[len(frame) // 2]
+    e = midden_explain_cell("mound-bottom", float(row["easting"]),
+                            float(row["northing"]), "open_habitation")
+    total = sum(f["contribution"] for f in e["features"].values())
+    ok = abs(total - e["score"]) < 0.01 and "companion_bands" in e
+    return ok, f"contributions sum {total:.4f} vs score {e['score']:.4f}"
+
+
 CHECKERS: dict[str, Checker] = {
     "1": _check_1,
     "2": _check_2,
@@ -190,6 +208,7 @@ CHECKERS: dict[str, Checker] = {
     "10": _check_10,
     "11": _check_11,
     "12": _check_12,
+    "13": _check_13,
 }
 
 

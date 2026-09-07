@@ -64,9 +64,9 @@ mcp: FastMCP = FastMCP(
 
 def _register_all() -> None:
     """Attach every tool module to the server."""
-    from midden.mcp.tools import compute, semantic, spatial, visual
+    from midden.mcp.tools import compute, interpret, semantic, spatial, visual
 
-    for module in (semantic, spatial, compute, visual):
+    for module in (semantic, spatial, compute, visual, interpret):
         module.register(mcp)
 
 
