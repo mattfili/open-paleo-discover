@@ -146,9 +146,10 @@ def build_plan(
             ),
         },
         "access_bias": (
-            "NOT COMPUTABLE: no public roads layer is loaded (B4). Until one is, "
-            "this plan's near-road preference cannot be measured; treat routing "
-            "convenience as an unmeasured bias."
+            "The zones inherit the surface's measured access bias — see the B4 line "
+            "on this class's latest `score run` (top-5% vs background road-distance "
+            "ratio, recorded in its derivation). Routing convenience adds bias on "
+            "top; log any zone skipped for access as skipped-for-access."
         ),
         "params": dict(PARAMS),
     }

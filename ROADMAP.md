@@ -517,7 +517,19 @@ catches the failure `spec.md` §2 names — the model learning "Middle Tennessee
 river terrace." Blocked by **#3** (`beaman-park` has no terrain), which makes that item a
 dependency of the validation strategy, not a coverage gap.
 
-#### B4. Access-bias audit
+#### B4. Access-bias audit — MEASURED 2026-09-07
+
+`sources/tiger_roads.yml` loads Census TIGERweb local roads over the buffered frame
+(the arcgis_rest driver gained a server-side envelope filter — a national layer
+cannot be fetched whole; local roads only, a recorded choice). `dist_to_road` stays
+permanently unpromotable (FORBIDDEN_FEATURES). Every `score run` now reports and
+records the B4 statistic; `score plan` points its zones at it.
+
+**First measurement: the bias is real — median ratio 0.61 (mound-bottom) and 0.62
+(castalian): the top-5% cells sit ~40% closer to roads than matched background.**
+Exactly the predicted laundering through slope/stream/terrace features. Measured,
+never corrected — correction needs non-public survey-coverage polygons, and the
+distinction stays explicit. Original framing kept below.
 
 Keep `dist_to_road` out of the feature stack. Excluding the variable does not remove access
 bias, it removes the ability to see it — roads follow terrace edges, gentle slope, and water

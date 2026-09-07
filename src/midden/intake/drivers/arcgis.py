@@ -21,15 +21,28 @@ def fetch(params: dict, aoi: Aoi | None, dest: Path) -> Path:
     """Query an ArcGIS layer and write the result to a GeoPackage."""
     url = params.get("url")
     if not url:
-        raise DriverError("arcgis_rest driver needs a 'url' param naming the layer endpoint.")
+        raise DriverError(
+            "arcgis_rest driver needs a 'url' param naming the layer endpoint."
+        )
 
     where = params.get("where", "1=1")
     scoped = params.get("scope", "aoi") == "aoi"
     if scoped and aoi is None:
-        raise DriverError("arcgis_rest with scope 'aoi' needs an AOI; pass --aoi <slug>.")
+        raise DriverError(
+            "arcgis_rest with scope 'aoi' needs an AOI; pass --aoi <slug>."
+        )
+
+    # buffer_m turns the AOI into a server-side envelope filter, expanded so the
+    # fetch covers the buffered analysis frame — required for national layers
+    # (TIGER roads), where fetch-everything-then-clip is not an option.
+    buffer_m = float(params.get("buffer_m", 0.0))
+    envelope = None
+    if scoped and aoi is not None and buffer_m > 0:
+        xmin, ymin, xmax, ymax = aoi.geom.bounds
+        envelope = (xmin - buffer_m, ymin - buffer_m, xmax + buffer_m, ymax + buffer_m)
 
     try:
-        rows = query_layer(url, where, out_crs=PROJECT_CRS)
+        rows = query_layer(url, where, out_crs=PROJECT_CRS, envelope=envelope)
     except ArcGisError as exc:
         raise DriverError(str(exc)) from exc
 
@@ -41,9 +54,11 @@ def fetch(params: dict, aoi: Aoi | None, dest: Path) -> Path:
         geometry=[geom for _, geom in rows],
         crs=PROJECT_CRS,
     )
-    if scoped and aoi is not None:
+    if scoped and aoi is not None and envelope is None:
         # Clipped client-side: layers used this way are reference layers of modest size,
         # and an envelope filter server-side would still need this to trim to the polygon.
+        # With buffer_m set, the envelope IS the wanted extent (the buffered analysis
+        # frame), so trimming back to the AOI polygon would defeat the buffer.
         frame = frame[frame.intersects(aoi.geom)]
         if frame.empty:
             raise DriverError(f"{url}: nothing intersects AOI {aoi.slug}.")

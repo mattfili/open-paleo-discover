@@ -1,0 +1,31 @@
+name: tiger_roads
+description: >-
+  Census TIGERweb local roads over the AOI's buffered frame. Exists ONLY to measure
+  access bias (B4): dist_to_road is permanently unpromotable to a scored feature --
+  it predicts where archaeologists have looked, not where people lived -- and the
+  weight-set loader enforces that. Local roads (layer 8) only, a recorded choice:
+  proximity is dominated by the local network; primary/secondary omitted.
+
+fetch:
+  driver: arcgis_rest
+  params:
+    url: https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/8
+    scope: aoi
+    # Server-side envelope: the layer is national, so fetch-everything-then-clip is
+    # not an option. 2500 m covers the 2000 m model frame with margin, so the B4
+    # distance statistic is valid to the frame edge.
+    buffer_m: 2500
+  cache: data/raw/tiger_roads
+
+transform:
+  - select: [OID, MTFCC, NAME, geometry]
+  - rename: {OID: road_oid, MTFCC: mtfcc, NAME: road_name}
+
+load:
+  target: ref.tiger_road
+  geometry_column: geom
+  # upsert, not replace: fetches are AOI-scoped; replace would keep only the most
+  # recent AOI's roads and silently destroy the rest.
+  mode: upsert
+  upsert_key: [road_oid]
+  index: [gist(geom)]

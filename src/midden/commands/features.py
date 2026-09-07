@@ -134,6 +134,11 @@ def score_run(
     write_score_raster(result.frame, template, destination)
     with connect() as conn:
         area = get_aoi(conn, aoi)
+        # B4 rides on every scoring run: excluding dist_to_road from the stack does
+        # not remove access bias, only the ability to see it — so it is measured here.
+        from midden.features.access import access_bias_report
+
+        bias = access_bias_report(conn, result.frame)
         with open_derivation(
             conn,
             operation="score.overlay",
@@ -145,6 +150,7 @@ def score_run(
                 "weights": str(weights_path),
                 "weight_set": result.weight_set,
                 "regional": regional,
+                "access_bias": bias,
             },
             inputs=[str(stack.path)],
         ) as derivation_id:
@@ -161,6 +167,20 @@ def score_run(
         f"{aoi}: scored {len(frame):,} cells for {class_id} with '{result.weight_set}'",
         fg=typer.colors.GREEN,
     )
+    if bias.get("computable"):
+        typer.secho(
+            f"  access bias (B4): top-5% median {bias['top_median_m']} m to a road vs "
+            f"background {bias['background_median_m']} m (ratio {bias['median_ratio']}) "
+            f"— {bias['reading']}",
+            fg=typer.colors.YELLOW
+            if bias["median_ratio"] < 0.9
+            else typer.colors.GREEN,
+        )
+    else:
+        typer.secho(
+            f"  access bias (B4): not computable — {bias['why']}",
+            fg=typer.colors.YELLOW,
+        )
     typer.echo(
         f"  mean {result.frame.score.mean():.3f}  "
         f"range {result.frame.score.min():.3f}..{result.frame.score.max():.3f}"

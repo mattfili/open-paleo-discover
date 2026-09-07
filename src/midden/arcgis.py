@@ -42,7 +42,9 @@ def _get(url: str, params: dict[str, Any]) -> dict[str, Any]:
     alone would let a failed query through as an empty result.
     """
     try:
-        response = httpx.get(url, params=params, timeout=_TIMEOUT, follow_redirects=True)
+        response = httpx.get(
+            url, params=params, timeout=_TIMEOUT, follow_redirects=True
+        )
         response.raise_for_status()
         payload = response.json()
     except httpx.HTTPError as exc:
@@ -74,11 +76,14 @@ def query_layer(
     *,
     out_fields: str = "*",
     out_crs: str = PROJECT_CRS,
+    envelope: tuple[float, float, float, float] | None = None,
 ) -> list[tuple[dict[str, Any], BaseGeometry]]:
     """Query a layer and return `(attributes, geometry)` pairs in `out_crs`.
 
     Pages until the server stops reporting a transfer limit, so a large layer comes back
-    whole rather than silently truncated at the first 1000 features.
+    whole rather than silently truncated at the first 1000 features. `envelope` is a
+    server-side bbox filter in `out_crs` — required for national layers (TIGER roads),
+    where fetch-everything-then-clip is not an option.
     """
     url = layer_url.rstrip("/") + "/query"
     base = {
@@ -88,11 +93,23 @@ def query_layer(
         "outSR": _srid(out_crs),
         "f": "geojson",
     }
+    if envelope is not None:
+        xmin, ymin, xmax, ymax = envelope
+        base.update(
+            {
+                "geometry": f"{xmin},{ymin},{xmax},{ymax}",
+                "geometryType": "esriGeometryEnvelope",
+                "inSR": _srid(out_crs),
+                "spatialRel": "esriSpatialRelIntersects",
+            }
+        )
 
     results: list[tuple[dict[str, Any], BaseGeometry]] = []
     offset = 0
     while True:
-        payload = _get(url, {**base, "resultOffset": offset, "resultRecordCount": _PAGE_SIZE})
+        payload = _get(
+            url, {**base, "resultOffset": offset, "resultRecordCount": _PAGE_SIZE}
+        )
         features = payload.get("features") or []
         for feature in features:
             geometry = feature.get("geometry")
