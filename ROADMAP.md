@@ -825,7 +825,16 @@ computing behind a readOnlyHint. Original tool list kept below.
   parameters, detectability, confusers, and sources. The registry is only useful as a
   learning tool if it is legible from inside the conversation.
 
-#### G4. Closing the loop
+#### G4. Closing the loop — v1 SHIPPED 2026-09-07
+
+The loop this week ran by hand is now repo machinery: the `experiment-loop` skill
+(one iteration = read roadmap → pick ONE runnable falsifiable item → run with the
+existing verbs → gate with the QA skills → write back in the same commit, failures
+included) and the `experiment-runner` agent that executes exactly one iteration and
+stops. Guardrails are in the definitions: every recall ships with its error bar,
+one principled change tested once, review_status is never machine-flipped, blocked
+is a finding. What v1 does not do: schedule itself — a human (or a session) invokes
+an iteration deliberately. Original framing kept below.
 
 Longer horizon, recorded now: an agent that reads `ROADMAP.md`, proposes the next falsifiable
 experiment, runs it, and writes the outcome back into the ledger — including when it fails.
@@ -853,7 +862,7 @@ novel for geospatial work.
 10. **A4** — confuser registry, opportunistically while working existing AOIs.
 11. **B3 + Known broken #3** — `beaman-park` terrain, then holdout.
 12. **C6** — portage, as a companion band with its test.
-13. ~~**F1**~~, ~~**F2**~~ — built 2026-09-06. Remaining: **E** cascade, **G3**, **G4**.
+13. ~~**F1**~~, ~~**F2**~~, ~~**G3**~~ (2026-09-07), ~~**G4** v1~~ (2026-09-07). Remaining: **E** cascade.
 
 ---
 
