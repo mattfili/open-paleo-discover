@@ -234,6 +234,41 @@ def terrain_preview(
     )
 
 
+@terrain_app.command("zones")
+def terrain_zones(
+    aoi: Annotated[str, typer.Option("--aoi", help="AOI slug.")],
+    class_id: Annotated[
+        str, typer.Option("--class", help="Detection class to promote.")
+    ],
+) -> None:
+    """Promote a class's detection clusters to candidate zones (the cascade stage).
+
+    Applies the SAME firing rule validation uses, across the whole raster instead of
+    at labelled points, and writes what qualifies to derived.candidate_zone — which
+    is what makes a detection usable as a survey candidate and as an evidence layer
+    for classes that cannot be detected directly.
+    """
+    from midden.detect_zones import detect_zones
+    from midden.registry import get_class
+
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        cls = get_class(conn, class_id)
+        result = detect_zones(conn, area, cls, config=settings())
+
+    typer.secho(
+        f"{result['aoi']} / {result['class_id']}: {result['zones']} zone(s), "
+        f"{result['total_area_m2']:,} m2 (derivation {result['derivation_id']})",
+        fg=typer.colors.GREEN,
+    )
+    typer.echo(f"  surface {result['surface']} ({result['tail']} tail)")
+    typer.echo(
+        "  Threshold is AOI-wide here, not a local annulus as in validation: a zone "
+        "clears the percentile for THIS raster, so the number is a statement about "
+        "this AOI. Zones are candidates, never findings."
+    )
+
+
 @terrain_app.command("params")
 def terrain_params() -> None:
     """Show the named parameters, their defaults, and why each is contested."""

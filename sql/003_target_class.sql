@@ -382,3 +382,11 @@ UPDATE ref.target_class SET params = params || '{"context": [
   {"source": "dist_to_chert_outcrop_m", "kind": "feature", "max_dist_m": 2000,
    "rationale": "C4, NOT BUILT: the first genuinely independent line of evidence. Declared so the stack reports it as missing rather than silently omitting it"}
 ]}' WHERE class_id = 'midden';
+
+-- relict_channel v2, 2026-09-08: the exclusion gate. Visual QA showed the rule
+-- correctly tracing point-bar scroll swales AND the active channel's cut banks and
+-- roadside ditches - all linear and concave. "Relict" means abandoned, so the class
+-- is defined partly by what it is NOT: clusters mostly coincident with mapped NHD
+-- hydrography are dropped. A relational discriminator, like every rule that has
+-- worked here.
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 60, "feature_radius_m": 15.0, "min_elongation": 3.0, "exclude_near": {"source": "ref.nhd_flowline", "min_dist_m": 25}}}' WHERE class_id = 'relict_channel';

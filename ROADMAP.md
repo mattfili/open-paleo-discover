@@ -680,6 +680,32 @@ motivation for the **E** cascade: detect context at 0.5 m, promote to zones at 1
 Design note recorded: if context classes multiply they want their own table or a `role`
 column rather than crowding `ref.target_class`.
 
+**The gravel-channel layer, end to end — 2026-09-08.** `midden terrain zones`
+promotes a detection class's qualifying clusters to `derived.candidate_zone` using the
+SAME firing rule validation uses (so a class cannot detect one way when measured and
+another when used), which is the cascade stage that was missing. Visual QA of the first
+run was decisive and mixed: the rule traced point-bar scroll swales correctly AND the
+active channel's cut banks and roadside ditches — all linear and concave. The fix is the
+definition of the word: **relict means abandoned**, so `exclude_near` drops clusters
+mostly coincident with mapped NHD hydrography. Mound Bottom went 47 → 22 zones (34,383
+cells excluded); Hidden Lake 121 → 61. A declared exclusion whose source table is empty
+in the frame now RAISES with the fix rather than silently keeping everything — found
+because Hidden Lake had no flowlines loaded and excluded nothing.
+
+**Result: the channel layer is the strongest evidence layer measured.** At mound-bottom
+it is selective (0.159 coverage, against chert's 1.000), independent of everything
+(r <= 0.09 with confluence, stream, chert), and **carries the separation: +0.1525 held
+out**, where confluence (-0.042) and chert (-0.072) dilute. Four layers now carry 3.5
+effective and total separation rose +0.103 -> **+0.256**. The full chain ran: field
+observation -> context class -> detection -> zones -> evidence.
+
+**Confound, named and open:** mound-bottom sits inside a Harpeth meander bend, where
+relict channels are abundant by definition. Some of that separation may say "this AOI is
+a bend" rather than "sites are near channels". Distinguishing them needs the layer
+tested at controls that are NOT in bends — old-stone-fort (Duck River forks, upland
+enclosure) and fewkes-group are the available tests, and neither has a detection grid
+yet. Until then this is a one-frame result with a plausible alternative explanation.
+
 **Co-occurrence stacking — BUILT 2026-09-08** (`features/evidence.py`,
 `midden score evidence --aoi --class`). The trap it avoids: summing more layers is
 the weighted overlay again, and evidence compounds only when layers are INDEPENDENT.
