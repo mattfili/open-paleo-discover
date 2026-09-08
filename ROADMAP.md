@@ -331,6 +331,22 @@ p95 anomalies than valley-bottom ground. Caveats recorded: disc sizes differ
 (recall under background); but the physiography-dependent texture difference B3
 predicted for the model side is now measured on the detection side.
 
+**Round-2 human review applied 2026-09-08** (bench artifact, `histmap.review`
+round 2): 33 confirmed / 6 rejected / 2 left open over 41 cards, four round-1
+"can't tells" upgraded to confirms. Corpus now 57 confirmed / 13 rejected / 6 open
+across 76 labels. The six rejects are all my Ridgetop pointing errors with the
+direction stated in the note (St Lawrence "upper left", Lickton "off left", Little
+Creek "half outside bottom right", Weaver, Oak Grove, Crossroads) — re-digitization
+candidates with a bearing already recorded. **The standout finding: at three
+cemeteries (Richardson S, relocated Jackson, Taylortown) the owner can SEE the
+enclosure outline in the LiDAR panels, each slightly offset from the ring** — the
+signature resolves to human eyes where the multi-element rule scores 0; the
+remaining error is positional and small, and the next rule iteration should match
+enclosure outlines, not grave-scale elements. Post-review re-validations (rejected
+labels excluded): Ridgetop civic 5/8 vs 70% background, Burns cemeteries 0/8 vs 18%
+— self-graded verdicts unchanged; the rule, not the labels, remains the falsified
+part, now established on a human-vetted corpus.
+
 **Tight-disc validation of the 1966 points (2026-09-06):** Taylortown Cem is the
 first cemetery to carry information — 1/1 recall vs a 23% background with the
 multi-element rule that scored 0/6 on coarse discs: at 40 m confidence the enclosure
