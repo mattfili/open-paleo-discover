@@ -366,3 +366,19 @@ VALUES
      'channel_m to a scored feature requires the usual B2 ablation bar.')
 ON CONFLICT (class_id) DO UPDATE SET
     morphology = EXCLUDED.morphology, params = EXCLUDED.params, notes = EXCLUDED.notes;
+
+-- Declared context associations (co-occurrence stacking, 2026-09-08). Each is a
+-- LINE OF EVIDENCE for a class that cannot be detected directly, with the distance
+-- over which the association is argued and the reason it is claimed. Independence
+-- between them is measured at run time, never assumed: layers that restate each
+-- other collapse toward one effective layer. dist_to_road is absent by invariant.
+UPDATE ref.target_class SET params = params || '{"context": [
+  {"source": "relict_channel", "kind": "class", "max_dist_m": 200,
+   "rationale": "owner observation at Hidden Lake: midden on a dry gravel channel; channel-adjacent terrace is the camp surface"},
+  {"source": "dist_to_confluence_m", "kind": "feature", "max_dist_m": 500,
+   "rationale": "resource-edge overlap plus travel-network position (Smith 1978); causal weighting interpretive"},
+  {"source": "dist_to_stream_m", "kind": "feature", "max_dist_m": 300,
+   "rationale": "water access; EXPECTED to correlate with the channel layer - the redundancy check should show it"},
+  {"source": "dist_to_chert_outcrop_m", "kind": "feature", "max_dist_m": 2000,
+   "rationale": "C4, NOT BUILT: the first genuinely independent line of evidence. Declared so the stack reports it as missing rather than silently omitting it"}
+]}' WHERE class_id = 'midden';

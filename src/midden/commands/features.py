@@ -655,6 +655,119 @@ def score_plan(
     )
 
 
+@score_app.command("evidence")
+def score_evidence(
+    aoi: Annotated[str, typer.Option("--aoi", help="AOI whose frame to stack over.")],
+    class_id: Annotated[
+        str,
+        typer.Option(
+            "--class", help="Class whose declared context associations to stack."
+        ),
+    ],
+) -> None:
+    """Co-occurrence stacking: how many INDEPENDENT arguments point at a place.
+
+    Evidence compounds only when the layers are independent, so independence is
+    measured rather than assumed: correlated layers collapse toward one effective
+    layer and cannot inflate the score. Reports per-layer coverage, the correlation
+    matrix, the effective layer count, and each layer's marginal contribution.
+    """
+    import shapely
+
+    from midden import __version__
+    from midden.derivation import open_derivation
+    from midden.features.evidence import evidence_report
+
+    with connect() as conn:
+        area = get_aoi(conn, aoi)
+        cls = get_class(conn, class_id)
+        stack = build_feature_stack(conn, area, clip_to_aoi=False)
+        frame = pd.read_parquet(stack.path)
+        rows = fetch_all(
+            conn,
+            """SELECT ST_AsBinary(geom) AS wkb FROM derived.aoi
+               WHERE role = 'control_positive' AND id = %s""",
+            (area.id,),
+        )
+        control = shapely.from_wkb(bytes(rows[0]["wkb"])) if rows else None
+        report = evidence_report(conn, frame, cls, control_geom=control)
+        with open_derivation(
+            conn,
+            operation="score.evidence",
+            tool="midden.features.evidence",
+            tool_version=__version__,
+            aoi_id=area.id,
+            params={
+                "class_id": class_id,
+                **{k: v for k, v in report.items() if k != "how_to_read"},
+            },
+            inputs=[str(stack.path)],
+        ):
+            pass
+
+    typer.secho(f"\nevidence stack — {class_id} over {aoi}'s frame", bold=True)
+    if not report.get("layers") or isinstance(report["layers"], int):
+        typer.secho(report["verdict"], fg=typer.colors.YELLOW)
+        for m in report["missing"]:
+            typer.echo(f"  missing: {m['source']} ({m['kind']}) — {m['why']}")
+        return
+
+    typer.echo(f"{'layer':<26}{'coverage':>9}  rationale")
+    typer.echo("-" * 96)
+    for layer in report["layers"]:
+        typer.echo(
+            f"{layer['name']:<26}{layer['coverage']:>9.3f}  {layer['rationale'][:56]}"
+        )
+    for m in report["missing"]:
+        typer.secho(
+            f"{m['source']:<26}{'--':>9}  NOT AVAILABLE: {m['why']}",
+            fg=typer.colors.YELLOW,
+        )
+
+    names = list(report["correlations"])
+    typer.echo("\nmeasured independence (indicator correlations):")
+    typer.echo(" " * 26 + "".join(f"{n[:11]:>13}" for n in names))
+    for a in names:
+        typer.echo(
+            f"{a:<26}"
+            + "".join(f"{report['correlations'][a][b]:>13.2f}" for b in names)
+        )
+    typer.secho(
+        f"\n{report['n_layers']} declared layers carry {report['n_effective']} "
+        f"effective (discount {report['redundancy_discount']})",
+        fg=typer.colors.GREEN
+        if report["redundancy_discount"] > 0.7
+        else typer.colors.YELLOW,
+    )
+    typer.echo(
+        f"combined: frame mean {report['combined_frame_mean']}"
+        + (
+            f", at control {report['combined_at_control']}"
+            if report["combined_at_control"] is not None
+            else ""
+        )
+    )
+    if report.get("separation") is not None:
+        typer.echo(f"separation (control minus frame): {report['separation']:+.4f}")
+    typer.echo("\nmarginal contribution, scored on SEPARATION (layer held out):")
+    for name, m in sorted(
+        report["marginal_contribution"].items(),
+        key=lambda kv: -(kv[1]["separation_delta"] or 0.0),
+    ):
+        if m["separation_delta"] is None:
+            typer.echo(f"  {name:<26}(no control in this frame)")
+            continue
+        verdict = (
+            "carries the separation"
+            if m["separation_delta"] > 0.01
+            else "DILUTES it"
+            if m["separation_delta"] < -0.01
+            else "neutral"
+        )
+        typer.echo(f"  {name:<26}{m['separation_delta']:+.4f}  {verdict}")
+    typer.echo("\n" + report["how_to_read"])
+
+
 @score_app.command("weights")
 def score_weights(
     class_id: Annotated[

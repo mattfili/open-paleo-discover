@@ -627,9 +627,32 @@ reported as a detection of the class it argues for. This is also the first real
 motivation for the **E** cascade: detect context at 0.5 m, promote to zones at 10 m.
 
 Design note recorded: if context classes multiply they want their own table or a `role`
-column rather than crowding `ref.target_class`. Untested next step: **co-occurrence
-stacking** — independent associations should compound (channel + chert) far more than
-shared-cause ones (channel + floodplain).
+column rather than crowding `ref.target_class`.
+
+**Co-occurrence stacking — BUILT 2026-09-08** (`features/evidence.py`,
+`midden score evidence --aoi --class`). The trap it avoids: summing more layers is
+the weighted overlay again, and evidence compounds only when layers are INDEPENDENT.
+So independence is MEASURED, not assumed — the indicator correlation matrix gives an
+effective layer count `n_eff = n^2 / sum(R)`, and the combined score is discounted by
+`n_eff / n`, so a redundant stack cannot inflate itself. Associations are declared per
+class in `params.context` with their distance and their reason; a declared layer that
+does not exist yet is reported MISSING rather than silently dropped.
+
+Running it corrected its own first metric, which is worth recording: marginal
+contribution by mean delta is dominated by COVERAGE — `dist_to_stream_m` covers 98% of
+the frame, so holding it out moved the mean enormously while saying nothing about
+finding a site. The metric is now **separation** (control value minus frame mean),
+the only number that says the stack distinguishes a site rather than describing the
+landscape.
+
+First result (mound-bottom, midden): 2 of 4 declared layers available; confluence and
+stream proximity correlate only 0.15, so 2 layers carry 1.74 effective — they do
+compound. Separation +0.1485, and the per-layer read is sharp: confluence **carries**
+the separation (+0.0523 held out) while stream proximity **dilutes** it (-0.0961) —
+near-ubiquitous evidence is not evidence. Missing and now the highest-value builds:
+`relict_channel` needs its detections polygonised into candidate zones, and
+`dist_to_chert_outcrop_m` (C4) is the first genuinely INDEPENDENT line and the real
+test of compounding.
 
 **First run, harpeth-hidden-lake (0.36 km2, 2026-09-08):** detection grid derived and
 QA-clean. Reads: a sinuous concave relict-channel trace across the terrace plus
