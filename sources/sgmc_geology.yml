@@ -1,0 +1,36 @@
+name: sgmc_geology
+description: >-
+  USGS State Geologic Map Compilation lithology polygons over the AOI's buffered frame,
+  filtered to the chert-bearing Mississippian units of Middle Tennessee. Basis for C4's
+  dist_to_chert_outcrop_m -- the first line of evidence INDEPENDENT of hydrography, which
+  is what makes it the real test of whether stacked evidence compounds (see the roadmap's
+  C-index). Also the hard constraint on where chert_quarry can plausibly occur.
+
+fetch:
+  driver: wfs
+  params:
+    url: https://mrdata.usgs.gov/wfs/sgmc2
+    typename: Lithology
+    version: "1.0.0"          # 1.1.0 flips bbox axis order by CRS; pinned deliberately
+    # 5 km: dist_to_chert_outcrop_m argues out to 2 km, and a distance feature needs
+    # sources beyond the frame edge or it reports "far" where the source is just outside.
+    buffer_m: 5000
+    where_in:
+      column: orig_label
+      # Fort Payne (Mfp) is the classic Middle TN chert source; Msw is the
+      # St. Louis-Warsaw carbonate sequence, also chert-bearing. Recorded selection:
+      # widening it is a parameter change, not a silent edit.
+      values: [Mfp, Msw]
+  cache: data/raw/sgmc_geology
+
+transform:
+  - select: [orig_label, unit_link, generalize, geometry]
+  - rename: {orig_label: unit_code, unit_link: unit_id, generalize: lithology}
+
+load:
+  target: ref.geologic_unit
+  geometry_column: geom
+  # upsert: fetches are AOI-scoped, so replace would keep only the latest AOI's geology.
+  mode: upsert
+  upsert_key: [unit_id]
+  index: [gist(geom), btree(unit_code)]

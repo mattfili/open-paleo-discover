@@ -67,4 +67,5 @@ def _load_builtin() -> None:
         arcgis,
         nhd,
         sda,
+        wfs,
     )

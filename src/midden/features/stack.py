@@ -156,6 +156,33 @@ def _hydrography(conn: psycopg.Connection, profile: dict) -> gpd.GeoDataFrame:
     )
 
 
+def _chert_outcrops(conn: psycopg.Connection, profile: dict) -> gpd.GeoDataFrame:
+    """Read chert-bearing geologic units intersecting the frame (C4).
+
+    Independent of hydrography by construction, which is the point: it is the first
+    line of evidence in the stack that does not restate water proximity, and so the
+    real test of whether stacked evidence compounds (roadmap C-index).
+    """
+    bounds = rasterio.transform.array_bounds(
+        profile["height"], profile["width"], profile["transform"]
+    )
+    rows = fetch_all(
+        conn,
+        """
+        SELECT ST_AsText(geom) AS wkt FROM ref.geologic_unit
+        WHERE geom && ST_MakeEnvelope(%s, %s, %s, %s, 26916)
+        """,
+        bounds,
+    )
+    if not rows:
+        return gpd.GeoDataFrame({"geometry": []}, geometry="geometry", crs=PROJECT_CRS)
+    return gpd.GeoDataFrame(
+        {"present": [1.0] * len(rows)},
+        geometry=gpd.GeoSeries.from_wkt([r["wkt"] for r in rows]),
+        crs=PROJECT_CRS,
+    )
+
+
 def _confluences(conn: psycopg.Connection, profile: dict) -> gpd.GeoDataFrame:
     """Read confluences that are genuine tributary junctions, not reach breaks."""
     bounds = rasterio.transform.array_bounds(
@@ -289,6 +316,19 @@ def build_feature_stack(
     confluence_raster = _rasterize(junctions, profile, None)
     dist_confluence, _ = _distance_and_nearest(confluence_raster, None, resolution_m)
     arrays["dist_to_confluence_m"] = dist_confluence
+
+    # C4, added 2026-09-08. Absent geology is NOT distance-zero and not a silent
+    # skip: the column is filled with NaN so a weight set naming it fails loudly
+    # rather than scoring every cell as if chert were underfoot.
+    chert = _chert_outcrops(conn, profile)
+    if len(chert):
+        chert_raster = _rasterize(chert, profile, "present")
+        dist_chert, _ = _distance_and_nearest(chert_raster, None, resolution_m)
+    else:
+        dist_chert = np.full(
+            (profile["height"], profile["width"]), np.nan, dtype="float32"
+        )
+    arrays["dist_to_chert_outcrop_m"] = dist_chert
 
     drainage_codes, flood_codes, burial, labels, flood_labels = _soils(conn, profile)
     arrays["drainage_code"] = drainage_codes

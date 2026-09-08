@@ -604,6 +604,57 @@ the widened scope opens up.
 
 ### C. Features
 
+#### C-index. The full feature spectrum, and the four roles a feature can have
+
+Every feature in this project has exactly ONE role, and the role decides what may be
+done with it. Confusing the roles is how a diagnostic becomes a predictor and a
+companion band gets summed into a score.
+
+| role | may enter the weight set? | bar to promote | examples |
+|---|---|---|---|
+| **scored** | yes | B2 ablation must show it carries signal | hand_m, slope_deg, dist_to_stream_m, dist_to_confluence_m, drainage_class, flood_freq, twi |
+| **companion band** | NEVER summed | reported alongside every score | burial_risk, canopy_pct |
+| **diagnostic** | permanently forbidden | measured, never modelled | dist_to_road (B4; FORBIDDEN_FEATURES enforces it) |
+| **evidence layer** | not a weight — a declared association | independence measured at run time (`score evidence`) | relict_channel, chert, spring, cave, portage |
+
+Status of the full spectrum:
+
+| feature | role | state | source |
+|---|---|---|---|
+| `hand_m` | scored (band) | **built** | model DEM + hydrology |
+| `slope_deg` | scored | **built** | WBT slope |
+| `twi` | scored | **built** | WBT SCA + slope |
+| `dist_to_stream_m` | scored | **built** | NHD flowlines |
+| `dist_to_confluence_m` | scored | **built** | `ref.confluence` |
+| `drainage_class` | scored | **built** | SSURGO |
+| `flood_freq` | scored | **built** 2026-09-06 | SSURGO (C1 follow-on) |
+| `stream_order_nearest` | context/unused | in stack, unscored | NHD |
+| `terrace_class` | — | **deleted from weights** (C1); raster kept for the write-up | — |
+| `burial_risk` | companion band | **built** | SSURGO |
+| `canopy_pct` | companion band | not built | NLCD canopy |
+| `dist_to_road_m` | diagnostic | **measured** 2026-09-07 (B4) | TIGER local roads |
+| `dist_to_sinkhole_m`, `sinkhole_density` | scored (candidate) | not built (C2) | WBT stochastic depression |
+| `dist_to_spring_m` | scored (candidate) / evidence | not built (C2) | NHD points |
+| `dist_to_chert_outcrop_m` | evidence | **built and FALSIFIED 2026-09-08** — independent (r=0.00) but ubiquitous; see C4 | USGS SGMC via new `wfs` driver |
+| `dist_to_relict_channel_m` | evidence | class detected 2026-09-08, zones not yet polygonised (C0) | 0.5 m detection |
+| rockshelter / cave potential | evidence | not built (C3) | 0.5 m openness + bluff mask |
+| `aspect_deg` | scored (candidate) | in weight set at weight 0.0 — a recorded decision, not an omission (C5) | WBT aspect |
+| `dist_to_portage_m` | companion band first | not built (C6); ethnographic footing recorded as thin | NHD order>=4 |
+
+**Compounding, generalised.** Adding features to a weight set is summing PROPERTIES and
+was measured mediocre. Adding evidence layers is combining ARGUMENTS, and it only pays
+when the arguments are independent — which `midden score evidence` measures rather than
+assumes (`n_eff = n^2 / sum(R)`, combined score discounted by `n_eff/n`). Two rules
+follow and they are load-bearing:
+
+1. **Independence is worth more than strength.** A second argument that shares a cause
+   with the first (stream proximity beside relict channel) adds almost nothing; a second
+   argument from a different domain (chert geology beside hydrology) adds nearly a full
+   layer. Prefer a weak independent line over a strong correlated one.
+2. **Ubiquity is disqualifying.** A layer covering most of the frame describes the
+   landscape rather than a site, and the separation metric (control minus frame) shows
+   it as dilution — `dist_to_stream_m` at 98% coverage scored -0.096 in the first run.
+
 #### C0. Context classes and the relational principle — ADDED 2026-09-08
 
 The strongest measured finding in the project, generalised into a design principle and
@@ -715,7 +766,34 @@ This matters disproportionately: a class the detection grid can find *directly* 
 by proxy, and a reason for the 0.5 m chain to exist on the Highland Rim margin, where
 terrace-based prediction is weakest.
 
-#### C4. Lithic raw material
+#### C4. Lithic raw material — BUILT AND FALSIFIED AS DESIGNED, 2026-09-08
+
+Built end to end: a new `wfs` intake driver (OGC WFS; the first non-ArcGIS vector
+source), `sources/sgmc_geology.yml` pulling USGS State Geologic Map Compilation
+lithology over the buffered frame filtered to the chert-bearing Mississippian units,
+`ref.geologic_unit`, and `dist_to_chert_outcrop_m` in the stack.
+
+**The prediction held and the feature still failed, which is the useful part.** The
+evidence stack measured chert proximity as *perfectly independent* of both hydrography
+layers (r = 0.00 with stream and confluence distance) — exactly what was predicted, and
+three layers duly carried 2.73 effective. But it **DILUTES separation (-0.0451)**,
+because it is ubiquitous: every cell in the frame lies within 783 m of chert-bearing
+outcrop and 60% sit directly on it. At 1:250,000 the Fort Payne polygon alone is
+2,224 km2. Independence is necessary and NOT sufficient — a perfectly independent
+constant carries nothing — which is the "ubiquity disqualifies" rule arriving from a
+second, unrelated direction.
+
+Two reasons, both recorded: (a) **scale** — a 250k compilation cannot resolve
+within-frame variation for a 10 m model, its own resolution is the ceiling; (b)
+**geology** — in the Central Basin and Rim margin, chert-bearing carbonate IS the
+bedrock, so "near chert" is a regional constant rather than a local discriminator.
+
+**The correction is in the owner's own observation.** The worked material was in a dry
+GRAVEL creek: the chert that mattered to people was cobbles in stream gravels, not
+bedrock outcrop. So the useful lithic feature is chert-bearing gravel bars — which is
+the `relict_channel` context class, not geology at all. Bedrock chert stays in the
+stack as a declared-but-diluting layer with this record attached, and the next attempt
+is gravel, not geology. Original framing kept below.
 
 Distance to chert source is a standard strong predictor in eastern woodlands settlement
 models and is absent. Tennessee Geological Survey publishes statewide surficial geology;

@@ -151,6 +151,33 @@ the controls move when it is included? Both answers recorded, including when the
 archaeologists have looked, not where people lived, and keeping it out of the stack does not
 remove access bias, it only removes the ability to measure it.
 
+**Every feature has exactly one role, and the role governs what may be done with it.**
+*Scored* features enter a weight set and must clear a B2 ablation. *Companion bands* are
+reported alongside and never summed. *Diagnostics* are measured and never modelled
+(`dist_to_road`, enforced by `FORBIDDEN_FEATURES`). *Evidence layers* are declared
+associations for classes that cannot be detected directly, combined by
+`midden score evidence` rather than weighted. The full inventory and each feature's
+current role live in the roadmap's C-index. Moving a feature between roles is a
+recorded decision with a test behind it, never a convenience.
+
+**A property is not evidence; a relationship is.** Measured three times: amplitude
+(94–100% background fire), blob shape (97%), and element arrangement all failed their
+negative controls, while the two rules that passed both ask about a relation — a pit
+*pairs with* its spoil (11%), a plot boundary *closes* (4%). Detection rules are built
+from the relation the morphology implies, and reported as that relation rather than as
+a percentile. `.claude/skills/relational-evidence` carries the design method;
+`plugin/skills/midden-relational` carries the reading discipline for the agent layer.
+
+**Evidence compounds only when it is independent, and independence is measured, never
+assumed.** Stacking arguments is not the same as summing features: `midden score
+evidence` computes the effective layer count `n_eff = n²/ΣR` from the layers' own
+correlations and discounts the combined score by `n_eff/n`, so a redundant stack cannot
+inflate itself. Two consequences hold in feature design generally: a weak *independent*
+line (chert geology beside hydrology) is worth more than a strong correlated one
+(stream proximity beside relict channel), and a layer covering most of the frame
+describes the landscape rather than a site — ubiquity shows up as dilution against the
+separation metric, not as strength.
+
 **Where a source is missing, say so in the artifact.** If a feature rests on an ethnographic
 or geomorphological claim that has not been sourced, the gap is recorded in the sources file
 and surfaced by the skill that explains the feature. Portage nodes (`neck_max_m`,

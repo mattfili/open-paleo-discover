@@ -111,3 +111,22 @@ claims are flagged):
   Leiden.
 - Fortin, M.-J. & Dale, M. 2005. *Spatial Analysis: A Guide for
   Ecologists*. Cambridge. (Restricted/matched permutation designs.)
+
+## 7. Combining evidence layers (added 2026-09-08)
+
+Stacking several lines of evidence with a naive sum treats them as
+independent observations and overstates the case, exactly as a naive
+cell-level permutation does. Measure the redundancy: the effective layer
+count `n_eff = n^2 / sum(R)` over the layers' own correlation matrix, with
+the combined score discounted by `n_eff/n` (`midden score evidence`).
+Report `n_eff` beside `n` always — "four layers" carrying 1.2 effective is
+a materially different claim from four independent ones.
+
+Two traps found by running it:
+
+- **Coverage masquerades as importance.** Hold-one-out measured on the mean
+  is dominated by how much of the frame a layer covers. Score marginal
+  contribution on SEPARATION (control value minus frame mean) instead.
+- **`n_eff` uses absolute correlation.** Two strongly ANTI-correlated layers
+  are just as redundant as two that agree; sign carries no independence
+  information.

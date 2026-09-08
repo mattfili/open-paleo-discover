@@ -124,3 +124,28 @@ physiography argument), (3) the falsifier (which control should register,
 which B2 ablation number would justify removal). A proposal that cannot
 fill slot 1 goes in as a companion band with the gap recorded — the portage
 pattern is the template.
+
+## Independence beats strength (added 2026-09-08)
+
+Every association above is a candidate line of evidence, and the project has
+now MEASURED how they combine (`midden score evidence`; see the
+`relational-evidence` skill). That reshapes what makes a good proposal:
+
+- **Prefer a weak independent line to a strong correlated one.** Catchment
+  features drawn from the same hydrography — stream distance, confluence
+  distance, floodplain position — largely restate each other; the effective
+  layer count collapses toward one and the second line adds almost nothing.
+  A line from another domain (lithic geology beside hydrology, insolation
+  beside water) adds nearly a full layer. Say what a proposed feature is
+  independent OF.
+- **Ubiquity disqualifies.** A band covering most of the frame describes
+  Middle Tennessee, not a site: `dist_to_stream_m` at 98% coverage measured
+  as DILUTION (-0.096 separation) though water access is real and sourced.
+  A true association can still be a useless feature if it is everywhere.
+  Choose the association distance so the layer is selective; report coverage.
+- **The falsifier is separation, not the mean.** Control value minus frame
+  mean is the only statistic that distinguishes a site from the landscape.
+
+So a proposal now has a fourth slot: (4) what it is independent of, and its
+expected frame coverage. A proposal that cannot fill slot 4 is probably a
+restatement of something already in the stack.
