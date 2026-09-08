@@ -517,7 +517,7 @@ def validate_histmap(
     from midden import __version__
     from midden.aoi import SeedSpec, get_aoi, to_multipolygon, upsert_aoi
     from midden.config import settings
-    from midden.derivation import open_derivation
+    from midden.derivation import open_derivation, param_variant
 
     config = config or settings()
     cls = get_class(conn, class_id)
@@ -561,7 +561,16 @@ def validate_histmap(
             if aoi_slug:
                 area = get_aoi(conn, aoi_slug)
             else:
-                slug = f"histmap-{scan_id}-{class_id.replace('_', '-')}-{i}"
+                # Content-addressed, NOT positional. An ordinal slug is reused when
+                # the point set changes (a review rejection, a relocation), so the
+                # cluster inherits rasters derived for DIFFERENT ground; the symbol
+                # then falls outside its own raster and is reported as a coverage
+                # gap. Hashing the envelope makes a changed cluster a new AOI and
+                # leaves the old one as a harmless orphan (found 2026-09-08).
+                digest = param_variant(
+                    {"wkt": shapely.to_wkt(envelope, rounding_precision=0)}, 8
+                )
+                slug = f"histmap-{scan_id}-{class_id.replace('_', '-')}-{digest}"
                 multipolygon, _ = to_multipolygon(envelope, slug=slug)
                 upsert_aoi(
                     conn,

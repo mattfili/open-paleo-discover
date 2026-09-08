@@ -1081,9 +1081,24 @@ Suggested next action, in order:
    `enclosure_ratio` (binary_fill_holes area over raw area) asks whether a cluster
    CLOSES around something — a fence line, wall or perimeter ditch encircles; a
    gully, roadbed or tree-throw scatter does not — gated to plot-scale span.
-   `family_cemetery` moves to it (the `multi` block is dropped). Falsifiable
-   question under test: whether a p95 threshold yields a closed ring or a broken
-   arc. Result recorded next.
+   `family_cemetery` moves to it (the `multi` block is dropped).
+
+   **RESULT: the enclosure rule carries information — recall 3/9 vs a 4% background
+   (3/96 matched null discs), ~8x enrichment over chance.** Only the second
+   configuration ever to earn the negative control's green verdict, after
+   pit-plus-spoil. Both winners are RELATIONAL — features that close, or that pair —
+   while amplitude (96-100% background) and single-blob morphometry (97%) never
+   cleared it. The cemetery class went 0/6 and 0/8 under every prior rule family and
+   now detects at 8x chance.
+
+   Two provenance notes worth keeping: the rule's specification came from the
+   owner's round-2 review (three cemeteries whose outlines they could see), and
+   **Jackson Cem (relocated) is one of the three hits** — the point rejected in
+   round 1 for sitting on the label text, re-digitized onto the symbol, now firing.
+   The human review loop paid off end to end. The six misses stay legible in the
+   report's per-surface numbers (all reach p99.8-100 in negative openness but fail
+   the enclosure or span gate — Richardson N's 4,924-cell SLRM cluster is far past
+   plot scale), which is the next iteration's material.
 4. ~~**Ticket (2026-09-07): seam-aware EPT project selection per cluster.**~~ — BUILT 2026-09-08 (`terrain/coverage.py` + `ensure_detection` fallback; verified the iron-works seam cluster resolves to B2 only, montgomery-bell straddles both). Original ticket: `validate
    histmap` and detection runs take one global `--ept-project`, but coverage is a
    patchwork whose true extents live in hobu/usgs-lidar `boundaries/resources.geojson`
