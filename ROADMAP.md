@@ -604,6 +604,41 @@ the widened scope opens up.
 
 ### C. Features
 
+#### C0. Context classes and the relational principle — ADDED 2026-09-08
+
+The strongest measured finding in the project, generalised into a design principle and
+two skills (`.claude/skills/relational-evidence` for build, `plugin/skills/
+midden-relational` for the agent layer). Amplitude (94-100% background), blob
+morphometry (97%), and grave-scale arrangement (blind) all failed their negative
+controls; the two rules that PASSED both ask about a relation — pit *pairs with* spoil
+(11%), plot boundary *closes* (4%). A property is not evidence; a relationship is.
+
+**Context classes** extend that to proxy/invisible classes, on an owner observation: a
+midden near Hidden Lake sat on a dry gravel channel littered with worked material. The
+flakes are centimetres and no grid will hold them — their PRESENCE is the evidence —
+but the channel is squarely detectable, and Middle TN gravel bars carry chert, so one
+landform argues for camp and raw material on two independent grounds. The chain is
+`invisible evidence -> visible context -> detectable landform`.
+
+`relict_channel` is the first context class: `direct`, detection-grid, but its purpose
+is evidence for classes that cannot be detected. Promoting `dist_to_relict_channel_m`
+to a scored feature still needs the B2 ablation bar, and a context detection is NEVER
+reported as a detection of the class it argues for. This is also the first real
+motivation for the **E** cascade: detect context at 0.5 m, promote to zones at 10 m.
+
+Design note recorded: if context classes multiply they want their own table or a `role`
+column rather than crowding `ref.target_class`. Untested next step: **co-occurrence
+stacking** — independent associations should compound (channel + chert) far more than
+shared-cause ones (channel + floodplain).
+
+**First run, harpeth-hidden-lake (0.36 km2, 2026-09-08):** detection grid derived and
+QA-clean. Reads: a sinuous concave relict-channel trace across the terrace plus
+scroll-bar (point-bar accretion) banding — the described morphology is present and
+detectable; a large engineered terrace layout southwest of the river (mid-century
+resort infrastructure) as prime confuser material; and an ambiguous pitted zone that
+may be quarry workings. No site location was recorded: the owner's midden is
+known-to-them, not public, so it stays out of tracked files entirely.
+
 #### C1. Delete `terrace_class` rather than repair it — DELETED 2026-09-05
 
 Removed from `weights/open_habitation.yml` (v3) with the B2 ablation number recorded

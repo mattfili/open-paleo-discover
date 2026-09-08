@@ -29,15 +29,10 @@ def _check_detection_preflight(
     area, ept_project: str | None, max_area_km2: float
 ) -> None:
     """Refuse a detection run that cannot work, with the next action rather than a hang."""
-    if ept_project is None:
-        typer.secho(
-            "--grid detection needs --ept-project. Middle TN splits across "
-            "USGS_LPC_TN_Middle_B1_2018_LAS_2019 (harpeth-narrows) and "
-            "..._B2_... (montgomery-bell); actual coverage is in hobu/usgs-lidar "
-            "boundaries/resources.geojson, not the ept.json cube bounds.",
-            fg=typer.colors.RED,
-        )
-        raise typer.Exit(code=1)
+    # --ept-project is now a PREFERENCE, not a requirement: coverage is resolved from
+    # the published boundary index (Middle TN splits across B1/B2 plus county and
+    # 2011 collections, and the ept.json cube bounds do not describe footprints).
+    # An unresolvable AOI fails later with the candidates it actually tried.
     if area.area_km2 > max_area_km2:
         typer.secho(
             f"AOI {area.slug} is {area.area_km2:.1f} km2, over the {max_area_km2:g} km2 "
@@ -88,9 +83,43 @@ def terrain_run(
                 )
                 raise typer.Exit(code=1)
             _check_detection_preflight(area, ept_project, max_area_km2)
-            result = run_detection_grid(
-                conn, area, ept_project=ept_project, class_id=class_id, config=config
-            )
+            # Seam-aware, same as validate: a project's ept.json bounds are the
+            # enclosing cube, not its footprint, so an explicit --ept-project is a
+            # PREFERENCE. Candidates come from the published coverage index and are
+            # tried in order; without this a covered AOI reports "no points".
+            from midden.terrain.coverage import covering_projects
+            from midden.terrain.dem import buffered_bounds
+
+            candidates = covering_projects(
+                buffered_bounds(area, 50.0), config.raw_dir, prefer=ept_project
+            ) or [ept_project]
+            if candidates[0] != ept_project:
+                typer.secho(
+                    f"note: {ept_project} does not cover {area.slug}; "
+                    f"trying {candidates}",
+                    fg=typer.colors.YELLOW,
+                )
+            result = None
+            failures = []
+            for candidate in candidates:
+                try:
+                    result = run_detection_grid(
+                        conn,
+                        area,
+                        ept_project=candidate,
+                        class_id=class_id,
+                        config=config,
+                    )
+                    break
+                except RuntimeError as exc:
+                    failures.append(f"{candidate}: {str(exc).splitlines()[0]}")
+            if result is None:
+                typer.secho(
+                    "no covering EPT project produced points:\n  "
+                    + "\n  ".join(failures),
+                    fg=typer.colors.RED,
+                )
+                raise typer.Exit(code=1)
         elif grid == "model":
             result = run_model_grid(conn, area, config=config)
         else:

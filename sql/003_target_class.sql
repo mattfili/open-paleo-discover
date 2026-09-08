@@ -334,3 +334,35 @@ UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openne
 -- measures that directly. Drops the `multi` block (jsonb || replaces the whole
 -- detect object), gates on enclosure_ratio and plot-scale span instead.
 UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 10.0, "max_cells": 10000, "min_enclosure_ratio": 1.2, "span_cells_range": [20, 140]}}' WHERE class_id = 'family_cemetery';
+
+-- ---------------------------------------------------------------------------
+-- Context classes, added 2026-09-08. A landform that is NOT an archaeological
+-- target but whose presence is evidence for one: the invisible class (midden,
+-- open_habitation) cannot be detected, but the visible ground it sits beside can.
+-- Owner observation that motivated it: a midden near Hidden Lake sat on a dry
+-- gravel channel littered with worked material - the flakes are far below any
+-- LiDAR grid, but the channel is squarely detectable, and gravel bars here carry
+-- chert, so the same landform argues for both camp and raw material.
+-- Recorded design note: if context classes multiply, they want their own table
+-- or a `role` column rather than crowding ref.target_class.
+-- ---------------------------------------------------------------------------
+INSERT INTO ref.target_class
+    (class_id, period, morphology, grid, detectability, burial_sensitivity,
+     label_source, params, notes)
+VALUES
+    ('relict_channel', 'either',
+     'Abandoned or seasonally dry channel: linear concave trace, 5-40 m wide, on a floodplain or terrace surface',
+     'detection', 'direct', false, 'none_yet',
+     '{"openness": {"search_radius_m": 15.0, "num_directions": 16},
+       "slrm": {"smoothing_radius_m": 15.0},
+       "min_area_m2": 200,
+       "detect": {"surfaces": {"openness_neg": "high", "slrm": "low"},
+                  "threshold_pctile": 95, "min_cells": 60,
+                  "feature_radius_m": 15.0, "min_elongation": 3.0}}',
+     'CONTEXT CLASS, not a target: detected as evidence for proxy classes that '
+     'cannot be detected directly. A dry gravel channel is both a camp-adjacent '
+     'landform and (in Middle TN) a chert source, so it argues for midden and '
+     'open_habitation on two independent grounds. Promotion of dist_to_relict_'
+     'channel_m to a scored feature requires the usual B2 ablation bar.')
+ON CONFLICT (class_id) DO UPDATE SET
+    morphology = EXCLUDED.morphology, params = EXCLUDED.params, notes = EXCLUDED.notes;
