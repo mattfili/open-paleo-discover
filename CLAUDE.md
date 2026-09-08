@@ -7,6 +7,11 @@ Tennessee. Proof of concept, local only.
 was amended on 2026-09-03 for the widened scope; §0 carries a banner saying which sections
 changed.
 
+**`docs/findings.md` is the source of truth for WHY** — the reasoning and the
+measurement behind every design decision, failures included. Read it before changing a
+parameter, a rule, or a weight: a constant there has an argument and a number attached,
+and re-deciding it without reading them repeats work already paid for.
+
 **@ROADMAP.md is the source of truth for state** — what is built, what is not, and what is
 known to be broken. `spec.md` says what the project should be; the roadmap says where it
 actually is. That `@` is an import: the roadmap is pulled into context with this file, so

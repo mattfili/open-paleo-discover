@@ -12,6 +12,15 @@ description: >-
 
 # Interpreting midden output
 
+## Where the design came from
+
+Explaining an output often needs the reasoning behind the machinery that produced it —
+why a band runs 2 to 12 m, why a rule asks about enclosure rather than size, why a
+recall is always reported beside a background fire rate. That record is
+`docs/findings.md`: each design decision with the measurement that produced it,
+failures included. Cite it when a reader asks "why is the model like this", rather than
+reconstructing the argument from the code.
+
 ## The standing obligation
 
 **No artifact ships without an explanation of itself.** A map that a reader cannot
