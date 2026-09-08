@@ -326,3 +326,11 @@ UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openne
 UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high"}, "threshold_pctile": 95, "min_cells": 8, "feature_radius_m": 10.0, "multi": {"surface": "openness_neg", "min_elements": 4, "element_min_cells": 4, "element_max_cells": 80, "element_max_elongation": 4.0, "nn_max_m": 8.0, "nn_cv_max": 0.6}}}' WHERE class_id = 'family_cemetery';
 UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0, "min_fill_ratio": 0.55}}' WHERE class_id = 'homestead';
 UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 24, "feature_radius_m": 5.0, "max_cells": 2000, "max_elongation": 3.0, "min_fill_ratio": 0.55}}' WHERE class_id = 'civic_structure';
+
+-- Cemetery rule v3, 2026-09-08: the ENCLOSURE rule, specified by the owner's review
+-- (three cemeteries whose plot outline is visible in the LiDAR panels while the
+-- grave-scale multi-element rule scored 0/8). A fence line, wall or ditch around a
+-- plot CLOSES; a gully, roadbed or tree-throw scatter does not — binary_fill_holes
+-- measures that directly. Drops the `multi` block (jsonb || replaces the whole
+-- detect object), gates on enclosure_ratio and plot-scale span instead.
+UPDATE ref.target_class SET params = params || '{"detect": {"surfaces": {"openness_neg": "high", "slrm": "low"}, "threshold_pctile": 95, "min_cells": 20, "feature_radius_m": 10.0, "max_cells": 10000, "min_enclosure_ratio": 1.2, "span_cells_range": [20, 140]}}' WHERE class_id = 'family_cemetery';

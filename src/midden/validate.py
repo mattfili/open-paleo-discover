@@ -123,10 +123,37 @@ def ensure_detection(
 
     have = _catalogued()
     if set(have) != set(surfaces):
-        run_detection_grid(
-            conn, aoi, ept_project=ept_project, class_id=cls.class_id, config=config
-        )
-        have = _catalogued()
+        # Seam-aware project selection: EPT coverage is a patchwork whose true
+        # footprints live in the published boundary index, NOT in a project's own
+        # cube bounds. Try the covering candidates in order so a cluster on a block
+        # seam reaches the neighbouring collection instead of reporting a false gap.
+        from midden.terrain.coverage import covering_projects
+        from midden.terrain.dem import buffered_bounds
+
+        candidates = covering_projects(
+            buffered_bounds(aoi, 50.0), config.raw_dir, prefer=ept_project
+        ) or [ept_project]
+        failures = []
+        for candidate in candidates:
+            try:
+                run_detection_grid(
+                    conn,
+                    aoi,
+                    ept_project=candidate,
+                    class_id=cls.class_id,
+                    config=config,
+                )
+            except RuntimeError as exc:
+                failures.append(f"{candidate}: {str(exc).splitlines()[0]}")
+                continue
+            have = _catalogued()
+            if set(have) == set(surfaces):
+                break
+        if set(have) != set(surfaces) and failures:
+            raise RuntimeError(
+                f"{aoi.slug}: no covering EPT project produced points. Tried "
+                + "; ".join(failures)
+            )
     missing = set(surfaces) - set(have)
     if missing:
         raise RuntimeError(
@@ -255,11 +282,21 @@ def _cluster_morphometry(beyond: np.ndarray) -> list[dict[str, Any]]:
             rotated = vec.T @ (coords - coords.mean(axis=1, keepdims=True))
             extent = rotated.max(axis=1) - rotated.min(axis=1) + 1.0
             fill = float(cells / max(extent[0] * extent[1], 1.0))
+        # Enclosure: does this cluster ring something? A fence line, wall, or ditch
+        # around a cemetery plot CLOSES; a gully, roadbed, or tree-throw scatter does
+        # not. Filling interior holes and comparing areas measures exactly that, and
+        # it is the shape the owner's review reported seeing at three cemeteries
+        # where the grave-scale rule scored zero (2026-09-08).
+        member = labelled == label_id
+        filled = int(ndimage.binary_fill_holes(member).sum())
+        span_cells = 0.0 if cells < 4 else float(max(extent))
         clusters.append(
             {
                 "cells": cells,
                 "elongation": round(elongation, 1),
                 "fill_ratio": round(fill, 2),
+                "enclosure_ratio": round(filled / max(cells, 1), 2),
+                "span_cells": round(span_cells, 1),
                 "centroid_rc": (float(rows.mean()), float(cols.mean())),
             }
         )
@@ -284,6 +321,14 @@ def _cluster_qualifies(cluster: dict, detect: dict, min_cells: int) -> bool:
         return False
     min_elong = detect.get("min_elongation")
     if min_elong is not None and cluster["elongation"] < min_elong:
+        return False
+    # Enclosure and span gates: an enclosed plot boundary at cemetery/homestead
+    # scale, rather than any compact blob past the threshold.
+    min_enclosure = detect.get("min_enclosure_ratio")
+    if min_enclosure is not None and cluster["enclosure_ratio"] < min_enclosure:
+        return False
+    span = detect.get("span_cells_range")
+    if span is not None and not (span[0] <= cluster["span_cells"] <= span[1]):
         return False
     min_fill = detect.get("min_fill_ratio")
     if min_fill is not None and cluster["fill_ratio"] < min_fill:

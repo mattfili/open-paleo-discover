@@ -1074,7 +1074,17 @@ Suggested next action, in order:
    stays); (c) confuser-context discrimination beyond geometry. The registry keeps
    the best-motivated rule per class with these numbers attached; nothing was tuned
    against the controls to manufacture a pass.
-4. **Ticket (2026-09-07): seam-aware EPT project selection per cluster.** `validate
+
+   **Round 3, 2026-09-08 — the ENCLOSURE rule, specified by human review.** The
+   owner's round-2 pass reported seeing plot outlines in the LiDAR at three
+   cemeteries where the grave-scale rule scored 0/8. New cluster metric
+   `enclosure_ratio` (binary_fill_holes area over raw area) asks whether a cluster
+   CLOSES around something — a fence line, wall or perimeter ditch encircles; a
+   gully, roadbed or tree-throw scatter does not — gated to plot-scale span.
+   `family_cemetery` moves to it (the `multi` block is dropped). Falsifiable
+   question under test: whether a p95 threshold yields a closed ring or a broken
+   arc. Result recorded next.
+4. ~~**Ticket (2026-09-07): seam-aware EPT project selection per cluster.**~~ — BUILT 2026-09-08 (`terrain/coverage.py` + `ensure_detection` fallback; verified the iron-works seam cluster resolves to B2 only, montgomery-bell straddles both). Original ticket: `validate
    histmap` and detection runs take one global `--ept-project`, but coverage is a
    patchwork whose true extents live in hobu/usgs-lidar `boundaries/resources.geojson`
    (the ept.json cube bounds lie). Resolve the covering project per cluster AOI from
