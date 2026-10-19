@@ -62,7 +62,7 @@ Consult them on both sides of the work:
 | `midden-interpretation` | **Every artifact, map, render, preview or score.** Any question of what a feature means, why it is in the model, or what a number implies. Non-optional: output that is not explained is not finished. |
 
 Do not reimplement what is in `scripts/` inside those skills. `wbt_helpers.py`,
-`hydro_chain.py`, `run_pipeline.py`, `dem_from_ept.py`, `inspect.py`, and `control_check.py`
+`hydro_chain.py`, `run_pipeline.py`, `dem_from_ept.py`, `inspect_pc.py`, and `control_check.py`
 are meant to be imported or invoked, not paraphrased.
 
 Eight more, added 2026-09-04. The QA four are checklists that run *after* work and gate

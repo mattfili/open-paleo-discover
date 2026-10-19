@@ -78,7 +78,7 @@ def build_pipeline(
         "pipeline": [
             reader,
             # Ground returns only. If this matches nothing you get an empty raster
-            # and no error -- run inspect.py first to confirm class 2 exists.
+            # and no error -- run inspect_pc.py first to confirm class 2 exists.
             {"type": "filters.range", "limits": "Classification[2:2]"},
             {"type": "filters.reprojection", "out_srs": out_crs},
             {

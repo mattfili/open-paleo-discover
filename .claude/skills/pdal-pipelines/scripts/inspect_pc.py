@@ -9,7 +9,7 @@ Answers the three questions that determine whether your pipeline will work:
   3. What point density do you actually have, and what resolution does that support?
 
 Usage:
-    python inspect.py input.laz
+    python inspect_pc.py input.laz
 """
 
 from __future__ import annotations

@@ -1104,10 +1104,11 @@ Each of these was learned the expensive way. They are in the code as comments to
 - **WhiteboxTools returns exit code 0 while panicking.** It rejects floating-point
   compression predictors. Anything WBT reads must be written without `PREDICTOR`. The
   skill's `checked()` wrapper is the only reason this surfaces at all.
-- **`pdal-pipelines/scripts/inspect.py` shadows the stdlib `inspect` module.** Running it as
-  a subprocess breaks Python itself. `midden.skills.load()` appends to `sys.path` rather
-  than prepending, which is what makes the import path safe — **but the skill's own
-  documented CLI usage (`python inspect.py input.laz`) is still broken.**
+- **`pdal-pipelines/scripts/inspect.py` shadowed the stdlib `inspect` module — FIXED
+  2026-10-19.** Running it as a script put its own directory first on `sys.path` and broke
+  Python itself. Renamed `inspect_pc.py`; the skill's CLI usage (`python inspect_pc.py
+  input.laz`) now works, and `midden.skills.load()` still refuses stdlib-shadowing names so
+  it cannot recur.
 - **3DEP returns EPSG:4269 with a degree-sized pixel.** WhiteboxTools does not reproject and
   will treat degrees as metres. The warp is not optional.
 - **USGS EPT bounds are EPSG:3857.** UTM bounds return zero points with no error.
@@ -1125,21 +1126,11 @@ Each of these was learned the expensive way. They are in the code as comments to
   (`_relocate`, recovered from a stash 2026-10-19).
 - **WBT 2.4 CLI `D8FlowAccumulation --pntr` without `--out_type=cells`** returned counts x10
   (identical to the SCA output) in one run. Pass `--out_type` explicitly; assert `min == 1`.
-- **Plain installs fail by design; use an editable one (2026-10-19).** midden reads its SQL,
-  intake sources, weight sets and skill scripts from the repo checkout, so a wheel or a
-  non-editable `git+https` dependency points them into site-packages. `settings()` now
-  raises `ResourceDirectoryError` naming each missing directory and the fix (`uv add
-  --editable ../open-paleo-discover`), instead of failing deep in a run. Mutable state
-  (`data/`, `scratch/`, `exports/`, `.env`) moves with `MIDDEN_HOME` or the per-path
-  `MIDDEN_DATA_DIR` / `MIDDEN_SCRATCH_DIR` / `MIDDEN_EXPORTS_DIR` / `MIDDEN_ENV_FILE`;
-  unset, behavior is unchanged. Intake caches declared as `data/...` follow `data_dir`.
-  Proven with a throwaway sibling project (editable install imports midden, reads
-  settings, builds a render `Scene`, calls `cells_from_metres`, no database) and a wheel
-  install that raises as intended. `tests/test_import_hygiene.py` imports every submodule
-  under an audit hook: no network, no midden `.env` read, no subprocess. **One third-party
-  caveat:** importing `midden.mcp.server` imports fastmcp, which itself reads a `.env` in
-  the current directory; midden cannot prevent that, so the test counts only midden's own
-  `.env`. A consumer that must not read a cwd `.env` should not import the MCP server.
+- **MCP raster tools picked an arbitrary variant — FIXED 2026-10-19.** The CLI's
+  `terrain preview` required `--variant` when a kind had several (class or sweep variants),
+  but the MCP `_resolve_raster` (behind `midden_preview_raster` and the other raster tools)
+  silently returned the first row, so the agent path could show one class's parameters as
+  if they were the AOI's. It now raises, naming the variants, exactly as the CLI does.
 - **Ibis has no cross-backend joins.** DuckDB is the single connection; `ref.*` and
   `derived.*` are attached with `read_postgres`.
 - **`USGS_LPC_TN_Middle_B1_2018_LAS_2019` does not cover Montgomery Bell.** The recorded

@@ -22,7 +22,7 @@ classified, every point is class 0 or 1, the filter matches nothing, and the pip
 succeeds while writing an empty raster.
 
 ```bash
-python scripts/inspect.py input.laz
+python scripts/inspect_pc.py input.laz
 ```
 
 If class 2 is absent, classify it yourself — `templates/reclassify_ground.json`. Note that

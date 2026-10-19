@@ -141,8 +141,8 @@ def fetch_dem_ept(
 
     The skill's `dem_from_ept` and `run_pipeline` are imported through `midden.skills`
     rather than shelled out to. Running `python dem_from_ept.py` puts its own directory at
-    the front of `sys.path`, and that directory contains an `inspect.py` which shadows the
-    standard library's — Python's own error suggests renaming it. The loader appends
+    the front of `sys.path`, and that directory used to contain an `inspect.py` which shadowed
+    the standard library's (renamed `inspect_pc.py`, 2026-10-19). The loader still appends
     instead of prepending, so the standard library keeps priority.
 
     Two outputs, and the second is not optional: alongside `dem.tif` the pipeline writes

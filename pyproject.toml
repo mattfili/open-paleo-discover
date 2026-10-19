@@ -1,7 +1,7 @@
 [project]
 name = "open-paleo-discover"
 version = "0.1.0"
-description = "Add your description here"
+description = "LiDAR-derived landform suitability modelling and feature detection for archaeological survey planning in Middle Tennessee."
 readme = "README.md"
 authors = [
     { name = "Matt Fili", email = "matthewjosephfili@gmail.com" }

@@ -32,6 +32,15 @@ def _resolve_raster(conn, aoi_slug: str, kind: str, variant: str | None) -> dict
             + f". Available kinds: {available or '(none)'}. "
             f"Run midden_derive_terrain for this AOI first."
         )
+    variants = sorted({r["variant"] or "" for r in rows})
+    if len(variants) > 1:
+        # Same rule as `midden terrain preview`: picking an arbitrary variant would show one
+        # class's (or one sweep's) parameters as if they were the AOI's, which is the
+        # silent misreading per-class parameters exist to prevent.
+        raise ValueError(
+            f"{aoi_slug}/{kind} has {len(variants)} variants: "
+            f"{[v or '(unqualified)' for v in variants]}. Pass variant=."
+        )
     return rows[0]
 
 
