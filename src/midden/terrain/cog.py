@@ -149,7 +149,7 @@ def list_assets(
         clauses.append("a.kind = %s")
         params.append(kind)
     where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
-    return fetch_all(
+    rows = fetch_all(
         conn,
         f"""
         SELECT a.id, o.slug AS aoi, a.kind, a.grid, a.resolution_m, a.variant,
@@ -161,3 +161,28 @@ def list_assets(
         """,
         params,
     )
+    for row in rows:
+        row["path"] = _relocate(row["path"])
+    return rows
+
+
+def _relocate(path: str) -> str:
+    """Re-root a catalogued path under the current data_dir if it no longer exists.
+
+    The catalog stores the absolute path at write time. That path is wrong as soon as the
+    repo is cloned elsewhere, mounted under a different prefix, or read from a VM; every
+    raster then fails with "No such file" even though the file is right there under
+    `data/`. The catalogued path is kept as the primary answer; only a missing file is
+    re-rooted, so nothing changes on the machine that wrote it.
+    """
+    from midden.config import settings
+
+    original = Path(path)
+    if original.exists():
+        return path
+    parts = original.parts
+    if "data" in parts:
+        candidate = settings().data_dir.joinpath(*parts[parts.index("data") + 1 :])
+        if candidate.exists():
+            return str(candidate)
+    return path

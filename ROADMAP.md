@@ -1094,6 +1094,11 @@ Each of these was learned the expensive way. They are in the code as comments to
   so does feeding `SDA_Get_Mukey_from_intersection_with_WktWgs84` back as a correlated
   subquery. Read the keys first, interpolate as literals. `mukey` is **not** unique per
   polygon — `mupolygonkey` is.
+- **`derived.raster_asset.path` is absolute.** Wrong the moment the repo is cloned, mounted
+  or read from a VM. `cog.list_assets` re-roots a missing path under `settings().data_dir`
+  (`_relocate`, recovered from a stash 2026-10-19).
+- **WBT 2.4 CLI `D8FlowAccumulation --pntr` without `--out_type=cells`** returned counts x10
+  (identical to the SCA output) in one run. Pass `--out_type` explicitly; assert `min == 1`.
 - **Ibis has no cross-backend joins.** DuckDB is the single connection; `ref.*` and
   `derived.*` are attached with `read_postgres`.
 - **`USGS_LPC_TN_Middle_B1_2018_LAS_2019` does not cover Montgomery Bell.** The recorded
