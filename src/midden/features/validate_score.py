@@ -107,7 +107,6 @@ def _null_masks(
     hand = frame["hand_m"].to_numpy()
     fx0, fy0 = frame["easting"].min(), frame["northing"].min()
     fx1, fy1 = frame["easting"].max(), frame["northing"].max()
-    gx0, gy0, gx1, gy1 = shapely.bounds(control_geom)
     produced = 0
     for _ in range(max_tries):
         if produced >= k:

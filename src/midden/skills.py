@@ -1,7 +1,7 @@
 """Loader for the technique scripts bundled in `.claude/skills/`.
 
 CLAUDE.md: "`wbt_helpers.py`, `hydro_chain.py`, `run_pipeline.py`, `dem_from_ept.py`,
-`inspect.py`, and `control_check.py` are meant to be imported or invoked, not
+`inspect_pc.py`, and `control_check.py` are meant to be imported or invoked, not
 paraphrased." Those scripts are not importable by name — the skill directories contain
 hyphens, there are no `__init__.py` files, and the modules import their siblings bare
 (`from wbt_helpers import ...`). This module is the single seam that bridges that gap.
@@ -14,10 +14,10 @@ Two rules the implementation enforces:
 
 1. The scripts directory is *appended* to `sys.path`, never prepended, so the standard
    library and site-packages always win a name contest.
-2. `load()` refuses any module whose name shadows a standard-library module.
-   `pdal-pipelines/scripts/inspect.py` is exactly that case; importing it would poison
-   `inspect` for pydantic, typer, and everything else. Use `script_path()` and run it as a
-   subprocess instead.
+2. `load()` refuses any module whose name shadows a standard-library module. The one
+   script that did (`pdal-pipelines/scripts/inspect.py`, which would poison `inspect` for
+   pydantic and typer) was renamed `inspect_pc.py` on 2026-10-19; the guard stays so the
+   mistake cannot come back. Use `script_path()` and run such a script as a subprocess.
 """
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ def script_path(skill: str, module: str) -> Path:
 
     Use this rather than `load()` for scripts that are command-line tools in their own
     right — `control_check.py` calls `sys.exit(1)` to gate a weight-set change, and
-    `inspect.py` shadows a standard-library module.
+    a script that shadows a standard-library module cannot be imported.
     """
     path = scripts_dir(skill) / f"{module}.py"
     if not path.is_file():

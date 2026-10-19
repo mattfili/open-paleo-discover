@@ -13,7 +13,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Collier Bend Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "rejected",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:33:57Z"
    }
   },
   {
@@ -28,7 +31,10 @@
    "properties": {
     "class_id": "road_trace",
     "name": "Travis Ford",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "rejected",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:28:54Z"
    }
   },
   {
@@ -43,7 +49,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Lillamay Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:34:09Z"
    }
   },
   {
@@ -58,7 +67,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Harpeth Valley Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "rejected",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:41:28Z"
    }
   },
   {
@@ -73,7 +85,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Stringfellow Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "rejected",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:41:32Z"
    }
   },
   {
@@ -88,7 +103,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Cedar Hill Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T17:01:07Z"
    }
   },
   {
@@ -103,7 +121,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Taylortown Sch",
-    "positional_confidence_m": 150
+    "positional_confidence_m": 150,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T17:01:09Z"
    }
   },
   {
@@ -118,7 +139,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Blackwood Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T17:01:09Z"
    }
   },
   {
@@ -133,7 +157,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Claylick Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:43Z"
    }
   },
   {
@@ -148,7 +175,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Frog Pond Ch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:48Z"
    }
   },
   {
@@ -163,7 +193,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Pleasant View Ch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:27:50Z"
    }
   },
   {
@@ -178,7 +211,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Johnson Sch",
-    "positional_confidence_m": 120
+    "positional_confidence_m": 120,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:27:55Z"
    }
   },
   {
@@ -193,7 +229,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Bar Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:50Z"
    }
   },
   {
@@ -208,7 +247,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "New Hope Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:52Z"
    }
   },
   {
@@ -223,7 +265,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "South Harpeth Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "rejected",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T17:03:53Z"
    }
   },
   {
@@ -238,7 +283,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Sams Creek Sch",
-    "positional_confidence_m": 120
+    "positional_confidence_m": 120,
+    "review_status": "rejected",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T17:03:53Z"
    }
   },
   {
@@ -253,7 +301,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Chestnut Ridge Ch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:28:01Z"
    }
   },
   {
@@ -268,7 +319,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Opossum Sch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:28:03Z"
    }
   },
   {
@@ -283,7 +337,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Jackson Ch",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:28:06Z"
    }
   },
   {
@@ -298,7 +355,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Williams Chapel",
-    "positional_confidence_m": 95.0
+    "positional_confidence_m": 95.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:28:15Z"
    }
   },
   {
@@ -313,7 +373,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Marrowbone Sch",
-    "positional_confidence_m": 120
+    "positional_confidence_m": 120,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:28:42Z"
    }
   },
   {
@@ -328,7 +391,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Sams Creek Ch",
-    "positional_confidence_m": 120
+    "positional_confidence_m": 120,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:28:49Z"
    }
   }
  ]

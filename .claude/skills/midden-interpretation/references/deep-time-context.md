@@ -29,6 +29,14 @@ seeded set is Central Basin river valley. That contrast is the point of includin
 This matters twice over: springs were a primary settlement attractor, and sinkholes are an
 inexhaustible source of circular depressions that look like features and are not.
 
+**The province boundary is not a line on the ground.** The lower Harpeth runs along the
+western edge of the Basin, and the river has cut down through the Highland Rim's
+Mississippian Fort Payne chert into older Silurian limestone beneath. The USGS State
+Geologic Map Compilation (`sources/sgmc_geology.yml`) puts the Narrows neck and Hidden
+Lake on Silurian units with Fort Payne on the uplands either side. One province label per
+AOI is too coarse there; read the geology layer when the bluff rock matters, and it
+matters whenever "quarry" or "rockshelter" is a possible reading.
+
 **Chert matters.** The limestones here carry high-quality chert — Fort Payne, St. Louis and
 others. Stone tool raw material was abundant and good, which is one reason this region is
 so densely occupied so early.
@@ -175,6 +183,20 @@ the roadmap.
 ---
 
 ## What this means for how you write
+
+**Height sorts kind of site, not site versus no site.** T0 is scoured or buried. T1 holds
+houses, hearths, gardens and middens. T2 remnants and bluff shoulders hold burial mounds
+and stone-box cemeteries overlooking the towns. Bluff crests are overlooks and, on chert,
+quarries; bluff bases are shelters. A low-scoring cell on a bluff is not empty, it is a
+different category of place.
+
+**Rivers are corridors, and corridors have nodes.** The Harpeth from Mound Bottom (AD
+950-1300, a palisaded town in a horseshoe bend) down past the Narrows was a highway, with
+farming hamlets along the terraces between. Travel nodes (confluences, fords, and portages
+across incised-meander necks) get used for thousands of years and accumulate the record of
+passing: dropped and cached tools, landing hearths, and in this region rock art at
+river-bluff landmarks. The suitability score ranks places to live and cannot express any of
+this. Say so when a landform is a node rather than a home.
 
 **Say which periods a landform could plausibly hold, and which it could not.** A
 well-drained T1 terrace near a confluence is a good candidate for essentially every period

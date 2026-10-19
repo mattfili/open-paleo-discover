@@ -119,22 +119,22 @@ def validate_histmap_cmd(  # cq-allow: report printing is deliberately verbose �
         quiet = rate <= 0.25
         if exceeds and quiet:
             verdict, colour = (
-                "Recall exceeds a quiet background — the rule carries information "
-                "here.",
+                ("Recall exceeds a quiet background — the rule carries information "
+                 "here."),
                 typer.colors.GREEN,
             )
         elif exceeds:
             verdict, colour = (
-                "Recall exceeds the background rate, but the background itself fires "
-                "often — weakly informative at best; a hit here is closer to 'ground "
-                "is textured' than 'feature found'.",
+                ("Recall exceeds the background rate, but the background itself fires "
+                 "often — weakly informative at best; a hit here is closer to 'ground "
+                 "is textured' than 'feature found'."),
                 typer.colors.YELLOW,
             )
         else:
             verdict, colour = (
-                "Recall does NOT exceed the background rate — this recall is "
-                "uninformative; the rule fires on ordinary ground as readily as on "
-                "mapped symbols.",
+                ("Recall does NOT exceed the background rate — this recall is "
+                 "uninformative; the rule fires on ordinary ground as readily as on "
+                 "mapped symbols."),
                 typer.colors.RED,
             )
         typer.secho(

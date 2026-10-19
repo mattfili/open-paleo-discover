@@ -14,7 +14,10 @@
     "class_id": "civic_structure",
     "name": "Frog Pond Ch",
     "positional_confidence_m": 35,
-    "note": "church-with-cross on 1966 sheet, label reads '...Chapel'"
+    "note": "church-with-cross on 1966 sheet, label reads '...Chapel'",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:25:10Z"
    }
   },
   {
@@ -30,7 +33,10 @@
     "class_id": "civic_structure",
     "name": "Pleasant View Ch",
     "positional_confidence_m": 35,
-    "note": "church-with-cross survives on 1966 sheet"
+    "note": "church-with-cross survives on 1966 sheet",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:25:14Z"
    }
   },
   {
@@ -46,7 +52,10 @@
     "class_id": "civic_structure",
     "name": "Claylick Sch",
     "positional_confidence_m": 45,
-    "note": "unlabeled building persists at the 1930 school position on the 1966 sheet"
+    "note": "unlabeled building persists at the 1930 school position on the 1966 sheet",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:25:17Z"
    }
   },
   {
@@ -62,7 +71,11 @@
     "class_id": "family_cemetery",
     "name": "Taylortown Cem",
     "positional_confidence_m": 40,
-    "note": "dashed cemetery enclosure with 'Cem' label on 1966 sheet, NW of the vanished school"
+    "note": "dashed cemetery enclosure with 'Cem' label on 1966 sheet, NW of the vanished school",
+    "review_status": "confirmed",
+    "review_note": "it's mostly captured but slightly off to the left",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:28:23Z"
    }
   }
  ]

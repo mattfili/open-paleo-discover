@@ -14,7 +14,10 @@
     "class_id": "civic_structure",
     "name": "Jackson Ch",
     "positional_confidence_m": 35,
-    "note": "survives as 'Jacksons Temple' on 1966 sheet"
+    "note": "survives as 'Jacksons Temple' on 1966 sheet",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:24Z"
    }
   },
   {
@@ -30,7 +33,10 @@
     "class_id": "civic_structure",
     "name": "New Hope Sch",
     "positional_confidence_m": 35,
-    "note": "church-with-cross at the site by 1966"
+    "note": "church-with-cross at the site by 1966",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:27Z"
    }
   },
   {
@@ -46,7 +52,10 @@
     "class_id": "family_cemetery",
     "name": "Pinkerton Cem",
     "positional_confidence_m": 40,
-    "note": "labeled cemetery, two dashed enclosures with crosses; point on the labeled upper one"
+    "note": "labeled cemetery, two dashed enclosures with crosses; point on the labeled upper one",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:30Z"
    }
   }
  ]

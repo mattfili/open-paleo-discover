@@ -11,7 +11,7 @@ import pytest
 
 rasterio = pytest.importorskip("rasterio")
 
-from midden.db import fetch_all
+from midden.terrain.cog import list_assets
 
 #: Middle Tennessee ground elevation, NAVD88 metres. The Central Basin floor is near 120 m
 #: and the Highland Rim tops out around 360 m; anything far outside this is feet, a
@@ -20,10 +20,9 @@ MIN_ELEV_M, MAX_ELEV_M = 80.0, 450.0
 
 
 def _dem_assets(db):
-    return fetch_all(
-        db,
-        "SELECT path, resolution_m, grid FROM derived.raster_asset WHERE kind = 'dem'",
-    )
+    # Through the catalog accessor rather than raw SQL, so the stored absolute path is
+    # re-rooted under the current data_dir when the repo is read from another machine.
+    return list_assets(db, kind="dem")
 
 
 def test_dem_is_metric_and_in_range(db):

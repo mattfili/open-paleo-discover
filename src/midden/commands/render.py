@@ -58,7 +58,7 @@ def render_qgis(
     absolute paths, which is why *.qgs is gitignored.
     """
     scene = _scene(aoi, kinds, None, class_id)
-    destination = out or settings().repo_root / "exports" / "qgis" / f"{aoi}.qgs"
+    destination = out or settings().exports_dir / "qgis" / f"{aoi}.qgs"
     render_qgis_project(scene, destination)
     typer.secho(f"wrote {destination}", fg=typer.colors.GREEN)
     typer.echo(f"  {len(scene.rasters)} raster + {len(scene.vectors)} vector layer(s)")
@@ -91,7 +91,7 @@ def render_map(
 ) -> None:
     """Export a single self-contained HTML file: no server, no tiles, no external CSS."""
     scene = _scene(aoi, kinds, visible, class_id)
-    destination = out or settings().repo_root / "exports" / f"{aoi}.html"
+    destination = out or settings().exports_dir / f"{aoi}.html"
     render_artifact(scene, destination, max_px=max_px)
     size = destination.stat().st_size
     typer.secho(f"wrote {destination}  ({size / 1e6:.2f} MB)", fg=typer.colors.GREEN)

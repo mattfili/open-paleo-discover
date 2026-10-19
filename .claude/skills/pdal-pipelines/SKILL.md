@@ -137,7 +137,7 @@ are about to discard.
 |---|---|
 | Running a pipeline with error handling | `scripts/run_pipeline.py` |
 | AOI → bare-earth DEM from 3DEP EPT | `scripts/dem_from_ept.py` |
-| Checking a file before committing to it | `scripts/inspect.py` |
+| Checking a file before committing to it | `scripts/inspect_pc.py` |
 | Bare-earth DEM from classified LAZ | `templates/dem_bare_earth.json` |
 | EPT subset by AOI | `templates/ept_aoi_extract.json` |
 | Classifying ground when it is missing | `templates/reclassify_ground.json` |

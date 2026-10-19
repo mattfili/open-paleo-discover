@@ -9,7 +9,7 @@
     },
     {
       "//": "Ground returns only. If the data is unclassified this matches nothing",
-      "//1": "and you get an empty raster with NO ERROR. Run scripts/inspect.py first.",
+      "//1": "and you get an empty raster with NO ERROR. Run scripts/inspect_pc.py first.",
       "type": "filters.range",
       "limits": "Classification[2:2]"
     },

@@ -162,3 +162,28 @@ def histmap_load_sites(
     typer.echo(
         "  review_status=unreviewed; positional confidence inherited from the sheet"
     )
+
+
+@histmap_app.command("export-labels")
+def histmap_export_labels(
+    labels_dir: Annotated[
+        Path, typer.Option("--labels-dir", help="Tracked labels directory.")
+    ] = Path("labels"),
+) -> None:
+    """Write each catalogued sheet's review state into labels/<sheet_id>.geojson.
+
+    Run after every review round and commit the result: the tracked files, not the
+    database, are the durable copy of the human review work. `load-sites` restores it.
+    """
+    from midden.corpus import export_sheet_labels
+
+    with connect() as conn:
+        sheets = fetch_all(
+            conn,
+            "SELECT DISTINCT source_sheet FROM ref.control_sites "
+            "WHERE source = 'usgs_histmap' ORDER BY 1",
+        )
+        for row in sheets:
+            sheet_id = row["source_sheet"]
+            n = export_sheet_labels(conn, sheet_id, labels_dir / f"{sheet_id}.geojson")
+            typer.echo(f"{sheet_id}: {n} point(s)")

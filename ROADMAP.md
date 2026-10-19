@@ -4,7 +4,8 @@
 broken.** Update it in the same commit as the work it describes. `spec.md` says what the
 project *should* be; this file says where it actually is.
 
-Last verified: 2026-09-02, against a live database and a full pipeline run.
+Last verified: 2026-10-19, by a fresh-clone rebuild of the four control frames (see the
+clean-clone reproduction under A2/A3 and `docs/frozen-v0.1.md`).
 Scope widened 2026-09-03 — see the next section before reading anything below it.
 
 ---
@@ -347,6 +348,32 @@ labels excluded): Ridgetop civic 5/8 vs 70% background, Burns cemeteries 0/8 vs 
 — self-graded verdicts unchanged; the rule, not the labels, remains the falsified
 part, now established on a human-vetted corpus.
 
+**The review corpus is now reproducible from git — 2026-10-19.** Until this date the human
+review lived only in Postgres, and the 2026-09-02 database volume had already been lost
+once. Review state now travels as extra properties on each feature of the tracked
+`labels/<sheet_id>.geojson` files (`review_status`, `review_note`, `review_round`,
+`reviewed_at`, `review_prior` for superseded decisions) — properties rather than a sidecar
+file because a sidecar needs a join key and (name, class) is not unique across relocations,
+whereas a property cannot drift from the geometry it judges. `midden histmap load-sites`
+restores it (a feature with review properties inserts with that state; reviewed rows already
+in the database still win); `midden histmap export-labels` writes it back and must be run
+after every review round. `ref.confuser` has the same pair, `midden labels
+export-confusers` / `load-confusers`. Round-trip tests in `tests/test_label_corpus.py`.
+**Recovery, and what could not be recovered:** this machine's Postgres was the stale
+2026-09-02 volume, so the corpus was rebuilt from the Symbol Review Bench artifact's shared
+store (74 decision documents keyed by the lost database's `site_id`, joined to the tracked
+label files on sheet + name + class; every decision matched). Result: **57 confirmed /
+13 rejected / 2 still-open "can't tell" across 72 points** — the recorded 57/13 reproduce
+exactly. Round is derived from the timestamp (before 2026-09-06 is round 1). Two points
+were reviewed twice (Richardson Cem (S), ore pit C: round-1 "can't tell", round-2
+confirmed); the earlier decision is kept in `review_prior`. **Gaps, recorded not papered
+over:** the corpus was recorded as 76 labels with 6 open, but only 72 points exist in git
+and in the bench — the 4 missing rows were never-reviewed points whose geometry survives
+nowhere on this machine; and **both `ref.confuser` rows (the Montgomery Bell campground
+loop and the Lake Woodhaven pad row) had no recoverable geometry**, so
+`labels/confusers.geojson` ships empty and the two are prose-only in A4 until re-logged
+(or exported from the original database, if it still exists anywhere).
+
 **Tight-disc validation of the 1966 points (2026-09-06):** Taylortown Cem is the
 first cemetery to carry information — 1/1 recall vs a 23% background with the
 multi-element rule that scored 0/6 on coarse discs: at 40 m confidence the enclosure
@@ -453,6 +480,30 @@ texture at that scale. Recorded consequences:
    pass-with-no-error-bar failure B1 exists to prevent (see `spatial-validation`).
 4. `USGS_LPC_TN_Middle_B1/B2` seam: Burns 1953 straddles it; validate reports a
    coverage-gap symbol as "no data", never as a miss.
+
+#### Clean-clone reproduction of the v4 control numbers — 2026-10-19
+
+A fresh clone (`uv sync --frozen`, ruff, pytest, new database volume, `db init`, `doctor`,
+`aoi seed`, then per frame: intake of nhd_flowline / ssurgo / tiger_roads / sgmc_geology,
+the confluence SQL, `terrain run --grid model`, `features build --regional`, `score run
+--class open_habitation --regional`, `score validate`) against live upstream services:
+
+| frame | recorded v4 mean pctile | rebuilt | delta | p recorded -> rebuilt |
+|---|---|---|---|---|
+| mound-bottom | 79.3 | 79.5 | +0.2 | .10 -> 0.10 |
+| castalian-springs | 95.5 | 95.5 | 0.0 | .08 -> 0.08 |
+| fewkes-group | 92.9 | 92.2 | -0.7 | not recorded -> 0.115 |
+| old-stone-fort | 87.9 | 87.9 | 0.0 | .045 -> 0.045 |
+
+Two frames reproduce exactly and two moved by under a point. The movement is upstream
+data drift (SSURGO, NHD and TIGER are live services, and confluences are rebuilt from
+whatever flowlines the fetch returns), not a code change; nothing was tuned to close it.
+Also unchanged: HAND modes at mound-bottom 0.38 / 3.38 / 10.62 m, ten modes at
+old-stone-fort. B4 access-bias ratios: mound-bottom 0.60 (recorded 0.61) and
+castalian-springs 0.59 (recorded 0.62), fewkes 0.94 and old-stone-fort 1.78 (above 1,
+i.e. no access signal there). Enrichment multiples now: 8.80x / 14.01x / 9.37x / 2.62x.
+`midden evals`: 13/13 pass. `pytest`: 20 passed. The D8 accumulation guard (minimum must
+be 1 cell) ran inside all four terrain runs and never fired.
 
 #### A3. NRHP for the monumental precontact classes — EXECUTED 2026-09-06
 
@@ -1078,10 +1129,11 @@ Each of these was learned the expensive way. They are in the code as comments to
 - **WhiteboxTools returns exit code 0 while panicking.** It rejects floating-point
   compression predictors. Anything WBT reads must be written without `PREDICTOR`. The
   skill's `checked()` wrapper is the only reason this surfaces at all.
-- **`pdal-pipelines/scripts/inspect.py` shadows the stdlib `inspect` module.** Running it as
-  a subprocess breaks Python itself. `midden.skills.load()` appends to `sys.path` rather
-  than prepending, which is what makes the import path safe — **but the skill's own
-  documented CLI usage (`python inspect.py input.laz`) is still broken.**
+- **`pdal-pipelines/scripts/inspect.py` shadowed the stdlib `inspect` module — FIXED
+  2026-10-19.** Running it as a script put its own directory first on `sys.path` and broke
+  Python itself. Renamed `inspect_pc.py`; the skill's CLI usage (`python inspect_pc.py
+  input.laz`) now works, and `midden.skills.load()` still refuses stdlib-shadowing names so
+  it cannot recur.
 - **3DEP returns EPSG:4269 with a degree-sized pixel.** WhiteboxTools does not reproject and
   will treat degrees as metres. The warp is not optional.
 - **USGS EPT bounds are EPSG:3857.** UTM bounds return zero points with no error.
@@ -1094,6 +1146,43 @@ Each of these was learned the expensive way. They are in the code as comments to
   so does feeding `SDA_Get_Mukey_from_intersection_with_WktWgs84` back as a correlated
   subquery. Read the keys first, interpolate as literals. `mukey` is **not** unique per
   polygon — `mupolygonkey` is.
+- **`derived.raster_asset.path` is absolute.** Wrong the moment the repo is cloned, mounted
+  or read from a VM. `cog.list_assets` re-roots a missing path under `settings().data_dir`
+  (`_relocate`, recovered from a stash 2026-10-19).
+- **WBT 2.4 CLI `D8FlowAccumulation --pntr` without `--out_type=cells`** returned counts x10
+  (identical to the SCA output) in one run. Pass `--out_type` explicitly; assert `min == 1`.
+- **MCP raster tools picked an arbitrary variant — FIXED 2026-10-19.** The CLI's
+  `terrain preview` required `--variant` when a kind had several (class or sweep variants),
+  but the MCP `_resolve_raster` (behind `midden_preview_raster` and the other raster tools)
+  silently returned the first row, so the agent path could show one class's parameters as
+  if they were the AOI's. It now raises, naming the variants, exactly as the CLI does.
+- **Plain installs fail by design; use an editable one (2026-10-19).** midden reads its SQL,
+  intake sources, weight sets and skill scripts from the repo checkout, so a wheel or a
+  non-editable `git+https` dependency points them into site-packages. `settings()` now
+  raises `ResourceDirectoryError` naming each missing directory and the fix (`uv add
+  --editable ../open-paleo-discover`), instead of failing deep in a run. Mutable state
+  (`data/`, `scratch/`, `exports/`, `.env`) moves with `MIDDEN_HOME` or the per-path
+  `MIDDEN_DATA_DIR` / `MIDDEN_SCRATCH_DIR` / `MIDDEN_EXPORTS_DIR` / `MIDDEN_ENV_FILE`;
+  unset, behavior is unchanged. Intake caches declared as `data/...` follow `data_dir`.
+  Proven with a throwaway sibling project (editable install imports midden, reads
+  settings, builds a render `Scene`, calls `cells_from_metres`, no database) and a wheel
+  install that raises as intended. `tests/test_import_hygiene.py` imports every submodule
+  under an audit hook: no network, no midden `.env` read, no subprocess. **One third-party
+  caveat:** importing `midden.mcp.server` imports fastmcp, which itself reads a `.env` in
+  the current directory; midden cannot prevent that, so the test counts only midden's own
+  `.env`. A consumer that must not read a cwd `.env` should not import the MCP server.
+- **`ref.confluence` is built by a SQL script nothing runs (found 2026-10-19).** The
+  confluence table is derived from the loaded flowlines by
+  `.claude/skills/landform-archaeology/scripts/confluence_extract.sql`, a manual step that
+  no CLI verb performs, so a database rebuilt from git failed at `features build` with
+  `relation "ref.confluence" does not exist`. The step is now in the README's worked pass
+  and `features build` raises with the exact command. Run it AFTER every frame's
+  flowlines are loaded: it rebuilds the table from everything in `ref.nhd_flowline`.
+- **`sgmc_geology` intake is not repeatable across AOIs (found 2026-10-19, NOT fixed).**
+  Its second load fails creating the unique upsert index on `unit_id` (SGMC polygons
+  share a unit id, the same mistake as SSURGO's `mukey`), and the USGS WFS returned a 502
+  once. Chert is a falsified, unscored evidence layer (C4), so the four-frame rebuild is
+  unaffected; the fix is an upsert key that is unique per polygon.
 - **Ibis has no cross-backend joins.** DuckDB is the single connection; `ref.*` and
   `derived.*` are attached with `read_postgres`.
 - **`USGS_LPC_TN_Middle_B1_2018_LAS_2019` does not cover Montgomery Bell.** The recorded
@@ -1124,6 +1213,20 @@ Each of these was learned the expensive way. They are in the code as comments to
 ---
 
 ## Resuming
+
+### Where this was left — 2026-10-19, stabilization pass for v0.1.0-research
+
+Branch `chore/stabilize`: a hardening pass with no model, weight, parameter or rule changes,
+done so the repo can be tagged `v0.1.0-research`, pinned by a product repo, and handed over
+for the January blind test. It recovered the stash's `_relocate` fix and two doc paragraphs;
+committed `docs/scaling.md` and the `midden-teaching` skill with candidate coordinates
+stripped; made the review corpus reproducible from tracked files; reproduced the four v4
+control numbers from a clean clone (two exact, two within 0.7 pctile, drift recorded); added
+path overrides, the editable-install guard and an import-hygiene test; renamed
+`inspect.py`; made the MCP raster tools refuse an ambiguous variant. Unrecoverable losses
+(both confuser rows, four never-reviewed labels) and the two newly found repeatability gaps
+(confluence SQL, sgmc intake) are recorded under Environment gotchas and A1. The frozen
+state is `docs/frozen-v0.1.md`; the next experiment starts from it.
 
 ### Where this was left — 2026-09-04, Priority items 1–4 executed
 

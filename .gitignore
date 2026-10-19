@@ -24,3 +24,9 @@ scratch/
 
 # HyRiver/pygeoogc HTTP response cache, created on first fetch.
 cache/
+
+# Session planning files: briefs, reports, status board. Not part of the project.
+.tmp/
+
+# Per-machine Claude Code permissions.
+.claude/settings.local.json

@@ -218,7 +218,7 @@ def terrain_preview(
     chosen = rows[0]["variant"] or ""
     source = Path(rows[0]["path"])
     suffix = f"_{chosen}" if chosen else ""
-    dest = out or settings().repo_root / "exports" / f"{aoi}_{kind}{suffix}.png"
+    dest = out or settings().exports_dir / f"{aoi}_{kind}{suffix}.png"
     # Openness is meaningful in absolute degrees around 90, so it gets a fixed window
     # rather than a per-image percentile stretch that would make a sweep incomparable.
     stretch = (

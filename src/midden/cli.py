@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -212,6 +213,34 @@ labels_app = typer.Typer(
     help="Label sources beyond histmap sheets.", no_args_is_help=True
 )
 app.add_typer(labels_app, name="labels")
+
+
+@labels_app.command("export-confusers")
+def labels_export_confusers(
+    path: Annotated[Path, typer.Option(help="Output GeoJSON.")] = Path(
+        "labels/confusers.geojson"
+    ),
+) -> None:
+    """Write ref.confuser (the hard-negative ledger) to a tracked GeoJSON file."""
+    from midden.corpus import export_confusers
+
+    with connect() as conn:
+        n = export_confusers(conn, path)
+    typer.echo(f"wrote {n} confuser(s) -> {path}")
+
+
+@labels_app.command("load-confusers")
+def labels_load_confusers(
+    path: Annotated[Path, typer.Option(help="GeoJSON from export-confusers.")] = Path(
+        "labels/confusers.geojson"
+    ),
+) -> None:
+    """Restore ref.confuser from the tracked file; rows already present are kept."""
+    from midden.corpus import load_confusers
+
+    with connect() as conn:
+        n = load_confusers(conn, path)
+    typer.echo(f"inserted {n} confuser(s) from {path}")
 
 
 @labels_app.command("seed-nrhp")

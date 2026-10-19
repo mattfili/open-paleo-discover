@@ -11,7 +11,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from wbt_helpers import checked, cells_from_metres, describe, make_wbt, require_tools
+from wbt_helpers import cells_from_metres, checked, describe, make_wbt, require_tools
 
 # CamelCase names from the manual. Checked at startup so a missing paid-extension
 # tool fails here rather than forty minutes into a chain.

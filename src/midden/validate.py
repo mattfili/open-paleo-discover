@@ -331,9 +331,7 @@ def _cluster_qualifies(cluster: dict, detect: dict, min_cells: int) -> bool:
     if span is not None and not (span[0] <= cluster["span_cells"] <= span[1]):
         return False
     min_fill = detect.get("min_fill_ratio")
-    if min_fill is not None and cluster["fill_ratio"] < min_fill:
-        return False
-    return True
+    return not (min_fill is not None and cluster["fill_ratio"] < min_fill)
 
 
 def _multi_satisfied(
