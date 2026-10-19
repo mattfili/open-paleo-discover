@@ -54,6 +54,9 @@ uv run midden aoi seed        # 13 AOIs from the authoritative boundary services
 ```bash
 uv run midden intake run nhd_flowline --aoi mound-bottom
 uv run midden intake run ssurgo       --aoi mound-bottom
+# ref.confluence is derived from the loaded flowlines by a SQL script no pipeline step runs:
+docker compose exec -T db psql -U midden -d midden \
+  < .claude/skills/landform-archaeology/scripts/confluence_extract.sql
 uv run midden terrain run --aoi mound-bottom --grid model
 uv run midden features build --aoi mound-bottom
 uv run midden score run   --aoi mound-bottom
@@ -67,6 +70,21 @@ The 0.5 m detection grid needs the LiDAR point cloud and an EPT project name:
 uv run midden terrain run --aoi harpeth-narrows --grid detection \
   --ept-project USGS_LPC_TN_Middle_B1_2018_LAS_2019
 ```
+
+## Using midden from another project
+
+midden reads its SQL, intake sources, weight sets and skill scripts from the repository
+checkout, so it is installed **editable from a checkout**, not as a wheel or a plain git
+dependency (those fail at `settings()` with a message naming the missing directories):
+
+```bash
+uv add --editable ../open-paleo-discover
+```
+
+Mutable state (`data/`, `scratch/`, `exports/`, `.env`) stays in the checkout by default.
+Set `MIDDEN_HOME=/some/dir` to move all four, or `MIDDEN_DATA_DIR`, `MIDDEN_SCRATCH_DIR`,
+`MIDDEN_EXPORTS_DIR` and `MIDDEN_ENV_FILE` individually. Importing midden never connects to
+the database, reads `.env`, or touches the network.
 
 ## Invariants
 

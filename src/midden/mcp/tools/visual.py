@@ -122,7 +122,7 @@ def midden_render_map(
             class_id=target_class,
         )
 
-    destination = settings().repo_root / "exports" / f"{aoi}.html"
+    destination = settings().exports_dir / f"{aoi}.html"
     render_artifact(scene, destination, max_px=max_px)
     return {
         "aoi": aoi,
@@ -163,7 +163,7 @@ def midden_render_qgis_project(
             conn, get_aoi(conn, aoi), kinds=selected, class_id=target_class
         )
 
-    destination = settings().repo_root / "exports" / "qgis" / f"{aoi}.qgs"
+    destination = settings().exports_dir / "qgis" / f"{aoi}.qgs"
     render_qgis_project(scene, destination)
     return {
         "aoi": aoi,

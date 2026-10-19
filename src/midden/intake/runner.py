@@ -184,13 +184,19 @@ def _ledger_params(source: Source, aoi: Aoi | None, key: str) -> dict[str, Any]:
     }
 
 
+def _cache_dir(source: Source, config: Settings) -> Path:
+    """Directory for a source's cache; a `data/...` path follows `data_dir`. Pure."""
+    if not source.fetch.cache:
+        return config.raw_dir / source.name
+    declared = Path(source.fetch.cache)
+    if declared.parts[:1] == ("data",):
+        return config.data_dir.joinpath(*declared.parts[1:])
+    return config.repo_root / declared
+
+
 def _cache_path(source: Source, aoi: Aoi | None, key: str, config: Settings) -> Path:
     """Where a fetch for this (source, AOI, params) combination is cached. Pure."""
-    directory = (
-        config.repo_root / source.fetch.cache
-        if source.fetch.cache
-        else config.raw_dir / source.name
-    )
+    directory = _cache_dir(source, config)
     return directory / f"{key[:16]}.gpkg"
 
 
