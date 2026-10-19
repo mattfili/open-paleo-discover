@@ -4,7 +4,8 @@
 broken.** Update it in the same commit as the work it describes. `spec.md` says what the
 project *should* be; this file says where it actually is.
 
-Last verified: 2026-09-02, against a live database and a full pipeline run.
+Last verified: 2026-10-19, by a fresh-clone rebuild of the four control frames (see the
+clean-clone reproduction under A2/A3 and `docs/frozen-v0.1.md`).
 Scope widened 2026-09-03 — see the next section before reading anything below it.
 
 ---
@@ -1212,6 +1213,20 @@ Each of these was learned the expensive way. They are in the code as comments to
 ---
 
 ## Resuming
+
+### Where this was left — 2026-10-19, stabilization pass for v0.1.0-research
+
+Branch `chore/stabilize`: a hardening pass with no model, weight, parameter or rule changes,
+done so the repo can be tagged `v0.1.0-research`, pinned by a product repo, and handed over
+for the January blind test. It recovered the stash's `_relocate` fix and two doc paragraphs;
+committed `docs/scaling.md` and the `midden-teaching` skill with candidate coordinates
+stripped; made the review corpus reproducible from tracked files; reproduced the four v4
+control numbers from a clean clone (two exact, two within 0.7 pctile, drift recorded); added
+path overrides, the editable-install guard and an import-hygiene test; renamed
+`inspect.py`; made the MCP raster tools refuse an ambiguous variant. Unrecoverable losses
+(both confuser rows, four never-reviewed labels) and the two newly found repeatability gaps
+(confluence SQL, sgmc intake) are recorded under Environment gotchas and A1. The frozen
+state is `docs/frozen-v0.1.md`; the next experiment starts from it.
 
 ### Where this was left — 2026-09-04, Priority items 1–4 executed
 
