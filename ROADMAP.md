@@ -480,6 +480,30 @@ texture at that scale. Recorded consequences:
 4. `USGS_LPC_TN_Middle_B1/B2` seam: Burns 1953 straddles it; validate reports a
    coverage-gap symbol as "no data", never as a miss.
 
+#### Clean-clone reproduction of the v4 control numbers — 2026-10-19
+
+A fresh clone (`uv sync --frozen`, ruff, pytest, new database volume, `db init`, `doctor`,
+`aoi seed`, then per frame: intake of nhd_flowline / ssurgo / tiger_roads / sgmc_geology,
+the confluence SQL, `terrain run --grid model`, `features build --regional`, `score run
+--class open_habitation --regional`, `score validate`) against live upstream services:
+
+| frame | recorded v4 mean pctile | rebuilt | delta | p recorded -> rebuilt |
+|---|---|---|---|---|
+| mound-bottom | 79.3 | 79.5 | +0.2 | .10 -> 0.10 |
+| castalian-springs | 95.5 | 95.5 | 0.0 | .08 -> 0.08 |
+| fewkes-group | 92.9 | 92.2 | -0.7 | not recorded -> 0.115 |
+| old-stone-fort | 87.9 | 87.9 | 0.0 | .045 -> 0.045 |
+
+Two frames reproduce exactly and two moved by under a point. The movement is upstream
+data drift (SSURGO, NHD and TIGER are live services, and confluences are rebuilt from
+whatever flowlines the fetch returns), not a code change; nothing was tuned to close it.
+Also unchanged: HAND modes at mound-bottom 0.38 / 3.38 / 10.62 m, ten modes at
+old-stone-fort. B4 access-bias ratios: mound-bottom 0.60 (recorded 0.61) and
+castalian-springs 0.59 (recorded 0.62), fewkes 0.94 and old-stone-fort 1.78 (above 1,
+i.e. no access signal there). Enrichment multiples now: 8.80x / 14.01x / 9.37x / 2.62x.
+`midden evals`: 13/13 pass. `pytest`: 20 passed. The D8 accumulation guard (minimum must
+be 1 cell) ran inside all four terrain runs and never fired.
+
 #### A3. NRHP for the monumental precontact classes — EXECUTED 2026-09-06
 
 `midden labels seed-nrhp` (`src/midden/nrhp.py`) seeds `ref.control_sites` from the
@@ -1131,6 +1155,33 @@ Each of these was learned the expensive way. They are in the code as comments to
   but the MCP `_resolve_raster` (behind `midden_preview_raster` and the other raster tools)
   silently returned the first row, so the agent path could show one class's parameters as
   if they were the AOI's. It now raises, naming the variants, exactly as the CLI does.
+- **Plain installs fail by design; use an editable one (2026-10-19).** midden reads its SQL,
+  intake sources, weight sets and skill scripts from the repo checkout, so a wheel or a
+  non-editable `git+https` dependency points them into site-packages. `settings()` now
+  raises `ResourceDirectoryError` naming each missing directory and the fix (`uv add
+  --editable ../open-paleo-discover`), instead of failing deep in a run. Mutable state
+  (`data/`, `scratch/`, `exports/`, `.env`) moves with `MIDDEN_HOME` or the per-path
+  `MIDDEN_DATA_DIR` / `MIDDEN_SCRATCH_DIR` / `MIDDEN_EXPORTS_DIR` / `MIDDEN_ENV_FILE`;
+  unset, behavior is unchanged. Intake caches declared as `data/...` follow `data_dir`.
+  Proven with a throwaway sibling project (editable install imports midden, reads
+  settings, builds a render `Scene`, calls `cells_from_metres`, no database) and a wheel
+  install that raises as intended. `tests/test_import_hygiene.py` imports every submodule
+  under an audit hook: no network, no midden `.env` read, no subprocess. **One third-party
+  caveat:** importing `midden.mcp.server` imports fastmcp, which itself reads a `.env` in
+  the current directory; midden cannot prevent that, so the test counts only midden's own
+  `.env`. A consumer that must not read a cwd `.env` should not import the MCP server.
+- **`ref.confluence` is built by a SQL script nothing runs (found 2026-10-19).** The
+  confluence table is derived from the loaded flowlines by
+  `.claude/skills/landform-archaeology/scripts/confluence_extract.sql`, a manual step that
+  no CLI verb performs, so a database rebuilt from git failed at `features build` with
+  `relation "ref.confluence" does not exist`. The step is now in the README's worked pass
+  and `features build` raises with the exact command. Run it AFTER every frame's
+  flowlines are loaded: it rebuilds the table from everything in `ref.nhd_flowline`.
+- **`sgmc_geology` intake is not repeatable across AOIs (found 2026-10-19, NOT fixed).**
+  Its second load fails creating the unique upsert index on `unit_id` (SGMC polygons
+  share a unit id, the same mistake as SSURGO's `mukey`), and the USGS WFS returned a 502
+  once. Chert is a falsified, unscored evidence layer (C4), so the four-frame rebuild is
+  unaffected; the fix is an upsert key that is unique per polygon.
 - **Ibis has no cross-backend joins.** DuckDB is the single connection; `ref.*` and
   `derived.*` are attached with `read_postgres`.
 - **`USGS_LPC_TN_Middle_B1_2018_LAS_2019` does not cover Montgomery Bell.** The recorded
