@@ -386,6 +386,8 @@ def load_sites(
     ) as derivation_id:
         # Reviewed rows survive a re-load; re-inserting their features would
         # duplicate them as fresh unreviewed rows. Skip by (name, class) and say so.
+        # Features that carry review properties (restored from git, see corpus.py)
+        # insert with that state, so a rebuilt database regains the reviewed corpus.
         reviewed_keys = {
             (r["name"], r["class_id"])
             for r in fetch_all(
@@ -401,37 +403,13 @@ def load_sites(
             (sheet_id,),
         )
         skipped = 0
+        restored = 0
         for feature in features:
-            x, y = feature["geometry"]["coordinates"]
             props = feature["properties"]
             if (props["name"], props["class_id"]) in reviewed_keys:
                 skipped += 1
                 continue
-            conn.execute(
-                """
-                INSERT INTO ref.control_sites
-                    (class_id, name, source, source_sheet, map_year,
-                     positional_confidence_m, review_status, geom, derivation_id)
-                VALUES (%s, %s, 'usgs_histmap', %s, %s, %s, 'unreviewed',
-                        ST_SetSRID(ST_MakePoint(%s, %s), 26916), %s)
-                """,
-                (
-                    props["class_id"],
-                    props["name"],
-                    sheet_id,
-                    sheet["map_year"],
-                    # A feature may carry its own confidence — sheet error plus the
-                    # digitization method's pointing error — but never less than the
-                    # sheet's: a point cannot be more certain than the map it came from.
-                    max(
-                        float(props.get("positional_confidence_m") or 0.0),
-                        sheet["positional_confidence_m"],
-                    ),
-                    x,
-                    y,
-                    derivation_id,
-                ),
-            )
+            restored += _insert_site(conn, feature, sheet, derivation_id)
     if reviewed_keys:
         # Not silent: reviewed rows for this sheet were kept, and features matching
         # them were not re-inserted.
@@ -439,4 +417,49 @@ def load_sites(
             f"note: {len(reviewed_keys)} reviewed point(s) for {sheet_id} left "
             f"untouched; {skipped} matching feature(s) skipped rather than duplicated"
         )
+    if restored:
+        print(f"note: {restored} reviewed point(s) restored with their review state")
     return len(features) - skipped
+
+
+def _insert_site(
+    conn: psycopg.Connection, feature: dict, sheet: dict, derivation_id: int
+) -> int:
+    """Insert one digitized feature; return 1 if it carried a review state, else 0."""
+    from midden.corpus import review_params
+
+    x, y = feature["geometry"]["coordinates"]
+    props = feature["properties"]
+    review = review_params(props)
+    conn.execute(
+        """
+        INSERT INTO ref.control_sites
+            (class_id, name, source, source_sheet, map_year,
+             positional_confidence_m, review_status, review_note, review_round,
+             reviewed_at, review_prior, geom, derivation_id)
+        VALUES (%s, %s, 'usgs_histmap', %s, %s, %s, %s, %s, %s, %s, %s::jsonb,
+                ST_SetSRID(ST_MakePoint(%s, %s), 26916), %s)
+        """,
+        (
+            props["class_id"],
+            props["name"],
+            sheet["sheet_id"],
+            sheet["map_year"],
+            # A feature may carry its own confidence (sheet error plus the digitization
+            # method's pointing error) but never less than the sheet's: a point cannot
+            # be more certain than the map it came from.
+            max(
+                float(props.get("positional_confidence_m") or 0.0),
+                sheet["positional_confidence_m"],
+            ),
+            review["review_status"],
+            review["review_note"],
+            review["review_round"],
+            review["reviewed_at"],
+            review["review_prior"],
+            x,
+            y,
+            derivation_id,
+        ),
+    )
+    return int(review["review_status"] != "unreviewed" or review["review_round"] is not None)

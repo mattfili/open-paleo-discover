@@ -14,7 +14,10 @@
     "class_id": "civic_structure",
     "name": "Oakwood Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:28:57Z"
    }
   },
   {
@@ -30,7 +33,10 @@
     "class_id": "civic_structure",
     "name": "Greenville Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:28:58Z"
    }
   },
   {
@@ -46,7 +52,11 @@
     "class_id": "civic_structure",
     "name": "St Lawrence Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "rejected",
+    "review_note": "off, it's to the upper left of the circle",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:29:16Z"
    }
   },
   {
@@ -62,7 +72,10 @@
     "class_id": "civic_structure",
     "name": "Setters Sch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "unreviewed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:29:26Z"
    }
   },
   {
@@ -78,7 +91,10 @@
     "class_id": "civic_structure",
     "name": "Oakland Ch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:29:28Z"
    }
   },
   {
@@ -94,7 +110,10 @@
     "class_id": "civic_structure",
     "name": "Joelton Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:29:30Z"
    }
   },
   {
@@ -110,7 +129,11 @@
     "class_id": "civic_structure",
     "name": "Lickton Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "rejected",
+    "review_note": "symbol is off to the left outside the circle",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:31:00Z"
    }
   },
   {
@@ -126,7 +149,10 @@
     "class_id": "civic_structure",
     "name": "Weaver Sch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "rejected",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:32:09Z"
    }
   },
   {
@@ -142,7 +168,11 @@
     "class_id": "civic_structure",
     "name": "Little Creek Sch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "rejected",
+    "review_note": "half the symbol is outside to the bottom right, i'm going to say off",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:33:46Z"
    }
   },
   {
@@ -158,7 +188,10 @@
     "class_id": "civic_structure",
     "name": "New Hope Ch (Ridgetop)",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:33:53Z"
    }
   },
   {
@@ -174,7 +207,10 @@
     "class_id": "civic_structure",
     "name": "Pinnacle Sch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:33:55Z"
    }
   },
   {
@@ -190,7 +226,10 @@
     "class_id": "civic_structure",
     "name": "Forest Grove Ch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:34:04Z"
    }
   },
   {
@@ -206,7 +245,10 @@
     "class_id": "civic_structure",
     "name": "Oak Grove Sch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "rejected",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:34:10Z"
    }
   },
   {
@@ -222,7 +264,10 @@
     "class_id": "civic_structure",
     "name": "Palestine Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:34:11Z"
    }
   },
   {
@@ -238,7 +283,10 @@
     "class_id": "civic_structure",
     "name": "Mt Zion Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:34:13Z"
    }
   },
   {
@@ -254,7 +302,10 @@
     "class_id": "civic_structure",
     "name": "Sharon Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:34:15Z"
    }
   },
   {
@@ -270,7 +321,10 @@
     "class_id": "civic_structure",
     "name": "Crunk Ch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:34:16Z"
    }
   },
   {
@@ -286,7 +340,10 @@
     "class_id": "civic_structure",
     "name": "Chestnut Grove Ch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "unreviewed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:37:58Z"
    }
   },
   {
@@ -302,7 +359,10 @@
     "class_id": "civic_structure",
     "name": "Crossroads Sch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "rejected",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:11Z"
    }
   },
   {
@@ -318,7 +378,10 @@
     "class_id": "civic_structure",
     "name": "Lights Chapel",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:12Z"
    }
   },
   {
@@ -334,7 +397,10 @@
     "class_id": "civic_structure",
     "name": "Ebenezer Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:13Z"
    }
   },
   {
@@ -350,7 +416,10 @@
     "class_id": "civic_structure",
     "name": "Rock Springs Ch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:15Z"
    }
   },
   {
@@ -366,7 +435,10 @@
     "class_id": "civic_structure",
     "name": "Reeder Sch",
     "positional_confidence_m": 120,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:22Z"
    }
   },
   {
@@ -382,7 +454,10 @@
     "class_id": "civic_structure",
     "name": "Green Sch",
     "positional_confidence_m": 90,
-    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window"
+    "note": "sheet is a 1950s printing of the 1931 survey; symbol date carries that window",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:38:23Z"
    }
   }
  ]

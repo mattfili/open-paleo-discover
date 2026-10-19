@@ -13,7 +13,11 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Jackson Cem",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "rejected",
+    "review_note": "a cemetery does appear but outside of the ring",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:31:37Z"
    }
   },
   {
@@ -28,7 +32,10 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Camp Ground Ch",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T19:26:54Z"
    }
   },
   {
@@ -43,7 +50,11 @@
    "properties": {
     "class_id": "civic_structure",
     "name": "Acorn Hill Ch",
-    "positional_confidence_m": 70
+    "positional_confidence_m": 70,
+    "review_status": "confirmed",
+    "review_note": "there does appear to be a structure within the top of the red ring, to the NW",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:29:26Z"
    }
   },
   {
@@ -58,7 +69,10 @@
    "properties": {
     "class_id": "iron_works",
     "name": "ore pit (pick symbol) A",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:32:43Z"
    }
   },
   {
@@ -73,7 +87,10 @@
    "properties": {
     "class_id": "iron_works",
     "name": "ore pit (pick symbol) B",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:32:55Z"
    }
   },
   {
@@ -88,7 +105,18 @@
    "properties": {
     "class_id": "iron_works",
     "name": "ore pit (pick symbol) C",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:25:03Z",
+    "review_prior": [
+     {
+      "decision": "unsure",
+      "round": 1,
+      "at": "2026-09-05T16:33:31Z",
+      "note": ""
+     }
+    ]
    }
   },
   {
@@ -103,7 +131,10 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Hall Cem",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:31:44Z"
    }
   },
   {
@@ -118,7 +149,10 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Ladd Cem",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:31:47Z"
    }
   },
   {
@@ -133,7 +167,19 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Richardson Cem (S)",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_note": "the actual cemetary outline is visible by lidar and is slightly off to the left",
+    "review_round": 2,
+    "reviewed_at": "2026-09-07T22:41:17Z",
+    "review_prior": [
+     {
+      "decision": "unsure",
+      "round": 1,
+      "at": "2026-09-05T16:31:52Z",
+      "note": ""
+     }
+    ]
    }
   },
   {
@@ -148,7 +194,10 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Price Cem",
-    "positional_confidence_m": 70
+    "positional_confidence_m": 70,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:31:55Z"
    }
   },
   {
@@ -163,7 +212,11 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Richardson Cem (N)",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_note": "looks right based on just the map",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:32:13Z"
    }
   },
   {
@@ -178,7 +231,10 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Fulgum Cem",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:32:17Z"
    }
   },
   {
@@ -193,7 +249,10 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Welch Cem",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:32:19Z"
    }
   },
   {
@@ -208,7 +267,10 @@
    "properties": {
     "class_id": "iron_works",
     "name": "Bakersworks",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:33:47Z"
    }
   },
   {
@@ -223,7 +285,10 @@
    "properties": {
     "class_id": "family_cemetery",
     "name": "Thompson Cem",
-    "positional_confidence_m": 45.0
+    "positional_confidence_m": 45.0,
+    "review_status": "confirmed",
+    "review_round": 1,
+    "reviewed_at": "2026-09-05T16:32:38Z"
    }
   },
   {
@@ -239,7 +304,11 @@
     "class_id": "family_cemetery",
     "name": "Jackson Cem (relocated)",
     "positional_confidence_m": 40,
-    "note": "relocation of the rejected Jackson Cem point per owner review: symbol (dashed square) sits ~69 m N of the original click, which was on the label text"
+    "note": "relocation of the rejected Jackson Cem point per owner review: symbol (dashed square) sits ~69 m N of the original click, which was on the label text",
+    "review_status": "confirmed",
+    "review_note": "again you can see the slight outline in the lidar",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:24:59Z"
    }
   }
  ]

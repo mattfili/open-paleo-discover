@@ -14,7 +14,10 @@
     "class_id": "civic_structure",
     "name": "Sams Creek Ch",
     "positional_confidence_m": 35,
-    "note": "church-with-cross survives, 'Sams Creek Ch' on 1966 sheet"
+    "note": "church-with-cross survives, 'Sams Creek Ch' on 1966 sheet",
+    "review_status": "confirmed",
+    "review_round": 2,
+    "reviewed_at": "2026-09-08T01:28:53Z"
    }
   }
  ]

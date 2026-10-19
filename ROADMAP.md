@@ -347,6 +347,32 @@ labels excluded): Ridgetop civic 5/8 vs 70% background, Burns cemeteries 0/8 vs 
 — self-graded verdicts unchanged; the rule, not the labels, remains the falsified
 part, now established on a human-vetted corpus.
 
+**The review corpus is now reproducible from git — 2026-10-19.** Until this date the human
+review lived only in Postgres, and the 2026-09-02 database volume had already been lost
+once. Review state now travels as extra properties on each feature of the tracked
+`labels/<sheet_id>.geojson` files (`review_status`, `review_note`, `review_round`,
+`reviewed_at`, `review_prior` for superseded decisions) — properties rather than a sidecar
+file because a sidecar needs a join key and (name, class) is not unique across relocations,
+whereas a property cannot drift from the geometry it judges. `midden histmap load-sites`
+restores it (a feature with review properties inserts with that state; reviewed rows already
+in the database still win); `midden histmap export-labels` writes it back and must be run
+after every review round. `ref.confuser` has the same pair, `midden labels
+export-confusers` / `load-confusers`. Round-trip tests in `tests/test_label_corpus.py`.
+**Recovery, and what could not be recovered:** this machine's Postgres was the stale
+2026-09-02 volume, so the corpus was rebuilt from the Symbol Review Bench artifact's shared
+store (74 decision documents keyed by the lost database's `site_id`, joined to the tracked
+label files on sheet + name + class; every decision matched). Result: **57 confirmed /
+13 rejected / 2 still-open "can't tell" across 72 points** — the recorded 57/13 reproduce
+exactly. Round is derived from the timestamp (before 2026-09-06 is round 1). Two points
+were reviewed twice (Richardson Cem (S), ore pit C: round-1 "can't tell", round-2
+confirmed); the earlier decision is kept in `review_prior`. **Gaps, recorded not papered
+over:** the corpus was recorded as 76 labels with 6 open, but only 72 points exist in git
+and in the bench — the 4 missing rows were never-reviewed points whose geometry survives
+nowhere on this machine; and **both `ref.confuser` rows (the Montgomery Bell campground
+loop and the Lake Woodhaven pad row) had no recoverable geometry**, so
+`labels/confusers.geojson` ships empty and the two are prose-only in A4 until re-logged
+(or exported from the original database, if it still exists anywhere).
+
 **Tight-disc validation of the 1966 points (2026-09-06):** Taylortown Cem is the
 first cemetery to carry information — 1/1 recall vs a 23% background with the
 multi-element rule that scored 0/6 on coarse discs: at 40 m confidence the enclosure
