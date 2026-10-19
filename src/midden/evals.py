@@ -24,8 +24,9 @@ can gate in CI once the database is seedable there.
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import psycopg
 

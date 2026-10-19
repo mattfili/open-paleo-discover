@@ -188,17 +188,29 @@ def _confluences(conn: psycopg.Connection, profile: dict) -> gpd.GeoDataFrame:
     bounds = rasterio.transform.array_bounds(
         profile["height"], profile["width"], profile["transform"]
     )
-    rows = fetch_all(
-        conn,
-        """
-        SELECT ST_AsText(geom) AS wkt
-        FROM ref.confluence
-        WHERE order_minor >= %s
-          AND order_minor < order_major
-          AND geom && ST_MakeEnvelope(%s, %s, %s, %s, 26916)
-        """,
-        (MIN_CONFLUENCE_ORDER, *bounds),
-    )
+    try:
+        rows = fetch_all(
+            conn,
+            """
+            SELECT ST_AsText(geom) AS wkt
+            FROM ref.confluence
+            WHERE order_minor >= %s
+              AND order_minor < order_major
+              AND geom && ST_MakeEnvelope(%s, %s, %s, %s, 26916)
+            """,
+            (MIN_CONFLUENCE_ORDER, *bounds),
+        )
+    except psycopg.errors.UndefinedTable:
+        conn.rollback()
+        # ref.confluence is derived from ref.nhd_flowline by a SQL script that no pipeline
+        # step runs; a database rebuilt from git does not have it (found 2026-10-19).
+        raise RuntimeError(
+            "ref.confluence does not exist. It is derived from the loaded flowlines by "
+            ".claude/skills/landform-archaeology/scripts/confluence_extract.sql; run it "
+            "after `midden intake run nhd_flowline`:\n  docker compose exec -T db psql "
+            "-U $POSTGRES_USER -d $POSTGRES_DB < "
+            ".claude/skills/landform-archaeology/scripts/confluence_extract.sql"
+        ) from None
     return gpd.GeoDataFrame(
         geometry=gpd.GeoSeries.from_wkt([r["wkt"] for r in rows]), crs=PROJECT_CRS
     )

@@ -42,7 +42,7 @@ def ensure_pdal() -> str:
 
 
 def version() -> str:
-    out = subprocess.run([ensure_pdal(), "--version"], capture_output=True, text=True)
+    out = subprocess.run([ensure_pdal(), "--version"], capture_output=True, text=True, check=False)
     return out.stdout.strip() or out.stderr.strip()
 
 
@@ -72,9 +72,8 @@ def run(
         pipeline_path = pipeline
     else:
         spec = pipeline if isinstance(pipeline, dict) else {"pipeline": pipeline}
-        fd = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
-        json.dump(spec, fd, indent=2)
-        fd.close()
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fd:
+            json.dump(spec, fd, indent=2)
         tmp = Path(fd.name)
         pipeline_path = tmp
 
@@ -85,7 +84,9 @@ def run(
         cmd += ["--metadata", str(metadata_out)]
 
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+        proc = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=timeout, check=False
+        )
     except subprocess.TimeoutExpired as exc:
         raise PdalError(
             f"pdal timed out after {timeout}s. For an EPT read this usually means the "
@@ -124,7 +125,7 @@ def info(path: Path, *, stats: bool = False, dimensions: str | None = None) -> d
     if dimensions:
         cmd += ["--dimensions", dimensions]
 
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if proc.returncode != 0:
         raise PdalError(f"pdal info failed: {proc.stderr.strip()}")
     return json.loads(proc.stdout)

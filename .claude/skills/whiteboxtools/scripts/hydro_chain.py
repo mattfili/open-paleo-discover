@@ -32,8 +32,7 @@ from pathlib import Path
 
 import numpy as np
 import rasterio
-
-from wbt_helpers import checked, cells_from_metres, describe, make_wbt, require_tools
+from wbt_helpers import cells_from_metres, checked, describe, make_wbt, require_tools
 
 REQUIRED = [
     "BreachDepressionsLeastCost",
@@ -43,6 +42,27 @@ REQUIRED = [
     "ElevationAboveStream",
     "Slope",
 ]
+
+
+def assert_accum_counts_cells(accum: Path) -> None:
+    """Fail loudly unless the D8 accumulation raster counts cells (its minimum is 1).
+
+    In `cells` mode every cell drains at least itself, so the smallest valid value is
+    exactly 1. WBT 2.4's CLI has returned counts x10 (identical to the specific-
+    contributing-area output) when `D8FlowAccumulation --pntr` ran without an explicit
+    `--out_type`; every stream threshold downstream would then be off by 10x with no error.
+    """
+    with rasterio.open(accum) as src:
+        valid = src.read(1, masked=True)
+    if not valid.count():
+        raise RuntimeError(f"{accum}: accumulation raster is entirely nodata")
+    low = float(valid.min())
+    if low != 1.0:
+        raise RuntimeError(
+            f"{accum}: D8 accumulation minimum is {low:g}, expected 1 cell. The raster is "
+            f"not in cells mode (WBT out_type x10 trap); stream thresholds would be wrong "
+            f"by the same factor. Pass out_type='cells' explicitly and re-run."
+        )
 
 
 def condition(wbt, dem: Path, out: Path, breach_dist_m: float) -> dict[str, Path]:
@@ -56,6 +76,7 @@ def condition(wbt, dem: Path, out: Path, breach_dist_m: float) -> dict[str, Path
 
     if all(p.exists() for p in paths.values()):
         print("Conditioning outputs already present -- reusing.")
+        assert_accum_counts_cells(paths["accum"])
         return paths
 
     dist_cells = cells_from_metres(dem, breach_dist_m)
@@ -86,6 +107,7 @@ def condition(wbt, dem: Path, out: Path, breach_dist_m: float) -> dict[str, Path
         str(paths["breached"]), str(paths["slope"]), units="degrees",
         expect=paths["slope"],
     )
+    assert_accum_counts_cells(paths["accum"])
     return paths
 
 

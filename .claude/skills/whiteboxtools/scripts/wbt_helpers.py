@@ -17,9 +17,9 @@ Import and use `checked` around every call, or use `WBT` which wraps automatical
 
 from __future__ import annotations
 
-import math
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any
 
 import rasterio
 
@@ -96,8 +96,8 @@ def require_tools(wbt, names: Iterable[str]) -> None:
         return name.lower().replace("_", "")
 
     try:
-        available = {_norm(k) for k in wbt.list_tools().keys()}
-    except Exception as exc:  # noqa: BLE001 -- surface the real problem
+        available = {_norm(k) for k in wbt.list_tools()}
+    except Exception as exc:
         raise WhiteboxError(
             f"Could not list tools: {exc}. If this is a first run, the binary may "
             "still be downloading. On macOS, check Gatekeeper quarantine on the "
@@ -136,7 +136,7 @@ def cells_from_metres(raster: Path, metres: float, odd: bool = False) -> int:
             "will process degrees as if they were metres."
         )
 
-    n = max(1, int(round(metres / res)))
+    n = max(1, round(metres / res))
     if odd and n % 2 == 0:
         n += 1
     return n
